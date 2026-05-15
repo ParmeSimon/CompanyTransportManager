@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da50d6ac99c10e64798a95354efcf68e, type: 3}
+  m_Name: TileMapConfig
+  m_EditorClassIdentifier: Assembly-CSharp::TransportManager.Entities.Map.TileMapConfig
+  urlTemplate: https://tile.openstreetmap.org/{z}/{x}/{y}.png
+  userAgent: TransportManagerMobile/0.1 (parmesimon@gmail.com)
+  attribution: "\xA9 OpenStreetMap contributors"
+  minZoom: 1
+  maxZoom: 18
+  tilePixelSize: 256
+  memoryCacheCapacity: 200
+  diskCacheFolder: osm_tiles
+  requestTimeoutSeconds: 10

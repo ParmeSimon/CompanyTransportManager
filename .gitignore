@@ -1,0 +1,74 @@
+# ---------- Unity generated ----------
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+
+# Asset import workers and generated meta
+sysinfo.txt
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# Unity3D-generated files
+*.unityproj
+*.app
+*.unitypackage
+*.aab
+*.apk
+*.ipa
+
+# Crashlytics generated file
+crashlytics-build.properties
+
+# Packages — keep manifest.json/packages-lock.json, ignore cache
+Packages/com.unity.collab-proxy/Editor/UserInterface/Source/Resources/Cache/
+
+# Visual Scripting auto-generated files
+Assets/Unity.VisualScripting.Generated*
+.VSCodeCounter/
+
+# ---------- IDEs & OS ----------
+# Visual Studio / Rider / VSCode generate these — Unity regenerates on focus
+.vs/
+.vscode/
+.idea/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.tmp
+*.swp
+*.pyc
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# macOS / Windows / Linux
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ---------- Project-specific ----------
+# Generated save data lives in persistentDataPath, not in repo — but ignore
+# any local dumps people might drop in the project for debugging.
+savegame.json
+route_cache.json
+osm_tiles/
+
+# If you ever store an ORS API key in OrsConfig.asset and want to keep it
+# out of the repo, uncomment the next line and commit an OrsConfig.example.asset
+# instead.
+# Assets/_Project/ScriptableObjects/Map/OrsConfig.asset

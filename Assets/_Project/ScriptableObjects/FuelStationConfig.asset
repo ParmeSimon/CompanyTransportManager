@@ -1,0 +1,76 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e5de123808d5e44e9fff09b14ccb34c, type: 3}
+  m_Name: FuelStationConfig
+  m_EditorClassIdentifier: Assembly-CSharp::TransportManager.Entities.Fuel.FuelStationConfig
+  tiers:
+  - level: 1
+    displayName: Vieux Baril
+    storageCapacityLiters: 200
+    upgradeCostDollars: 0
+    fullRefillDurationSeconds: 0
+    instantRefillIngotCost: 0
+  - level: 2
+    displayName: Cuve Plastique
+    storageCapacityLiters: 300
+    upgradeCostDollars: 1000
+    fullRefillDurationSeconds: 150
+    instantRefillIngotCost: 5
+  - level: 3
+    displayName: "R\xE9servoir Acier"
+    storageCapacityLiters: 500
+    upgradeCostDollars: 2500
+    fullRefillDurationSeconds: 800
+    instantRefillIngotCost: 10
+  - level: 4
+    displayName: "Cuve Enterr\xE9e"
+    storageCapacityLiters: 1000
+    upgradeCostDollars: 10000
+    fullRefillDurationSeconds: 4800
+    instantRefillIngotCost: 14
+  - level: 5
+    displayName: Station Cour
+    storageCapacityLiters: 2000
+    upgradeCostDollars: 35000
+    fullRefillDurationSeconds: 16800
+    instantRefillIngotCost: 20
+  - level: 6
+    displayName: Installation Pro
+    storageCapacityLiters: 5000
+    upgradeCostDollars: 100000
+    fullRefillDurationSeconds: 72000
+    instantRefillIngotCost: 30
+  - level: 7
+    displayName: Cuve Double Paroi
+    storageCapacityLiters: 15000
+    upgradeCostDollars: 300000
+    fullRefillDurationSeconds: 86400
+    instantRefillIngotCost: 50
+  - level: 8
+    displayName: "Station R\xE9gionale"
+    storageCapacityLiters: 25000
+    upgradeCostDollars: 800000
+    fullRefillDurationSeconds: 172800
+    instantRefillIngotCost: 100
+  - level: 9
+    displayName: Terminal
+    storageCapacityLiters: 50000
+    upgradeCostDollars: 2000000
+    fullRefillDurationSeconds: 259200
+    instantRefillIngotCost: 150
+  - level: 10
+    displayName: "Hub Priv\xE9"
+    storageCapacityLiters: 100000
+    upgradeCostDollars: 5000000
+    fullRefillDurationSeconds: 345600
+    instantRefillIngotCost: 200
+  dollarsPerLiter: 1.5

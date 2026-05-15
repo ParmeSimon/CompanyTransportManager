@@ -1,0 +1,207 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 224e921baae638a46a39264103c44d56, type: 3}
+  m_Name: VehicleCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::TransportManager.Entities.Vehicles.VehicleCatalog
+  vehicles:
+  - id: van_occasion
+    displayName: "Van d'Occasion"
+    category: 0
+    icon: {fileID: 0}
+    purchasePrice: 8500
+    maintenanceCost: 400
+    speedKmh: 110
+    capacity: 6
+    maxKilometers: 15000
+    fuelTankCapacityLiters: 70
+    fuelConsumptionLPer100Km: 9
+    routingProfile: 0
+  - id: utilitaire_standard
+    displayName: Utilitaire Standard
+    category: 0
+    icon: {fileID: 0}
+    purchasePrice: 22000
+    maintenanceCost: 600
+    speedKmh: 130
+    capacity: 10
+    maxKilometers: 25000
+    fuelTankCapacityLiters: 80
+    fuelConsumptionLPer100Km: 8.5
+    routingProfile: 0
+  - id: fourgon_grand_volume
+    displayName: Fourgon Grand Volume
+    category: 0
+    icon: {fileID: 0}
+    purchasePrice: 35000
+    maintenanceCost: 800
+    speedKmh: 120
+    capacity: 14
+    maxKilometers: 30000
+    fuelTankCapacityLiters: 90
+    fuelConsumptionLPer100Km: 10
+    routingProfile: 0
+  - id: chassis_cabine_pro
+    displayName: "Châssis Cabine Pro"
+    category: 0
+    icon: {fileID: 0}
+    purchasePrice: 48000
+    maintenanceCost: 1000
+    speedKmh: 110
+    capacity: 20
+    maxKilometers: 40000
+    fuelTankCapacityLiters: 100
+    fuelConsumptionLPer100Km: 12
+    routingProfile: 0
+  - id: van_premium_elec
+    displayName: "Van Premium Élec"
+    category: 0
+    icon: {fileID: 0}
+    purchasePrice: 65000
+    maintenanceCost: 450
+    speedKmh: 110
+    capacity: 15
+    maxKilometers: 60000
+    fuelTankCapacityLiters: 120
+    fuelConsumptionLPer100Km: 3
+    routingProfile: 0
+  - id: petit_porteur_7t
+    displayName: Petit Porteur 7t
+    category: 1
+    icon: {fileID: 0}
+    purchasePrice: 75000
+    maintenanceCost: 2500
+    speedKmh: 90
+    capacity: 35
+    maxKilometers: 50000
+    fuelTankCapacityLiters: 150
+    fuelConsumptionLPer100Km: 15
+    routingProfile: 1
+  - id: porteur_distrib_12t
+    displayName: Porteur Distrib 12t
+    category: 1
+    icon: {fileID: 0}
+    purchasePrice: 95000
+    maintenanceCost: 3200
+    speedKmh: 90
+    capacity: 50
+    maxKilometers: 60000
+    fuelTankCapacityLiters: 200
+    fuelConsumptionLPer100Km: 18
+    routingProfile: 1
+  - id: regional_pro_16t
+    displayName: "Régional Pro 16t"
+    category: 1
+    icon: {fileID: 0}
+    purchasePrice: 120000
+    maintenanceCost: 4000
+    speedKmh: 90
+    capacity: 75
+    maxKilometers: 70000
+    fuelTankCapacityLiters: 300
+    fuelConsumptionLPer100Km: 22
+    routingProfile: 1
+  - id: heavy_rigid_19t
+    displayName: Heavy Rigid 19t
+    category: 1
+    icon: {fileID: 0}
+    purchasePrice: 155000
+    maintenanceCost: 5500
+    speedKmh: 80
+    capacity: 100
+    maxKilometers: 85000
+    fuelTankCapacityLiters: 400
+    fuelConsumptionLPer100Km: 26
+    routingProfile: 1
+  - id: tracteur_standard
+    displayName: Tracteur Standard
+    category: 3
+    icon: {fileID: 0}
+    purchasePrice: 145000
+    maintenanceCost: 8000
+    speedKmh: 90
+    capacity: 250
+    maxKilometers: 100000
+    fuelTankCapacityLiters: 600
+    fuelConsumptionLPer100Km: 30
+    routingProfile: 1
+  - id: tracteur_longue_dist
+    displayName: "Tracteur Longue Dist."
+    category: 3
+    icon: {fileID: 0}
+    purchasePrice: 185000
+    maintenanceCost: 9500
+    speedKmh: 90
+    capacity: 280
+    maxKilometers: 120000
+    fuelTankCapacityLiters: 900
+    fuelConsumptionLPer100Km: 28
+    routingProfile: 1
+  - id: tracteur_high_end
+    displayName: Tracteur High-End
+    category: 3
+    icon: {fileID: 0}
+    purchasePrice: 240000
+    maintenanceCost: 11000
+    speedKmh: 90
+    capacity: 300
+    maxKilometers: 150000
+    fuelTankCapacityLiters: 1200
+    fuelConsumptionLPer100Km: 27
+    routingProfile: 1
+  - id: v8_heavy_duty
+    displayName: V8 Heavy Duty
+    category: 3
+    icon: {fileID: 0}
+    purchasePrice: 310000
+    maintenanceCost: 15000
+    speedKmh: 90
+    capacity: 350
+    maxKilometers: 180000
+    fuelTankCapacityLiters: 1000
+    fuelConsumptionLPer100Km: 35
+    routingProfile: 1
+  - id: tracteur_convoi_80t
+    displayName: Tracteur Convoi 80t
+    category: 4
+    icon: {fileID: 0}
+    purchasePrice: 450000
+    maintenanceCost: 25000
+    speedKmh: 70
+    capacity: 800
+    maxKilometers: 100000
+    fuelTankCapacityLiters: 1200
+    fuelConsumptionLPer100Km: 65
+    routingProfile: 1
+  - id: tracteur_lourd_150t
+    displayName: Tracteur Lourd 150t
+    category: 4
+    icon: {fileID: 0}
+    purchasePrice: 750000
+    maintenanceCost: 45000
+    speedKmh: 60
+    capacity: 1500
+    maxKilometers: 120000
+    fuelTankCapacityLiters: 1500
+    fuelConsumptionLPer100Km: 95
+    routingProfile: 1
+  - id: ultra_mover_250t
+    displayName: Ultra-Mover 250t+
+    category: 4
+    icon: {fileID: 0}
+    purchasePrice: 1200000
+    maintenanceCost: 80000
+    speedKmh: 40
+    capacity: 2500
+    maxKilometers: 140000
+    fuelTankCapacityLiters: 2000
+    fuelConsumptionLPer100Km: 130
+    routingProfile: 1
