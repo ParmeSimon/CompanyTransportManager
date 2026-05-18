@@ -29,5 +29,23 @@ namespace TransportManager.Save
         public List<DriverInstance> hiredDrivers = new List<DriverInstance>();
         public List<DriverInstance> recruitmentPool = new List<DriverInstance>();
         public long lastHrRefreshUtcTicks;
+
+        public TutorialState tutorial = new TutorialState();
+        public BuildingLevels buildingLevels = new BuildingLevels();
+    }
+
+    [Serializable]
+    public class TutorialState
+    {
+        public bool completed;
+        public string currentStepId = "company_create";
+    }
+
+    [Serializable]
+    public class BuildingLevels
+    {
+        public int hangar;
+        public int office;
+        public int fuelTank;
     }
 }

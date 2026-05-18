@@ -68,5 +68,15 @@ namespace TransportManager.Events
         // UI
         public static event Action<TabType> OnTabChanged;
         public static void RaiseTabChanged(TabType t) => OnTabChanged?.Invoke(t);
+
+        // Tutorial / Buildings
+        public static event Action OnCompanyCreated;
+        public static event Action<string, int> OnBuildingRepaired;
+        public static event Action<string> OnFuelPanelOpened;
+        public static event Action<string> OnHrPanelOpened;
+        public static void RaiseCompanyCreated() => OnCompanyCreated?.Invoke();
+        public static void RaiseBuildingRepaired(string building, int newLevel) => OnBuildingRepaired?.Invoke(building, newLevel);
+        public static void RaiseFuelPanelOpened(string source) => OnFuelPanelOpened?.Invoke(source);
+        public static void RaiseHrPanelOpened(string source) => OnHrPanelOpened?.Invoke(source);
     }
 }

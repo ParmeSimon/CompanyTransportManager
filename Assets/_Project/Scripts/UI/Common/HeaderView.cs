@@ -39,7 +39,29 @@ namespace TransportManager.UI.Common
             rt.offsetMin = new Vector2(10, -68);
             rt.offsetMax = new Vector2(-10, -8);
 
-            // --- CompanyName (gauche) ---
+            // --- Logo (gauche) ---
+            var logoSprite = Resources.Load<Sprite>("UI/Logo");
+            if (logoSprite == null)
+            {
+                var logoTex = Resources.Load<Texture2D>("UI/Logo");
+                if (logoTex != null)
+                    logoSprite = Sprite.Create(logoTex, new Rect(0, 0, logoTex.width, logoTex.height), new Vector2(0.5f, 0.5f));
+            }
+
+            var logoGo = new GameObject("Logo", typeof(RectTransform));
+            logoGo.transform.SetParent(transform, false);
+            var logoImg = logoGo.AddComponent<Image>();
+            logoImg.sprite = logoSprite;
+            logoImg.preserveAspect = true;
+            logoImg.raycastTarget = false;
+            var logoRt = logoGo.GetComponent<RectTransform>();
+            logoRt.anchorMin = new Vector2(0, 0);
+            logoRt.anchorMax = new Vector2(0, 1);
+            logoRt.pivot = new Vector2(0, 0.5f);
+            logoRt.offsetMin = new Vector2(12, 6);
+            logoRt.offsetMax = new Vector2(60, -6);
+
+            // --- CompanyName (gauche, après le logo) ---
             var companyGo = new GameObject("CompanyName", typeof(RectTransform));
             companyGo.transform.SetParent(transform, false);
             _companyNameLabel = companyGo.AddComponent<TextMeshProUGUI>();
@@ -51,7 +73,7 @@ namespace TransportManager.UI.Common
             var companyRt = companyGo.GetComponent<RectTransform>();
             companyRt.anchorMin = new Vector2(0, 0);
             companyRt.anchorMax = new Vector2(0.5f, 1);
-            companyRt.offsetMin = new Vector2(16, 0);
+            companyRt.offsetMin = new Vector2(68, 0);
             companyRt.offsetMax = new Vector2(0, 0);
 
             // --- CurrencyGroup (droite) ---

@@ -15,6 +15,8 @@ using TransportManager.Systems.Time;
 using TransportManager.Systems.Shop;
 using TransportManager.Systems.Map;
 using TransportManager.Systems.Map.Routing;
+using TransportManager.Systems.Tutorial;
+using TransportManager.Systems.Buildings;
 
 namespace TransportManager.Core
 {
@@ -37,6 +39,8 @@ namespace TransportManager.Core
         [SerializeField] private bool resetSaveOnStart;
 
         public GameSaveData Save { get; private set; }
+        public TutorialSystem Tutorial { get; private set; }
+        public BuildingService Buildings { get; private set; }
 
         private void Awake()
         {
@@ -53,12 +57,17 @@ namespace TransportManager.Core
                 Debug.Log("[GameManager] Save reset on start.");
             }
             Save = SaveSystem.Load() ?? new GameSaveData();
+            if (Save.tutorial == null) Save.tutorial = new TutorialState();
+            if (Save.buildingLevels == null) Save.buildingLevels = new BuildingLevels();
 
             var routingProvider = BuildRoutingProvider();
             var mapSystem = new MapSystem(cityCatalog, routingProvider);
 
             if (vehicleCatalog != null) ServiceLocator.Register(vehicleCatalog);
-            ServiceLocator.Register(new WalletSystem(Save));
+            var wallet = new WalletSystem(Save);
+            ServiceLocator.Register(wallet);
+            Buildings = new BuildingService(Save, wallet);
+            ServiceLocator.Register(Buildings);
             ServiceLocator.Register(new FleetSystem(Save));
             ServiceLocator.Register(new HrSystem(Save));
             ServiceLocator.Register(new XpSystem(Save));
@@ -73,7 +82,13 @@ namespace TransportManager.Core
 
             ServiceLocator.Get<HrSystem>().EnsureRecruitmentPool();
             ServiceLocator.Get<OfflineTimeService>().ApplyOfflineProgress();
+
+            Tutorial = new TutorialSystem(Save);
+            ServiceLocator.Register(Tutorial);
+            _tutorialDriver = new TutorialDriver(Tutorial);
         }
+
+        private TutorialDriver _tutorialDriver;
 
         private IRoutingProvider BuildRoutingProvider()
         {

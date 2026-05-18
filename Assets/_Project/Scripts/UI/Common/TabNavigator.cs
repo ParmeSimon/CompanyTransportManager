@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TransportManager.Enums;
 using TransportManager.Events;
+using TransportManager.Systems.Tutorial;
 
 namespace TransportManager.UI.Common
 {
@@ -62,6 +63,11 @@ namespace TransportManager.UI.Common
             StyleTabButton(shopButton, "SHOP", "Magasin");
             if (fuelButton) StyleTabButton(fuelButton, "FUEL", "Carburant");
             if (hrButton) StyleTabButton(hrButton, "RH", "RH");
+
+            if (mapButton) TutorialTargetRegistry.Register("tab:map", mapButton.GetComponent<RectTransform>());
+            if (depotButton) TutorialTargetRegistry.Register("tab:depot", depotButton.GetComponent<RectTransform>());
+            if (vehiclesButton) TutorialTargetRegistry.Register("tab:vehicles", vehiclesButton.GetComponent<RectTransform>());
+            if (shopButton) TutorialTargetRegistry.Register("tab:shop", shopButton.GetComponent<RectTransform>());
         }
 
         private static void StyleTabButton(Button btn, string emoji, string label)

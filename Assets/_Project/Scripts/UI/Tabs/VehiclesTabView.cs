@@ -38,6 +38,11 @@ namespace TransportManager.UI.Tabs
 
         private VehicleData _selectedVehicle;
 
+        private RawImage _bgImage;
+        private RectTransform _bgRect;
+        private Texture2D _bgTex;
+        private Vector2 _lastBgSize;
+
         private void Awake() => Build();
 
         private void Build()
@@ -61,9 +66,16 @@ namespace TransportManager.UI.Tabs
             var bgGo = new GameObject("Background", typeof(RectTransform));
             bgGo.transform.SetParent(transform, false);
             var bgImg = bgGo.AddComponent<RawImage>();
-            bgImg.texture = Resources.Load<Texture2D>("UI/VehicleBackground");
+            var bgTex = Resources.Load<Texture2D>("UI/VehicleBackground");
+            bgImg.texture = bgTex;
             bgImg.color = Color.white;
-            StretchFull(bgGo.GetComponent<RectTransform>());
+            bgImg.raycastTarget = false;
+            _bgImage = bgImg;
+            _bgTex = bgTex;
+            var bgRt = bgGo.GetComponent<RectTransform>();
+            StretchFull(bgRt);
+            _bgRect = bgRt;
+            UpdateBackgroundUVs();
 
             // Dark scrim
             var scrimGo = new GameObject("Scrim", typeof(RectTransform));
@@ -643,6 +655,38 @@ namespace TransportManager.UI.Tabs
             rt.anchorMax = Vector2.one;
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
+        }
+
+        private void Update()
+        {
+            if (_bgRect == null) return;
+            var size = _bgRect.rect.size;
+            if (size != _lastBgSize)
+            {
+                _lastBgSize = size;
+                UpdateBackgroundUVs();
+            }
+        }
+
+        private void UpdateBackgroundUVs()
+        {
+            if (_bgImage == null || _bgTex == null || _bgRect == null) return;
+
+            float containerAspect = _bgRect.rect.width / Mathf.Max(1f, _bgRect.rect.height);
+            float texAspect = (float)_bgTex.width / Mathf.Max(1, _bgTex.height);
+
+            float u = 0f, v = 0f, uw = 1f, vh = 1f;
+            if (containerAspect > texAspect)
+            {
+                vh = texAspect / containerAspect;
+                v = (1f - vh) * 0.5f;
+            }
+            else
+            {
+                uw = containerAspect / texAspect;
+                u = (1f - uw) * 0.5f;
+            }
+            _bgImage.uvRect = new Rect(u, v, uw, vh);
         }
     }
 }
