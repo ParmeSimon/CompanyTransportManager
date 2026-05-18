@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da50d6ac99c10e64798a95354efcf68e, type: 3}
   m_Name: TileMapConfig
   m_EditorClassIdentifier: Assembly-CSharp::TransportManager.Entities.Map.TileMapConfig
-  urlTemplate: https://tile.openstreetmap.org/{z}/{x}/{y}.png
+  urlTemplate: https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}
   userAgent: TransportManagerMobile/0.1 (parmesimon@gmail.com)
   attribution: "\xA9 OpenStreetMap contributors"
   minZoom: 1

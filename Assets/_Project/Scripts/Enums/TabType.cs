@@ -5,6 +5,8 @@ namespace TransportManager.Enums
         Map,
         Depot,
         Vehicles,
-        Shop
+        Shop,
+        Fuel,
+        Hr
     }
 }

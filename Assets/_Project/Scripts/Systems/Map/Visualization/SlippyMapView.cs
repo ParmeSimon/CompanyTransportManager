@@ -40,11 +40,30 @@ namespace TransportManager.Systems.Map.Visualization
 
         public void SetView(double latitude, double longitude, int newZoom)
         {
-            centerLatitude = latitude;
+            int minZoom = config != null ? ComputeMinZoom() : 1;
+            zoom = Mathf.Clamp(newZoom, minZoom, config != null ? config.maxZoom : 18);
+
+            // clamp latitude so the map never scrolls past its top/bottom edge
+            double maxLat = ClampLatitudeForZoom(zoom);
+            centerLatitude = Math.Max(-maxLat, Math.Min(maxLat, latitude));
             centerLongitude = longitude;
-            zoom = Mathf.Clamp(newZoom, config != null ? config.minZoom : 1, config != null ? config.maxZoom : 18);
+
             Refresh();
             OnViewChanged?.Invoke();
+        }
+
+        // Returns the max latitude reachable so the map fills the container vertically
+        private double ClampLatitudeForZoom(int z)
+        {
+            if (config == null || tilesContainer == null) return 85.0511;
+            int tileSize = config.tilePixelSize;
+            float halfHeight = tilesContainer.rect.height / 2f;
+            double worldPixels = (1 << z) * tileSize;
+            // how many degrees of latitude correspond to halfHeight pixels at this zoom?
+            // world goes from -85.0511 to +85.0511 over worldPixels
+            double degreesPerPixel = 170.1022 / worldPixels;
+            double margin = halfHeight * degreesPerPixel;
+            return 85.0511 - margin;
         }
 
         public void Pan(double deltaLatitude, double deltaLongitude)
@@ -54,6 +73,20 @@ namespace TransportManager.Systems.Map.Visualization
 
         public void ZoomIn() => SetView(centerLatitude, centerLongitude, zoom + 1);
         public void ZoomOut() => SetView(centerLatitude, centerLongitude, zoom - 1);
+
+        private int ComputeMinZoom()
+        {
+            if (config == null || tilesContainer == null) return 1;
+            var rect = tilesContainer.rect;
+            int tileSize = config.tilePixelSize;
+            // need world pixel size to cover both width and height
+            for (int z = config.minZoom; z <= config.maxZoom; z++)
+            {
+                float worldPixels = (1 << z) * tileSize;
+                if (worldPixels >= rect.width && worldPixels >= rect.height) return z;
+            }
+            return config.maxZoom;
+        }
 
         public Vector2 LatLonToLocal(double latitude, double longitude)
         {
@@ -76,20 +109,24 @@ namespace TransportManager.Systems.Map.Visualization
             int yMin = (int)Math.Floor((cy - rect.height / 2.0) / tileSize);
             int yMax = (int)Math.Floor((cy + rect.height / 2.0) / tileSize);
 
-            int worldMax = (1 << zoom) - 1;
+            int worldCount = 1 << zoom; // total tiles per axis at this zoom
+            int worldMax = worldCount - 1;
             var keep = new HashSet<TileKey>();
 
             for (int tx = xMin; tx <= xMax; tx++)
             {
                 for (int ty = yMin; ty <= yMax; ty++)
                 {
-                    if (tx < 0 || tx > worldMax || ty < 0 || ty > worldMax) continue;
-                    var key = new TileKey(zoom, tx, ty);
-                    keep.Add(key);
-                    if (!_active.TryGetValue(key, out var img))
+                    if (ty < 0 || ty > worldMax) continue; // latitude has hard limits
+                    int wrappedTx = ((tx % worldCount) + worldCount) % worldCount; // wrap longitude
+                    var key = new TileKey(zoom, wrappedTx, ty);
+                    // use a visual key so the same tile can appear multiple times (world wrap)
+                    var visualKey = new TileKey(zoom, tx, ty);
+                    keep.Add(visualKey);
+                    if (!_active.TryGetValue(visualKey, out var img))
                     {
                         img = AcquireImage();
-                        _active[key] = img;
+                        _active[visualKey] = img;
                         _ = LoadIntoAsync(img, key);
                     }
                     double localX = (tx + 0.5) * tileSize - cx;

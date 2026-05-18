@@ -58,4 +58,9 @@ namespace TransportManager.Systems.Hr
 
         public static int ComputeDesiredWage(int level, DriverStats stats)
         {
-            float wage = BaseWagePerContract * level 
+            float wage = BaseWagePerContract * level
+                * (1f + stats.salaryDemandFactor);
+            return Mathf.RoundToInt(wage);
+        }
+    }
+}
