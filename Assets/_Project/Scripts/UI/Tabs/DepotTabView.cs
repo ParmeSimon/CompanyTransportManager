@@ -16,6 +16,7 @@ namespace TransportManager.UI.Tabs
     {
         private RawImage _depotBgImage;
         private RectTransform _depotBgRect;
+        private RectTransform _depotWorldRect;
         private Texture2D _depotBgTex;
         private Vector2 _lastBgSize;
 
@@ -58,28 +59,51 @@ namespace TransportManager.UI.Tabs
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
 
-            // --- Background image (depot map) ---
-            var bgGo = new GameObject("Background", typeof(RectTransform));
-            bgGo.transform.SetParent(transform, false);
-            var bgImg = bgGo.AddComponent<RawImage>();
+            // --- Dark fill behind everything (visible if the map is letterboxed) ---
+            var fillGo = new GameObject("Fill", typeof(RectTransform));
+            fillGo.transform.SetParent(transform, false);
+            var fillImg = fillGo.AddComponent<Image>();
+            fillImg.color = new Color(0.08f, 0.10f, 0.12f, 1f);
+            fillImg.raycastTarget = false;
+            StretchRect(fillGo.GetComponent<RectTransform>());
+
+            // --- World container: keeps the map's aspect ratio, so all building
+            //     sprites positioned in normalized coords stay aligned with the map. ---
+            var worldGo = new GameObject("DepotWorld", typeof(RectTransform));
+            worldGo.transform.SetParent(transform, false);
+            var worldRt = worldGo.GetComponent<RectTransform>();
+            worldRt.anchorMin = Vector2.zero;
+            worldRt.anchorMax = Vector2.one;
+            worldRt.offsetMin = Vector2.zero;
+            worldRt.offsetMax = Vector2.zero;
+            _depotWorldRect = worldRt;
+
             var bgTex = Resources.Load<Texture2D>("UI/depotMap") ?? Resources.Load<Texture2D>("UI/DepotBackground");
+            if (bgTex != null && bgTex.height > 0)
+            {
+                var arf = worldGo.AddComponent<AspectRatioFitter>();
+                arf.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent; // fills screen, may crop one axis
+                arf.aspectRatio = (float)bgTex.width / bgTex.height;
+            }
+
+            // --- Background image (depot map) — fills the world container exactly ---
+            var bgGo = new GameObject("Background", typeof(RectTransform));
+            bgGo.transform.SetParent(worldGo.transform, false);
+            var bgImg = bgGo.AddComponent<RawImage>();
             bgImg.texture = bgTex;
             bgImg.color = Color.white;
             bgImg.raycastTarget = false;
+            bgImg.uvRect = new Rect(0, 0, 1, 1);
             _depotBgImage = bgImg;
             _depotBgTex = bgTex;
             var bgRt = bgGo.GetComponent<RectTransform>();
-            bgRt.anchorMin = Vector2.zero;
-            bgRt.anchorMax = Vector2.one;
-            bgRt.offsetMin = Vector2.zero;
-            bgRt.offsetMax = Vector2.zero;
+            StretchRect(bgRt);
             _depotBgRect = bgRt;
-            UpdateBackgroundUVs();
 
-            // --- Building sprites layer (above the map, under overlays) ---
-            BuildBuildingSprite(BuildingVisuals.Hangar, new Vector2(0.50f, 0.62f), new Vector2(170, 170));
-            BuildBuildingSprite(BuildingVisuals.Office, new Vector2(0.22f, 0.35f), new Vector2(120, 120));
-            BuildBuildingSprite(BuildingVisuals.FuelTank, new Vector2(0.78f, 0.32f), new Vector2(110, 110));
+            // --- Building sprites — children of the world container (always aligned with the map) ---
+            BuildBuildingSprite(BuildingVisuals.Hangar, new Vector2(0.50f, 0.62f), new Vector2(170, 170), worldGo.transform);
+            BuildBuildingSprite(BuildingVisuals.Office, new Vector2(0.22f, 0.35f), new Vector2(120, 120), worldGo.transform);
+            BuildBuildingSprite(BuildingVisuals.FuelTank, new Vector2(0.78f, 0.32f), new Vector2(110, 110), worldGo.transform);
 
             // Semi-transparent dark scrim so overlays are readable
             var scrimGo = new GameObject("Scrim", typeof(RectTransform));
@@ -263,10 +287,10 @@ namespace TransportManager.UI.Tabs
             Refresh();
         }
 
-        private void BuildBuildingSprite(string building, Vector2 normalizedPos, Vector2 size)
+        private void BuildBuildingSprite(string building, Vector2 normalizedPos, Vector2 size, Transform parent = null)
         {
             var go = new GameObject($"Sprite_{building}", typeof(RectTransform));
-            go.transform.SetParent(transform, false);
+            go.transform.SetParent(parent != null ? parent : transform, false);
             var img = go.AddComponent<Image>();
             img.preserveAspect = true;
             img.raycastTarget = false;
@@ -278,6 +302,14 @@ namespace TransportManager.UI.Tabs
             rt.anchoredPosition = Vector2.zero;
             _buildingSprites[building] = img;
             RefreshBuildingSprite(building);
+        }
+
+        private static void StretchRect(RectTransform rt)
+        {
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
         }
 
         private void RefreshBuildingSprite(string building)
@@ -521,38 +553,5 @@ namespace TransportManager.UI.Tabs
             if (_hrPoolLabel) _hrPoolLabel.text = $"{pool} candidat{(pool != 1 ? "s" : "")}";
         }
 
-        private void Update()
-        {
-            if (_depotBgRect == null) return;
-            var size = _depotBgRect.rect.size;
-            if (size != _lastBgSize)
-            {
-                _lastBgSize = size;
-                UpdateBackgroundUVs();
-            }
-        }
-
-        private void UpdateBackgroundUVs()
-        {
-            if (_depotBgImage == null || _depotBgTex == null || _depotBgRect == null) return;
-
-            float containerAspect = _depotBgRect.rect.width / Mathf.Max(1f, _depotBgRect.rect.height);
-            float texAspect = (float)_depotBgTex.width / Mathf.Max(1, _depotBgTex.height);
-
-            float u = 0f, v = 0f, uw = 1f, vh = 1f;
-            if (containerAspect > texAspect)
-            {
-                // Container plus large que la texture: crop le haut/bas
-                vh = texAspect / containerAspect;
-                v = (1f - vh) * 0.5f;
-            }
-            else
-            {
-                // Container plus haut que la texture: crop gauche/droite
-                uw = containerAspect / texAspect;
-                u = (1f - uw) * 0.5f;
-            }
-            _depotBgImage.uvRect = new Rect(u, v, uw, vh);
-        }
     }
 }

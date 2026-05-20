@@ -1,4 +1,4 @@
-using TransportManager.Core;
+﻿using TransportManager.Core;
 using TransportManager.Entities.Vehicles;
 using TransportManager.Enums;
 using TransportManager.Events;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using TransportManager.Save;
 
@@ -23,6 +23,7 @@ namespace TransportManager.Systems.Tutorial
         private string _currentStepId;
 
         public bool IsActive => !_save.tutorial.completed;
+        public bool IsCompleted() => _save.tutorial.completed;
         public string CurrentStepId => _currentStepId;
         public StepData CurrentStep => _steps.TryGetValue(_currentStepId, out var s) ? s : null;
 

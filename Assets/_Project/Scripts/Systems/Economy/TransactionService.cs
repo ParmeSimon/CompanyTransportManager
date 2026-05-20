@@ -1,4 +1,4 @@
-namespace TransportManager.Systems.Economy
+﻿namespace TransportManager.Systems.Economy
 {
     public class TransactionService
     {

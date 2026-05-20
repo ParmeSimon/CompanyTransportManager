@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using TransportManager.Entities.Fuel;
 using TransportManager.Entities.Map;
 using TransportManager.Entities.Vehicles;

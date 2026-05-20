@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using TransportManager.Entities.Contracts;
 using TransportManager.Entities.Drivers;
 using TransportManager.Entities.Fuel;
@@ -78,5 +78,8 @@ namespace TransportManager.Events
         public static void RaiseBuildingRepaired(string building, int newLevel) => OnBuildingRepaired?.Invoke(building, newLevel);
         public static void RaiseFuelPanelOpened(string source) => OnFuelPanelOpened?.Invoke(source);
         public static void RaiseHrPanelOpened(string source) => OnHrPanelOpened?.Invoke(source);
+
+        public static event Action OnCompanyProfileChanged;
+        public static void RaiseCompanyProfileChanged() => OnCompanyProfileChanged?.Invoke();
     }
 }

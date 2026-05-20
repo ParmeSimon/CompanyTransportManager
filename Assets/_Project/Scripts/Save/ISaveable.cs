@@ -1,4 +1,4 @@
-namespace TransportManager.Save
+﻿namespace TransportManager.Save
 {
     public interface ISaveable
     {

@@ -1,4 +1,4 @@
-using TransportManager.Core;
+﻿using TransportManager.Core;
 using TransportManager.Enums;
 using TransportManager.Save;
 using TransportManager.Systems.Economy;

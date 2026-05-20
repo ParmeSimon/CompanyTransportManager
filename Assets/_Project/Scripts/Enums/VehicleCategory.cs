@@ -1,4 +1,4 @@
-namespace TransportManager.Enums
+﻿namespace TransportManager.Enums
 {
     public enum VehicleCategory
     {

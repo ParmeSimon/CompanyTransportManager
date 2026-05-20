@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using TransportManager.Core;
@@ -52,7 +52,7 @@ namespace TransportManager.UI.Tutorial
 
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(390, 844);
+            scaler.referenceResolution = new Vector2(1920, 1080);
             scaler.matchWidthOrHeight = 0.5f;
 
             gameObject.AddComponent<GraphicRaycaster>();
@@ -150,6 +150,12 @@ namespace TransportManager.UI.Tutorial
         private void OnStepChanged(TutorialSystem.StepData step)
         {
             _currentStep = step;
+            // The CompanyCreate step is owned by IntroDialogueView — hide the overlay.
+            if (step.id == TutorialStep.CompanyCreate)
+            {
+                gameObject.SetActive(false);
+                return;
+            }
             gameObject.SetActive(true);
             _titleLabel.text = step.advisorTitle;
             _messageLabel.text = step.advisorMessage;

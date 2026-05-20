@@ -1,4 +1,4 @@
-using TransportManager.Entities.Progression;
+﻿using TransportManager.Entities.Progression;
 using TransportManager.Events;
 using TransportManager.Save;
 

@@ -1,4 +1,4 @@
-namespace TransportManager.Onboarding
+﻿namespace TransportManager.Onboarding
 {
     public enum OnboardingStep
     {

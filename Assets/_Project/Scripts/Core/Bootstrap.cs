@@ -1,4 +1,6 @@
-using UnityEngine;
+﻿using UnityEngine;
+using TransportManager.Enums;
+using TransportManager.Events;
 using TransportManager.UI.Common;
 using TransportManager.UI.Tutorial;
 
@@ -24,8 +26,14 @@ namespace TransportManager.Core
             }
             gm.Initialize();
 
+            bool firstLaunch = gm.Tutorial != null && !gm.Tutorial.IsCompleted();
+            // On first launch we land on the Depot view (story starts there).
+            // Once the player has gone through the intro, default to Map.
+            GameEvents.RaiseTabChanged(firstLaunch ? TabType.Depot : TabType.Map);
+
             ShowTutorialOverlay();
-            ShowCompanyCreationIfNeeded(gm);
+            if (firstLaunch && gm.Tutorial.CurrentStepId == Systems.Tutorial.TutorialStep.CompanyCreate)
+                ShowIntroDialogue();
         }
 
         private static void ShowSplashScreen()
@@ -42,12 +50,11 @@ namespace TransportManager.Core
             go.AddComponent<TutorialOverlayView>();
         }
 
-        private static void ShowCompanyCreationIfNeeded(GameManager gm)
+        private static void ShowIntroDialogue()
         {
-            if (gm.Tutorial == null || gm.Tutorial.CurrentStepId != Systems.Tutorial.TutorialStep.CompanyCreate) return;
-            var go = new GameObject("CompanyCreation", typeof(RectTransform));
+            var go = new GameObject("IntroDialogue", typeof(RectTransform));
             DontDestroyOnLoad(go);
-            go.AddComponent<CompanyCreationView>();
+            go.AddComponent<IntroDialogueView>();
         }
     }
 }
