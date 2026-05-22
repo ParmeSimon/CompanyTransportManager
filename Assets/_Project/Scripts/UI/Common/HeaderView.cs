@@ -84,7 +84,7 @@ namespace TransportManager.UI.Common
             // Logo
             var logoGo  = MakeGO("Logo", left.transform);
             var logoImg = logoGo.AddComponent<Image>();
-            logoImg.sprite         = Resources.Load<Sprite>("UI/LogoFull") ?? Resources.Load<Sprite>("UI/Logo");
+            logoImg.sprite         = Resources.Load<Sprite>("UI/Logo/LogoFull") ?? Resources.Load<Sprite>("UI/Logo/Logo");
             logoImg.preserveAspect = true;
             logoImg.raycastTarget  = false;
             SetLayout(logoGo, 48, 48);
@@ -104,7 +104,7 @@ namespace TransportManager.UI.Common
             colFitter.verticalFit   = ContentSizeFitter.FitMode.PreferredSize;
 
             // Ligne 1 : Name
-            _companyNameLabel = MakeTMP("Name", col.transform, "Mon Entreprise", 14, FontStyles.Bold, new Color32(0xEC, 0xEE, 0xF5, 255));
+            _companyNameLabel = MakeTMP("Name", col.transform, "Mon Entreprise", 20, FontStyles.Bold, new Color32(0xEC, 0xEE, 0xF5, 255));
             _companyNameLabel.textWrappingMode = TextWrappingModes.NoWrap;
             _companyNameLabel.overflowMode       = TextOverflowModes.Ellipsis;
             _companyNameLabel.alignment          = TextAlignmentOptions.Center;
@@ -123,14 +123,15 @@ namespace TransportManager.UI.Common
             pillsFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
             pillsFitter.verticalFit   = ContentSizeFitter.FitMode.PreferredSize;
 
-            _dollarsLabel    = MakePill(pillsRow.transform, "PillDollars", "dollar", "$", new Color32(0x3D, 0xC9, 0x6E, 255));
-            _goldIngotsLabel = MakePill(pillsRow.transform, "PillGold",    "gold",   "G", new Color32(0xF2, 0xD9, 0x66, 255));
-            _xpLabel         = MakePill(pillsRow.transform, "PillXP",      "xp",     "*", new Color32(0xFA, 0xC0, 0x24, 255));
+            _dollarsLabel    = MakePill(pillsRow.transform, "PillDollars", "dollars", new Color32(0x3D, 0xC9, 0x6E, 255));
+            _goldIngotsLabel = MakePill(pillsRow.transform, "PillGold",    "gold",   new Color32(0xF2, 0xD9, 0x66, 255));
+            _xpLabel         = MakePill(pillsRow.transform, "PillXP",      "xp",     new Color32(0xFA, 0xC0, 0x24, 255));
 
-            // Ligne 3 : Location
-            _locationLabel = MakeTMP("Location", col.transform, "—", 9, FontStyles.Normal, new Color32(0x7A, 0x8F, 0xA6, 255));
+            // Ligne 3 : Location (ville uniquement)
+            _locationLabel = MakeTMP("Location", col.transform, "—", 11, FontStyles.Normal, new Color32(0x7A, 0x8F, 0xA6, 255));
             _locationLabel.textWrappingMode = TextWrappingModes.NoWrap;
-            _locationLabel.alignment          = TextAlignmentOptions.Center;
+            _locationLabel.overflowMode     = TextOverflowModes.Ellipsis;
+            _locationLabel.alignment        = TextAlignmentOptions.Center;
             SetLayout(_locationLabel.gameObject, 160, 13);
 
             // ===== RIGHT SIDE =====
@@ -161,7 +162,7 @@ namespace TransportManager.UI.Common
 
             MakeIconButton(right.transform, "BtnAnalytics", "chart");
             MakeDivider(right.transform);
-            MakeIconButton(right.transform, "btnTrucks",    "truck");
+            MakeIconButton(right.transform, "btnList",       "list");
             MakeDivider(right.transform);
             MakeIconButton(right.transform, "BtnFriends",   "users");
             MakeDivider(right.transform);
@@ -197,7 +198,7 @@ namespace TransportManager.UI.Common
             return tmp;
         }
 
-        private static TMP_Text MakePill(Transform parent, string name, string iconSpriteName, string fallbackChar, Color32 iconColor)
+        private static TMP_Text MakePill(Transform parent, string name, string iconSpriteName, Color32 iconColor)
         {
             var pill    = MakeGO(name, parent);
             var pillImg = pill.AddComponent<Image>();
@@ -220,37 +221,26 @@ namespace TransportManager.UI.Common
             var pillLe = pill.AddComponent<LayoutElement>();
             pillLe.preferredHeight = 26;
 
-            // Icon — PNG si dispo, sinon texte fallback
-            var sprite = Resources.Load<Sprite>($"UI/icons/{iconSpriteName}");
-            if (sprite != null)
-            {
-                var iconGo  = MakeGO("Icon", pill.transform);
-                var iconImg = iconGo.AddComponent<Image>();
-                iconImg.sprite         = sprite;
-                iconImg.color          = iconColor;
-                iconImg.preserveAspect = true;
-                iconImg.raycastTarget  = false;
-                var iconLe = iconGo.AddComponent<LayoutElement>();
-                iconLe.preferredWidth  = 14;
-                iconLe.preferredHeight = 14;
-            }
-            else
-            {
-                var iconTmp = MakeTMP("Icon", pill.transform, fallbackChar, 11, FontStyles.Bold, iconColor);
-                iconTmp.alignment = TextAlignmentOptions.Center;
-                var iconLe = iconTmp.gameObject.AddComponent<LayoutElement>();
-                iconLe.preferredWidth  = 11;
-                iconLe.preferredHeight = 14;
-            }
+            // Icon
+            var iconGo  = MakeGO("Image", pill.transform);
+            var iconImg = iconGo.AddComponent<Image>();
+            iconImg.sprite         = Resources.Load<Sprite>($"UI/Icons/Infos/{iconSpriteName}");
+            iconImg.color          = iconColor;
+            iconImg.preserveAspect = true;
+            iconImg.raycastTarget  = false;
+            var iconLe = iconGo.AddComponent<LayoutElement>();
+            iconLe.minWidth       = 50;
+            iconLe.preferredWidth = 50;
+            iconLe.minHeight      = 24;
 
             // Label valeur — largeur auto via TMP preferred size
-            var labelTmp = MakeTMP("Label", pill.transform, "0", 11, FontStyles.Bold, new Color32(0xEC, 0xEE, 0xF5, 255));
+            var labelTmp = MakeTMP("Label", pill.transform, "0", 18, FontStyles.Bold, new Color32(0xEC, 0xEE, 0xF5, 255));
             labelTmp.textWrappingMode = TextWrappingModes.NoWrap;
             labelTmp.overflowMode      = TextOverflowModes.Overflow;
             var labelFitter = labelTmp.gameObject.AddComponent<ContentSizeFitter>();
             labelFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
             var labelLe = labelTmp.gameObject.AddComponent<LayoutElement>();
-            labelLe.preferredHeight = 14;
+            labelLe.preferredHeight = 24;
 
             return labelTmp;
         }
@@ -267,7 +257,7 @@ namespace TransportManager.UI.Common
 
             var iconGo  = MakeGO("Icon", go.transform);
             var iconImg = iconGo.AddComponent<Image>();
-            iconImg.sprite         = Resources.Load<Sprite>($"UI/icons/{iconName}");
+            iconImg.sprite         = Resources.Load<Sprite>($"UI/Icons/icons/{iconName}");
             iconImg.color          = new Color32(0xC8, 0xD0, 0xE0, 255);
             iconImg.preserveAspect = true;
             iconImg.raycastTarget  = false;
@@ -324,7 +314,20 @@ namespace TransportManager.UI.Common
             if (gm == null || gm.Save == null) return;
             var c = gm.Save.company;
             if (_companyNameLabel) _companyNameLabel.text = string.IsNullOrWhiteSpace(c.companyName) ? "Mon Entreprise" : c.companyName;
-            if (_locationLabel)    _locationLabel.text    = string.IsNullOrWhiteSpace(c.location)    ? "—"              : c.location;
+            if (_locationLabel)    _locationLabel.text    = ExtractCity(c.location);
+        }
+
+        // Nominatim returns "2 bis, Impasse Vège, ..., Bordeaux, ..."
+        // If the first segment starts with a digit (house number), prepend it to the street name.
+        private static string ExtractCity(string location)
+        {
+            if (string.IsNullOrWhiteSpace(location)) return "—";
+            var parts = location.Split(',');
+            if (parts.Length == 0) return "—";
+            string first = parts[0].Trim();
+            if (parts.Length > 1 && first.Length > 0 && char.IsDigit(first[0]))
+                return first + " " + parts[1].Trim();
+            return first;
         }
 
         private void UpdateDollars(int value)     { if (_dollarsLabel)    _dollarsLabel.text    = $"{value:N0}"; }

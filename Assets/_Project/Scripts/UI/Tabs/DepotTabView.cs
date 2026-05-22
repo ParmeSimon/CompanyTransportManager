@@ -78,7 +78,7 @@ namespace TransportManager.UI.Tabs
             worldRt.offsetMax = Vector2.zero;
             _depotWorldRect = worldRt;
 
-            var bgTex = Resources.Load<Texture2D>("UI/depotMap") ?? Resources.Load<Texture2D>("UI/DepotBackground");
+            var bgTex = Resources.Load<Texture2D>("UI/WareHouse/depotMap") ?? Resources.Load<Texture2D>("UI/WareHouse/DepotBackground");
             if (bgTex != null && bgTex.height > 0)
             {
                 var arf = worldGo.AddComponent<AspectRatioFitter>();

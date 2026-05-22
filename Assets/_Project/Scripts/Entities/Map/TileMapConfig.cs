@@ -5,8 +5,11 @@ namespace TransportManager.Entities.Map
     [CreateAssetMenu(fileName = "TileMapConfig", menuName = "TransportManager/Tile Map Config")]
     public class TileMapConfig : ScriptableObject
     {
-        [Tooltip("URL template. Placeholders: {z}, {x}, {y}.")]
+        [Tooltip("URL template. Placeholders: {z}, {x}, {y}, {s} (subdomain).")]
         public string urlTemplate = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+        [Tooltip("Characters used for {s} subdomain rotation, e.g. \"abcd\".")]
+        public string subdomains = "abcd";
 
         [Tooltip("Required by OSM tile usage policy. Identify your app.")]
         public string userAgent = "TransportManagerMobile/0.1 (contact@example.com)";

@@ -3,7 +3,6 @@ using UnityEngine.EventSystems;
 using TMPro;
 using TransportManager.Core;
 using TransportManager.Systems.Map.Visualization;
-using TransportManager.Systems.Map.Geocoding;
 using TransportManager.UI.Map;
 
 namespace TransportManager.UI.Tabs
@@ -22,17 +21,15 @@ namespace TransportManager.UI.Tabs
 
         private int _tileSize;
         private HomeMarker _homeMarker;
+        private ContractsPanelView _contractsPanel;
 
-        private void OnEnable()
-        {
-            if (attributionLabel && mapView != null && mapView.Config != null)
-                attributionLabel.text = mapView.Config.attribution;
-        }
+        private void OnEnable() { }
 
         private void Start()
         {
             _tileSize = (mapView != null && mapView.Config != null) ? mapView.Config.tilePixelSize : 256;
             EnsureHomeMarker();
+            EnsureContractsPanel();
             FocusOnHomeIfAvailable();
         }
 
@@ -50,9 +47,16 @@ namespace TransportManager.UI.Tabs
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
             _homeMarker = go.AddComponent<HomeMarker>();
-            var t = typeof(HomeMarker);
-            t.GetField("mapView", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(_homeMarker, mapView);
-            t.GetField("markerContainer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(_homeMarker, rt);
+            _homeMarker.Init(mapView, rt);
+        }
+
+        private void EnsureContractsPanel()
+        {
+            if (_contractsPanel != null) return;
+            var go = new GameObject("ContractsPanel", typeof(RectTransform));
+            go.transform.SetParent((RectTransform)transform, false);
+            _contractsPanel = go.AddComponent<ContractsPanelView>();
+            _contractsPanel.Build();
         }
 
         private void FocusOnHomeIfAvailable()

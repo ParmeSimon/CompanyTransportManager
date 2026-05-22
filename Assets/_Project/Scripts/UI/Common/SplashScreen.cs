@@ -121,10 +121,10 @@ namespace TransportManager.UI.Common
 
         private static Sprite LoadLogo()
         {
-            var srcTex = Resources.Load<Texture2D>("UI/LogoFull");
+            var srcTex = Resources.Load<Texture2D>("UI/Logo/LogoFull");
             if (srcTex == null)
             {
-                var s = Resources.Load<Sprite>("UI/LogoFull");
+                var s = Resources.Load<Sprite>("UI/Logo/LogoFull");
                 if (s != null) srcTex = s.texture;
             }
             if (srcTex == null) return null;

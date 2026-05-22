@@ -35,12 +35,14 @@ namespace TransportManager.UI.Common
 
         private void Build()
         {
-            foreach (Transform child in transform)
+            var children = new System.Collections.Generic.List<GameObject>();
+            foreach (Transform child in transform) children.Add(child.gameObject);
+            foreach (var child in children)
             {
 #if UNITY_EDITOR
-                DestroyImmediate(child.gameObject);
+                DestroyImmediate(child);
 #else
-                Destroy(child.gameObject);
+                Destroy(child);
 #endif
             }
 
@@ -62,7 +64,7 @@ namespace TransportManager.UI.Common
             rt.anchorMax        = new Vector2(0, 0.5f);
             rt.pivot            = new Vector2(0, 0.5f);
             rt.anchoredPosition = new Vector2(10, 0);
-            rt.sizeDelta        = new Vector2(70, 0);
+            rt.sizeDelta        = new Vector2(90, 0);
 
             // Background fit-content
             var bg = GetComponent<Image>();
@@ -86,13 +88,10 @@ namespace TransportManager.UI.Common
             vlg.childForceExpandHeight = false;
             vlg.childAlignment        = TextAnchor.UpperCenter;
 
-            (_mapBtn, _mapBg)           = AddTab("Carte",     "🗺");
-            AddHorizontalDivider();
-            (_depotBtn, _depotBg)       = AddTab("Dépôt",     "🏭");
-            AddHorizontalDivider();
-            (_vehiclesBtn, _vehiclesBg) = AddTab("Véhicules", "🚛");
-            AddHorizontalDivider();
-            (_shopBtn, _shopBg)         = AddTab("Magasin",   "🛒");
+            (_mapBtn, _mapBg)           = AddTab("Carte",     "UI/Icons/icons/map");
+            (_depotBtn, _depotBg)       = AddTab("Dépôt",     "UI/Icons/icons/warehouse");
+            (_vehiclesBtn, _vehiclesBg) = AddTab("Véhicules", "UI/Icons/icons/truck");
+            (_shopBtn, _shopBg)         = AddTab("Magasin",   "UI/Icons/icons/store");
 
             _mapBtn.onClick.AddListener(() => SelectTab(TabType.Map));
             _depotBtn.onClick.AddListener(() => SelectTab(TabType.Depot));
@@ -115,7 +114,7 @@ namespace TransportManager.UI.Common
             go.GetComponent<RectTransform>().sizeDelta = new Vector2(50, 1);
         }
 
-        private (Button, Image) AddTab(string label, string emoji)
+        private (Button, Image) AddTab(string label, string iconPath)
         {
             var go = new GameObject(label, typeof(RectTransform));
             go.transform.SetParent(transform, false);
@@ -134,37 +133,47 @@ namespace TransportManager.UI.Common
             btn.targetGraphic = bg;
 
             var le = go.AddComponent<LayoutElement>();
-            le.preferredHeight = 60;
-            go.GetComponent<RectTransform>().sizeDelta = new Vector2(70, 60);
+            le.preferredHeight = 90;
+            go.GetComponent<RectTransform>().sizeDelta = new Vector2(90, 90);
 
             var inner = go.AddComponent<VerticalLayoutGroup>();
-            inner.childAlignment        = TextAnchor.MiddleCenter;
-            inner.childForceExpandWidth  = true;
+            inner.childAlignment         = TextAnchor.MiddleCenter;
+            inner.childForceExpandWidth  = false;
             inner.childForceExpandHeight = false;
-            inner.spacing = 3;
+            inner.childControlWidth      = false;
+            inner.childControlHeight     = false;
+            inner.spacing = 4;
             inner.padding = new RectOffset(4, 4, 8, 8);
 
-            // Emoji icon
+            // Sprite icon
             var iconGo  = new GameObject("Icon", typeof(RectTransform));
             iconGo.transform.SetParent(go.transform, false);
-            var iconTmp = iconGo.AddComponent<TextMeshProUGUI>();
-            iconTmp.text          = emoji;
-            iconTmp.fontSize      = 20;
-            iconTmp.alignment     = TextAlignmentOptions.Center;
-            iconTmp.raycastTarget = false;
-            iconGo.AddComponent<LayoutElement>().preferredHeight = 24;
+            var iconImg = iconGo.AddComponent<Image>();
+            iconImg.sprite         = Resources.Load<Sprite>(iconPath);
+            iconImg.color          = new Color(0.55f, 0.55f, 0.60f);
+            iconImg.preserveAspect = true;
+            iconImg.raycastTarget  = false;
+            var iconLe = iconGo.AddComponent<LayoutElement>();
+            iconLe.minWidth        = 36;
+            iconLe.preferredWidth  = 36;
+            iconLe.minHeight       = 36;
+            iconLe.preferredHeight = 36;
+            iconGo.GetComponent<RectTransform>().sizeDelta = new Vector2(36, 36);
 
             // Label
             var lblGo  = new GameObject("Label", typeof(RectTransform));
             lblGo.transform.SetParent(go.transform, false);
             var lblTmp = lblGo.AddComponent<TextMeshProUGUI>();
             lblTmp.text          = label;
-            lblTmp.fontSize      = 9;
+            lblTmp.fontSize      = 16;
             lblTmp.fontStyle     = FontStyles.Bold;
             lblTmp.alignment     = TextAlignmentOptions.Center;
-            lblTmp.color         = new Color(0.65f, 0.65f, 0.70f);
+            lblTmp.color         = new Color(0.55f, 0.55f, 0.60f);
             lblTmp.raycastTarget = false;
-            lblGo.AddComponent<LayoutElement>().preferredHeight = 12;
+            var lblLe = lblGo.AddComponent<LayoutElement>();
+            lblLe.preferredWidth  = 82;
+            lblLe.preferredHeight = 22;
+            lblGo.GetComponent<RectTransform>().sizeDelta = new Vector2(82, 22);
 
             return (btn, bg);
         }
@@ -189,11 +198,14 @@ namespace TransportManager.UI.Common
             if (bg == null) return;
             bg.color = active ? new Color(1f, 1f, 1f, 0.12f) : Color.clear;
 
-            // Update label color
+            var activeColor   = Color.white;
+            var inactiveColor = new Color(0.55f, 0.55f, 0.60f);
+
             var lbl = btn.transform.Find("Label")?.GetComponent<TextMeshProUGUI>();
-            if (lbl) lbl.color = active ? Color.white : new Color(0.55f, 0.55f, 0.60f);
-            var icon = btn.transform.Find("Icon")?.GetComponent<TextMeshProUGUI>();
-            if (icon) icon.color = active ? Color.white : new Color(0.55f, 0.55f, 0.60f);
+            if (lbl) lbl.color = active ? activeColor : inactiveColor;
+
+            var icon = btn.transform.Find("Icon")?.GetComponent<Image>();
+            if (icon) icon.color = active ? activeColor : inactiveColor;
         }
 
         private void OnEnable() => GameEvents.OnTabChanged += OnTabChanged;

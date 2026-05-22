@@ -17,7 +17,7 @@ namespace TransportManager.UI.Common
         private void OnEnable() => GameEvents.OnTabChanged += ShowTab;
         private void OnDisable() => GameEvents.OnTabChanged -= ShowTab;
 
-        private void Start() => ShowTab(defaultTab);
+        private void Start() => GameEvents.RaiseTabChanged(defaultTab);
 
         private void ShowTab(TabType tab)
         {

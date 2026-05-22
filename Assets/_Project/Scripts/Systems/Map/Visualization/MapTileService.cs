@@ -103,7 +103,12 @@ namespace TransportManager.Systems.Map.Visualization
 
         private string BuildUrl(TileKey k)
         {
+            string sub = "";
+            if (!string.IsNullOrEmpty(_config.subdomains))
+                sub = _config.subdomains[(k.x + k.y) % _config.subdomains.Length].ToString();
+
             return _config.urlTemplate
+                .Replace("{s}", sub)
                 .Replace("{z}", k.zoom.ToString())
                 .Replace("{x}", k.x.ToString())
                 .Replace("{y}", k.y.ToString());

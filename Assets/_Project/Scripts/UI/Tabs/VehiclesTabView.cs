@@ -66,7 +66,7 @@ namespace TransportManager.UI.Tabs
             var bgGo = new GameObject("Background", typeof(RectTransform));
             bgGo.transform.SetParent(transform, false);
             var bgImg = bgGo.AddComponent<RawImage>();
-            var bgTex = Resources.Load<Texture2D>("UI/VehicleBackground");
+            var bgTex = Resources.Load<Texture2D>("UI/Tutorial/VehicleBackground");
             bgImg.texture = bgTex;
             bgImg.color = Color.white;
             bgImg.raycastTarget = false;

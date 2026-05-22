@@ -7,8 +7,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TransportManager.Core;
 using TransportManager.Events;
-using TransportManager.Systems.Map.Geocoding;
 using TransportManager.Systems.Tutorial;
+using TransportManager.UI.Common;
 
 namespace TransportManager.UI.Tutorial
 {
@@ -40,6 +40,8 @@ namespace TransportManager.UI.Tutorial
         private TMP_Text _hintLabel;
         private Button _nextBtn;
         private TMP_Text _nextBtnLabel;
+
+        private AddressAutocompleteField _autocomplete;
 
         private Sprite _secretary0;
         private Sprite _secretary1;
@@ -86,8 +88,8 @@ namespace TransportManager.UI.Tutorial
             // Secretary on the right side — fixed size container so swapping
             // between secretary01 / secretary02 doesn't change the displayed size
             // (the two PNG can have different native dimensions).
-            _secretary0 = LoadSpriteFlexible("UI/secretary01");
-            _secretary1 = LoadSpriteFlexible("UI/secretary02");
+            _secretary0 = LoadSpriteFlexible("UI/Tutorial/secretary01");
+            _secretary1 = LoadSpriteFlexible("UI/Tutorial/secretary02");
 
             var secGo = new GameObject("Secretary", typeof(RectTransform));
             secGo.transform.SetParent(transform, false);
@@ -241,7 +243,40 @@ namespace TransportManager.UI.Tutorial
             btnLblRt.anchorMax = Vector2.one;
             btnLblRt.offsetMin = Vector2.zero;
             btnLblRt.offsetMax = Vector2.zero;
+
+            // Address autocomplete (AskLocation step only)
+            // Placed LAST in the bubble so its dropdown renders on top of everything.
+            // autoGo stretches to cover the full bubble so that its children (AutoInput,
+            // AutoDrop) are hidden when autoGo.SetActive(false) is called.
+            var autoGo = new GameObject("Autocomplete", typeof(RectTransform));
+            autoGo.transform.SetParent(_bubbleRt, false);
+            var autoRt = autoGo.GetComponent<RectTransform>();
+            autoRt.anchorMin = Vector2.zero;
+            autoRt.anchorMax = Vector2.one;
+            autoRt.offsetMin = Vector2.zero;
+            autoRt.offsetMax = Vector2.zero;
+            _autocomplete = autoGo.AddComponent<AddressAutocompleteField>();
+            _autocomplete.Build(
+                parent:          autoRt,              // children belong to autoGo, not _bubbleRt
+                inputOffsetMin:  new Vector2(28f, 14f),
+                inputOffsetMax:  new Vector2(-180f, 64f),
+                dropdownHeight:  MaxSuggests * 36f,   // 5 rows × 36px
+                placeholder:     "Ex. Paris, Lyon, Bordeaux…",
+                roundedSprite:   MakeRounded());
+            // OnSelected: immediately store coordinates so TryAdvance can validate
+            _autocomplete.OnSelected += (name, lat, lon) =>
+            {
+                var gm = GameManager.Instance;
+                if (gm?.Save == null) return;
+                gm.Save.company.location               = name;
+                gm.Save.company.locationLatitude       = lat;
+                gm.Save.company.locationLongitude      = lon;
+                gm.Save.company.hasLocationCoordinates = true;
+            };
+            autoGo.SetActive(false);
         }
+
+        private const int MaxSuggests = 5;
 
         public void OnPointerClick(PointerEventData eventData)
         {
@@ -269,37 +304,19 @@ namespace TransportManager.UI.Tutorial
             }
             else if (current.kind == LineKind.AskLocation)
             {
-                var loc = _inputField.text?.Trim();
-                if (string.IsNullOrWhiteSpace(loc)) { _inputField.Select(); return; }
-                var gm = GameManager.Instance;
-                if (gm != null && gm.Save != null)
+                // Must pick from autocomplete suggestions (guarantees valid geocoded address)
+                if (!_autocomplete.HasSelection)
                 {
-                    gm.Save.company.location = loc;
-                    gm.Save.company.hasLocationCoordinates = false;
-                    StartCoroutine(GeocodeLocation(loc));
+                    _hintLabel.text = "Sélectionnez une adresse dans la liste de suggestions.";
+                    _autocomplete.Select();
+                    return;
                 }
+                // Coordinates already saved by OnSelected callback — nothing more to do here.
             }
 
             _index++;
             if (_index >= _lines.Count) { Finish(); return; }
             Show(_lines[_index]);
-        }
-
-        private IEnumerator GeocodeLocation(string address)
-        {
-            yield return NominatimGeocoder.Geocode(address, result =>
-            {
-                var gm = GameManager.Instance;
-                if (gm == null || gm.Save == null) return;
-                if (!result.success) return;
-                gm.Save.company.locationLatitude = result.latitude;
-                gm.Save.company.locationLongitude = result.longitude;
-                gm.Save.company.hasLocationCoordinates = true;
-                if (!string.IsNullOrEmpty(result.displayName))
-                    gm.Save.company.location = result.displayName;
-                gm.SaveNow();
-                GameEvents.RaiseCompanyProfileChanged();
-            });
         }
 
         private void Show(DialogueLine line)
@@ -312,25 +329,35 @@ namespace TransportManager.UI.Tutorial
             _messageLabel.text = text;
             _secretaryImg.sprite = line.secretaryIndex == 1 ? _secretary1 : _secretary0;
 
-            bool needsInput = line.kind != LineKind.Text;
-            _inputField.gameObject.SetActive(needsInput);
+            bool needsInput    = line.kind != LineKind.Text;
+            bool isAskLocation = line.kind == LineKind.AskLocation;
+
+            _inputField.gameObject.SetActive(needsInput && !isAskLocation);
+            _autocomplete.gameObject.SetActive(isAskLocation);
             _hintLabel.gameObject.SetActive(needsInput);
 
             if (needsInput)
             {
-                _inputField.text = "";
-                _hintLabel.text = "Saisissez votre réponse puis cliquez sur Valider.";
+                _hintLabel.text    = "Saisissez votre réponse puis cliquez sur Valider.";
                 _nextBtnLabel.text = "Valider";
-                if (line.kind == LineKind.AskName)
-                    ((TMP_Text)_inputField.placeholder).text = "Ex. Logistik Express";
+
+                if (isAskLocation)
+                {
+                    _autocomplete.ClearSelection();
+                    _hintLabel.text = "Tapez une ville ou adresse, puis choisissez dans la liste.";
+                    _autocomplete.Select();
+                }
                 else
-                    ((TMP_Text)_inputField.placeholder).text = "Ex. Paris, France";
-                _inputField.Select();
-                _inputField.ActivateInputField();
+                {
+                    _inputField.text = "";
+                    ((TMP_Text)_inputField.placeholder).text = "Ex. Logistik Express";
+                    _inputField.Select();
+                    _inputField.ActivateInputField();
+                }
             }
             else
             {
-                _hintLabel.text = "Cliquez n'importe où ou sur Continuer.";
+                _hintLabel.text    = "Cliquez n'importe où ou sur Continuer.";
                 _nextBtnLabel.text = _index == _lines.Count - 1 ? "Commencer" : "Continuer";
             }
         }

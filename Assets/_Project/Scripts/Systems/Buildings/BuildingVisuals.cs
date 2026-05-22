@@ -40,6 +40,8 @@ namespace TransportManager.Systems.Buildings
         {
             "Buildings/{0}/level_{1}",
             "Buildings/{0}/lvl_{1}",
+            "UI/WareHouse/{0}_lvl{1}",
+            "UI/WareHouse/{0}_level_{1}",
             "UI/{0}_lvl{1}",
             "UI/{0}_level_{1}",
         };

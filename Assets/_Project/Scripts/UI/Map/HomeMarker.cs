@@ -17,15 +17,20 @@ namespace TransportManager.UI.Map
         private bool _hasCoords;
         private double _lat, _lng;
 
-        private void Awake()
+        public void Init(SlippyMapView mv, RectTransform container)
         {
+            mapView         = mv;
+            markerContainer = container;
             BuildMarker();
+            ReadCoordsFromSave();
+            if (mapView != null) mapView.OnViewChanged += Reposition;
+            Reposition();
         }
 
         private void OnEnable()
         {
+            // Subscription is handled by Init(); re-subscribe only on subsequent enables.
             if (mapView != null) mapView.OnViewChanged += Reposition;
-            ReadCoordsFromSave();
             Reposition();
         }
 

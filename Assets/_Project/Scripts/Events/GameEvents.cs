@@ -81,5 +81,9 @@ namespace TransportManager.Events
 
         public static event Action OnCompanyProfileChanged;
         public static void RaiseCompanyProfileChanged() => OnCompanyProfileChanged?.Invoke();
+
+        // Shop
+        public static event Action OnDailyOfferClaimed;
+        public static void RaiseDailyOfferClaimed() => OnDailyOfferClaimed?.Invoke();
     }
 }
