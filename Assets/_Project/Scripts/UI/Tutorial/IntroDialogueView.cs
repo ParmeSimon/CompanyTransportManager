@@ -20,7 +20,7 @@ namespace TransportManager.UI.Tutorial
         {
             public string text;
             public LineKind kind;
-            public int secretaryIndex; // 0 or 1
+            public int secretaryIndex; // 0, 1, or 2 (2 = compact avatar bubble)
             public DialogueLine(string t, LineKind k, int s) { text = t; kind = k; secretaryIndex = s; }
         }
 
@@ -45,6 +45,18 @@ namespace TransportManager.UI.Tutorial
 
         private Sprite _secretary0;
         private Sprite _secretary1;
+        private Sprite _secretary2;
+        private Image _avatarImg;
+        private RectTransform _avatarRt;
+
+        private Vector2 _bubbleOffsetMinDefault;
+        private Vector2 _bubbleOffsetMaxDefault;
+        private Vector2 _bubbleOffsetMinCompact;
+        private Vector2 _bubbleOffsetMaxCompact;
+        private Vector2 _titleOffsetMinDefault;
+        private Vector2 _titleOffsetMinCompact;
+        private Vector2 _messageOffsetMinDefault;
+        private Vector2 _messageOffsetMinCompact;
 
         private void Awake()
         {
@@ -90,6 +102,7 @@ namespace TransportManager.UI.Tutorial
             // (the two PNG can have different native dimensions).
             _secretary0 = LoadSpriteFlexible("UI/Tutorial/secretary01");
             _secretary1 = LoadSpriteFlexible("UI/Tutorial/secretary02");
+            _secretary2 = LoadSpriteFlexible("UI/Tutorial/secretary03");
 
             var secGo = new GameObject("Secretary", typeof(RectTransform));
             secGo.transform.SetParent(transform, false);
@@ -117,8 +130,12 @@ namespace TransportManager.UI.Tutorial
             _bubbleRt.anchorMin = new Vector2(0, 0);
             _bubbleRt.anchorMax = new Vector2(1, 0);
             _bubbleRt.pivot = new Vector2(0.5f, 0);
-            _bubbleRt.offsetMin = new Vector2(60, 60);
-            _bubbleRt.offsetMax = new Vector2(-760, 380);
+            _bubbleOffsetMinDefault = new Vector2(60, 60);
+            _bubbleOffsetMaxDefault = new Vector2(-760, 380);
+            _bubbleOffsetMinCompact = new Vector2(60, 60);
+            _bubbleOffsetMaxCompact = new Vector2(-760, 200);
+            _bubbleRt.offsetMin = _bubbleOffsetMinDefault;
+            _bubbleRt.offsetMax = _bubbleOffsetMaxDefault;
 
             // Title (Élise)
             var titleGo = new GameObject("Title", typeof(RectTransform));
@@ -134,8 +151,24 @@ namespace TransportManager.UI.Tutorial
             titleRt.anchorMin = new Vector2(0, 1);
             titleRt.anchorMax = new Vector2(1, 1);
             titleRt.pivot = new Vector2(0.5f, 1);
-            titleRt.offsetMin = new Vector2(28, -52);
+            _titleOffsetMinDefault = new Vector2(28, -52);
+            _titleOffsetMinCompact = new Vector2(180, -52);
+            titleRt.offsetMin = _titleOffsetMinDefault;
             titleRt.offsetMax = new Vector2(-28, -16);
+
+            // Compact avatar (used when secretaryIndex == 2). Circular portrait, left side.
+            var avGo = new GameObject("Avatar", typeof(RectTransform));
+            avGo.transform.SetParent(_bubbleRt, false);
+            _avatarImg = avGo.AddComponent<Image>();
+            _avatarImg.preserveAspect = true;
+            _avatarImg.raycastTarget = false;
+            _avatarRt = avGo.GetComponent<RectTransform>();
+            _avatarRt.anchorMin = new Vector2(0, 0.5f);
+            _avatarRt.anchorMax = new Vector2(0, 0.5f);
+            _avatarRt.pivot     = new Vector2(0, 0.5f);
+            _avatarRt.sizeDelta = new Vector2(130, 130);
+            _avatarRt.anchoredPosition = new Vector2(20, 0);
+            avGo.SetActive(false);
 
             // Message
             var msgGo = new GameObject("Message", typeof(RectTransform));
@@ -149,7 +182,9 @@ namespace TransportManager.UI.Tutorial
             var msgRt = msgGo.GetComponent<RectTransform>();
             msgRt.anchorMin = new Vector2(0, 0);
             msgRt.anchorMax = new Vector2(1, 1);
-            msgRt.offsetMin = new Vector2(28, 100);
+            _messageOffsetMinDefault = new Vector2(28, 100);
+            _messageOffsetMinCompact = new Vector2(180, 70);
+            msgRt.offsetMin = _messageOffsetMinDefault;
             msgRt.offsetMax = new Vector2(-28, -58);
 
             // Input field (hidden by default)
@@ -327,7 +362,22 @@ namespace TransportManager.UI.Tutorial
             var text = line.text.Replace("{name}", name).Replace("{location}", loc);
 
             _messageLabel.text = text;
-            _secretaryImg.sprite = line.secretaryIndex == 1 ? _secretary1 : _secretary0;
+
+            bool isCompact = line.secretaryIndex == 2;
+            _secretaryImg.gameObject.SetActive(!isCompact);
+            if (!isCompact)
+                _secretaryImg.sprite = line.secretaryIndex == 1 ? _secretary1 : _secretary0;
+
+            _avatarImg.gameObject.SetActive(isCompact);
+            if (isCompact) _avatarImg.sprite = _secretary2;
+
+            _bubbleRt.offsetMin = isCompact ? _bubbleOffsetMinCompact : _bubbleOffsetMinDefault;
+            _bubbleRt.offsetMax = isCompact ? _bubbleOffsetMaxCompact : _bubbleOffsetMaxDefault;
+            ((RectTransform)_titleLabel.transform).offsetMin =
+                new Vector2((isCompact ? _titleOffsetMinCompact : _titleOffsetMinDefault).x,
+                            _titleOffsetMinDefault.y);
+            var msgRtRef = (RectTransform)_messageLabel.transform;
+            msgRtRef.offsetMin = isCompact ? _messageOffsetMinCompact : _messageOffsetMinDefault;
 
             bool needsInput    = line.kind != LineKind.Text;
             bool isAskLocation = line.kind == LineKind.AskLocation;
@@ -335,6 +385,9 @@ namespace TransportManager.UI.Tutorial
             _inputField.gameObject.SetActive(needsInput && !isAskLocation);
             _autocomplete.gameObject.SetActive(isAskLocation);
             _hintLabel.gameObject.SetActive(needsInput);
+
+            if (isAskLocation)
+                _autocomplete.transform.SetAsLastSibling();
 
             if (needsInput)
             {

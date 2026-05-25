@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
-using TMPro;
 using TransportManager.Core;
 using TransportManager.Systems.Map.Visualization;
 using TransportManager.UI.Map;
@@ -10,7 +9,6 @@ namespace TransportManager.UI.Tabs
     public class MapTabView : MonoBehaviour, IPointerDownHandler, IDragHandler, IScrollHandler
     {
         [SerializeField] private SlippyMapView mapView;
-        [SerializeField] private TMP_Text attributionLabel;
 
         [Header("Interaction")]
         [SerializeField] private float panSensitivity = 0.0003f;

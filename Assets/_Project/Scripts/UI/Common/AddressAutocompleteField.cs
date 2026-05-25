@@ -27,7 +27,9 @@ namespace TransportManager.UI.Common
         public void ClearSelection()
         {
             HasSelection = false;
-            if (_input != null) _input.text = "";
+            if (_input != null) _input.SetTextWithoutNotify("");
+            if (_debounce != null) { StopCoroutine(_debounce); _debounce = null; }
+            _lastTyped = "";
             HideDropdown();
         }
 
@@ -238,6 +240,7 @@ namespace TransportManager.UI.Common
             var offMin = _dropRt.offsetMin;
             _dropRt.offsetMax = new Vector2(_dropRt.offsetMax.x, offMin.y + totalH);
             _dropRt.gameObject.SetActive(true);
+            _dropRt.SetAsLastSibling();
 
             for (int i = 0; i < MaxSuggests; i++)
             {
@@ -245,6 +248,14 @@ namespace TransportManager.UI.Common
                 _rows[i].bg.gameObject.SetActive(active);
                 if (active)
                 {
+                    // Re-stack rows from top of the (resized) dropdown so they
+                    // stay inside the bg, regardless of how many suggestions came back.
+                    float y = totalH - (i + 1) * RowHeight;
+                    var rt = (RectTransform)_rows[i].bg.transform;
+                    rt.offsetMin        = new Vector2(0f, y);
+                    rt.offsetMax        = new Vector2(0f, y + RowHeight);
+                    rt.anchoredPosition = new Vector2(0f, y);
+
                     _rows[i].lbl.text = results[i].displayName;
                     _rows[i].bg.color = RowNormal;
                 }
@@ -262,9 +273,9 @@ namespace TransportManager.UI.Common
             if (_pendingResults == null || idx >= _pendingResults.Count) return;
             var r = _pendingResults[idx];
 
-            _suppressCallback = true;
-            _input.text = r.displayName;
-            _suppressCallback = false;
+            _input.SetTextWithoutNotify(r.displayName);
+            if (_debounce != null) { StopCoroutine(_debounce); _debounce = null; }
+            _lastTyped = r.displayName;
 
             HasSelection    = true;
             SelectedName    = r.displayName;
