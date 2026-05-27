@@ -26,6 +26,7 @@ namespace TransportManager.UI.Common
         [UnityEditor.MenuItem("CONTEXT/NavbarView/Build Navbar")]
         private static void BuildFromMenu(UnityEditor.MenuCommand cmd)
         {
+            if (Application.isPlaying) { Debug.LogWarning("Stop Play Mode before building the Navbar."); return; }
             var n = (NavbarView)cmd.context;
             n.Build();
             UnityEditor.EditorUtility.SetDirty(n.gameObject);
@@ -40,7 +41,8 @@ namespace TransportManager.UI.Common
             foreach (var child in children)
             {
 #if UNITY_EDITOR
-                DestroyImmediate(child);
+                if (!Application.isPlaying) DestroyImmediate(child);
+                else Destroy(child);
 #else
                 Destroy(child);
 #endif
@@ -51,7 +53,8 @@ namespace TransportManager.UI.Common
             if (oldHlg != null)
             {
 #if UNITY_EDITOR
-                DestroyImmediate(oldHlg);
+                if (!Application.isPlaying) DestroyImmediate(oldHlg);
+                else Destroy(oldHlg);
 #else
                 Destroy(oldHlg);
 #endif

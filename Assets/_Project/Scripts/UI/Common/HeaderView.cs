@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TransportManager.Core;
 using TransportManager.Events;
+using TransportManager.UI.Friends;
+using TransportManager.UI.Settings;
 
 namespace TransportManager.UI.Common
 {
@@ -18,6 +20,7 @@ namespace TransportManager.UI.Common
         [UnityEditor.MenuItem("CONTEXT/HeaderView/Build Header")]
         private static void BuildFromMenu(UnityEditor.MenuCommand cmd)
         {
+            if (Application.isPlaying) { Debug.LogWarning("Stop Play Mode before building the Header."); return; }
             var h = (HeaderView)cmd.context;
             h.Build();
             UnityEditor.EditorUtility.SetDirty(h.gameObject);
@@ -33,7 +36,8 @@ namespace TransportManager.UI.Common
             foreach (var c in children)
             {
 #if UNITY_EDITOR
-                DestroyImmediate(c);
+                if (!Application.isPlaying) DestroyImmediate(c);
+                else Destroy(c);
 #else
                 Destroy(c);
 #endif
@@ -42,7 +46,7 @@ namespace TransportManager.UI.Common
             // Header background removed
             var existingBg = GetComponent<Image>();
 #if UNITY_EDITOR
-            if (existingBg != null) DestroyImmediate(existingBg);
+            if (existingBg != null) { if (!Application.isPlaying) DestroyImmediate(existingBg); else Destroy(existingBg); }
 #else
             if (existingBg != null) Destroy(existingBg);
 #endif
@@ -299,6 +303,17 @@ namespace TransportManager.UI.Common
 
         private void Start()
         {
+            // Câblage runtime du bouton Settings
+            var rightSide = transform.Find("RightSide");
+            if (rightSide != null)
+            {
+                var settingsBtn = rightSide.Find("BtnSettings")?.GetComponent<Button>();
+                if (settingsBtn != null) settingsBtn.onClick.AddListener(SettingsPopupView.Show);
+
+                var friendsBtn = rightSide.Find("BtnFriends")?.GetComponent<Button>();
+                if (friendsBtn != null) friendsBtn.onClick.AddListener(FriendsPopupView.Show);
+            }
+
             var gm = GameManager.Instance;
             if (gm == null || gm.Save == null) return;
             UpdateCompany();

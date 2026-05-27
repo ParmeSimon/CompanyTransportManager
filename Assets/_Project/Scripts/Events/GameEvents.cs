@@ -85,5 +85,15 @@ namespace TransportManager.Events
         // Shop
         public static event Action OnDailyOfferClaimed;
         public static void RaiseDailyOfferClaimed() => OnDailyOfferClaimed?.Invoke();
+
+        // Social / Friends
+        public static event Action<string> OnFriendRoutesRequested;
+        public static event Action<string> OnFriendDepotRequested;
+        public static event Action<string> OnFriendTrucksRequested;
+        public static event Action<string> OnFriendRoutesHidden;
+        public static void RaiseFriendRoutesRequested(string uid) => OnFriendRoutesRequested?.Invoke(uid);
+        public static void RaiseFriendRoutesHidden(string uid)    => OnFriendRoutesHidden?.Invoke(uid);
+        public static void RaiseFriendDepotRequested(string uid)  => OnFriendDepotRequested?.Invoke(uid);
+        public static void RaiseFriendTrucksRequested(string uid) => OnFriendTrucksRequested?.Invoke(uid);
     }
 }
