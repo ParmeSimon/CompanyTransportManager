@@ -1,6 +1,11 @@
-﻿using UnityEngine;
+﻿using System.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using TransportManager.Core;
+using TransportManager.Entities.Contracts;
+using TransportManager.Enums;
+using TransportManager.Events;
+using TransportManager.Systems.Map;
 using TransportManager.Systems.Map.Visualization;
 using TransportManager.UI.Map;
 
@@ -18,17 +23,79 @@ namespace TransportManager.UI.Tabs
         [SerializeField] private RectTransform markersContainer;
 
         private int _tileSize;
-        private HomeMarker _homeMarker;
+        private HomeMarker       _homeMarker;
         private ContractsPanelView _contractsPanel;
+        private RouteOverlayView  _routeOverlay;
 
-        private void OnEnable() { }
+        private void OnEnable()
+        {
+            GameEvents.OnShowContractRoute += HandleShowContractRoute;
+        }
+
+        private void OnDisable()
+        {
+            GameEvents.OnShowContractRoute -= HandleShowContractRoute;
+        }
 
         private void Start()
         {
             _tileSize = (mapView != null && mapView.Config != null) ? mapView.Config.tilePixelSize : 256;
+            EnsureRouteOverlay();   // en premier → rendu derrière le HomeMarker
             EnsureHomeMarker();
             EnsureContractsPanel();
             FocusOnHomeIfAvailable();
+        }
+
+        private void EnsureRouteOverlay()
+        {
+            if (_routeOverlay != null) return;
+            var container = markersContainer != null ? markersContainer : (mapView != null ? (RectTransform)mapView.transform : null);
+            if (container == null) return;
+
+            var go = new GameObject("RouteOverlay", typeof(RectTransform));
+            go.transform.SetParent(container, false);
+            go.transform.SetAsFirstSibling(); // sous le HomeMarker
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+
+            _routeOverlay = go.AddComponent<RouteOverlayView>();
+            _routeOverlay.Init(mapView);
+            _routeOverlay.gameObject.SetActive(false);
+        }
+
+        private void HandleShowContractRoute(ContractData def)
+        {
+            _ = ShowContractRouteAsync(def);
+        }
+
+        private async Task ShowContractRouteAsync(ContractData def)
+        {
+            var mapSys = ServiceLocator.Get<MapSystem>();
+            if (mapSys == null || def == null || mapView == null || _routeOverlay == null) return;
+
+            var from = mapSys.Catalog?.GetById(def.originCityId);
+            var to   = mapSys.Catalog?.GetById(def.destinationCityId);
+            if (from == null || to == null) return;
+
+            // 1. Zoom immédiat sur les deux villes
+            mapView.FitBounds(from.location.latitude, from.location.longitude,
+                              to.location.latitude,   to.location.longitude);
+
+            // 2. Marqueurs A/B visibles tout de suite
+            _routeOverlay.ShowMarkers(
+                from.location.latitude, from.location.longitude,
+                to.location.latitude,   to.location.longitude,
+                from.displayName,       to.displayName);
+
+            // 3. Récupérer la route (cache ORS ou appel réseau)
+            var route = await mapSys.GetRouteAsync(from, to, VehicleRoutingProfile.HeavyGoodsVehicle);
+
+            // Vérifier que l'objet est toujours valide après l'await
+            if (_routeOverlay == null || mapView == null) return;
+            _routeOverlay.SetRoute(route);
         }
 
         private void EnsureHomeMarker()

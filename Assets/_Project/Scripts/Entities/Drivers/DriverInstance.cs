@@ -8,6 +8,7 @@ namespace TransportManager.Entities.Drivers
         public string instanceId;
         public string firstName;
         public string lastName;
+        public string nationality;
 
         public int xp;
         public int contractsCompleted;
@@ -20,6 +21,10 @@ namespace TransportManager.Entities.Drivers
         public int desiredWagePerContract;
 
         public string assignedVehicleInstanceId;
+
+        // Fatigue : 0 = reposé, 100 = épuisé. Persiste entre les contrats.
+        public float currentFatigue;
+        public long lastContractEndUtcTicks;
 
         public string FullName => $"{firstName} {lastName}";
     }

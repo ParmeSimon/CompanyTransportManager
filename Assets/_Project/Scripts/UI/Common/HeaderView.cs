@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TransportManager.Core;
 using TransportManager.Events;
+using TransportManager.UI.Analytics;
+using TransportManager.UI.Fleet;
 using TransportManager.UI.Friends;
 using TransportManager.UI.Settings;
 
@@ -312,6 +314,12 @@ namespace TransportManager.UI.Common
 
                 var friendsBtn = rightSide.Find("BtnFriends")?.GetComponent<Button>();
                 if (friendsBtn != null) friendsBtn.onClick.AddListener(FriendsPopupView.Show);
+
+                var analyticsBtn = rightSide.Find("BtnAnalytics")?.GetComponent<Button>();
+                if (analyticsBtn != null) analyticsBtn.onClick.AddListener(AnalyticsPopupView.Show);
+
+                var listBtn = rightSide.Find("btnList")?.GetComponent<Button>();
+                if (listBtn != null) listBtn.onClick.AddListener(FleetListPopupView.Show);
             }
 
             var gm = GameManager.Instance;

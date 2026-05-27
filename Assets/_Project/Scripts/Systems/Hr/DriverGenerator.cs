@@ -27,6 +27,13 @@ namespace TransportManager.Systems.Hr
             "Mercier", "Blanc", "Faure", "Dupuis", "Carpentier"
         };
 
+        private static readonly string[] Nationalities =
+        {
+            "Français", "Belge", "Suisse", "Espagnol", "Portugais",
+            "Italien", "Allemand", "Polonais", "Roumain",
+            "Algérien", "Marocain", "Tunisien", "Turc", "Russe"
+        };
+
         public static DriverInstance Generate()
         {
             int level = UnityEngine.Random.Range(1, 5);   // 1..4 (entry-level pool)
@@ -34,25 +41,30 @@ namespace TransportManager.Systems.Hr
 
             var stats = new DriverStats
             {
-                speedBonus = Mathf.Lerp(-0.10f, 0.20f, UnityEngine.Random.value),
+                speedBonus          = Mathf.Lerp(-0.10f, 0.20f, UnityEngine.Random.value),
                 fuelEfficiencyBonus = Mathf.Lerp(-0.05f, 0.15f, UnityEngine.Random.value),
-                safetyScore = UnityEngine.Random.Range(40f, 100f),
-                salaryDemandFactor = Mathf.Lerp(0f, 0.5f, UnityEngine.Random.value)
+                safetyScore         = UnityEngine.Random.Range(40f, 100f),
+                salaryDemandFactor  = Mathf.Lerp(0f, 0.5f, UnityEngine.Random.value),
+                concentration       = UnityEngine.Random.Range(20f, 100f),
+                dodge               = UnityEngine.Random.Range(20f, 100f),
+                endurance           = UnityEngine.Random.Range(20f, 100f)
             };
 
             int desiredWage = ComputeDesiredWage(level, stats);
 
             return new DriverInstance
             {
-                instanceId = Guid.NewGuid().ToString(),
-                firstName = FirstNames[UnityEngine.Random.Range(0, FirstNames.Length)],
-                lastName = LastNames[UnityEngine.Random.Range(0, LastNames.Length)],
-                xp = xp,
+                instanceId         = Guid.NewGuid().ToString(),
+                firstName          = FirstNames[UnityEngine.Random.Range(0, FirstNames.Length)],
+                lastName           = LastNames[UnityEngine.Random.Range(0, LastNames.Length)],
+                nationality        = Nationalities[UnityEngine.Random.Range(0, Nationalities.Length)],
+                xp                 = xp,
                 contractsCompleted = 0,
-                hired = false,
-                stats = stats,
+                hired              = false,
+                currentFatigue     = 0f,
+                stats              = stats,
                 assignedWagePerContract = desiredWage,
-                desiredWagePerContract = desiredWage
+                desiredWagePerContract  = desiredWage
             };
         }
 

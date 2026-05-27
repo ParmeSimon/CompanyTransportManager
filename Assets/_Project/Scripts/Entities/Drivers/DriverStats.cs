@@ -17,5 +17,14 @@ namespace TransportManager.Entities.Drivers
 
         [Tooltip("Salary demand factor 0.0-0.5. Higher = more expensive driver.")]
         public float salaryDemandFactor;
+
+        [Tooltip("Concentration 0-100. Speeds up fatigue recovery and reduces fatal accident chance.")]
+        public float concentration;
+
+        [Tooltip("Dodge (esquive) 0-100. Directly reduces accident probability.")]
+        public float dodge;
+
+        [Tooltip("Endurance 0-100. Reduces fatigue gain per km. Low endurance = rapid fatigue on long trips.")]
+        public float endurance;
     }
 }

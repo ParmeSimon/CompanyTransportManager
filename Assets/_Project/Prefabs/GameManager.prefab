@@ -49,3 +49,6 @@ MonoBehaviour:
   fuelStationConfig: {fileID: 11400000, guid: 092906c824e8af4428afd818b99292dd, type: 2}
   orsConfig: {fileID: 0}
   forceFallbackRouting: 1
+  resetSaveOnStart: 0
+  seedFakeAnalytics: 1
+  seedFakeFleet: 1

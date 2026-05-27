@@ -8,6 +8,7 @@ using TransportManager.Entities.Vehicles;
 using TransportManager.Enums;
 using TransportManager.Events;
 using TransportManager.Save;
+using TransportManager.Systems.Accidents;
 using TransportManager.Systems.Economy;
 using TransportManager.Systems.Fleet;
 using TransportManager.Systems.Hr;
@@ -24,6 +25,12 @@ namespace TransportManager.Systems.Contracts
 
         public IReadOnlyList<ContractData> Available => _save.availableContracts;
         public IReadOnlyList<ContractInstance> Active => _save.activeContracts;
+
+        public void AddToPool(ContractData def)
+        {
+            if (def != null && !_save.availableContracts.Contains(def))
+                _save.availableContracts.Add(def);
+        }
 
         public bool CanAttempt(ContractData contract, VehicleData data, DriverInstance driver = null)
         {
@@ -80,6 +87,8 @@ namespace TransportManager.Systems.Contracts
             _save.activeContracts.Add(instance);
             _save.availableContracts.Remove(definition);
 
+            PrecomputeAccidentForContract(instance, driver, data);
+
             GameEvents.RaiseContractStarted(instance);
             GameEvents.RaiseVehicleStatusChanged(vehicle);
             return instance;
@@ -92,9 +101,35 @@ namespace TransportManager.Systems.Contracts
 
             var contract = _save.activeContracts[idx];
             if (contract.status != ContractStatus.InProgress) return false;
+
+            // L'accident est vérifié en priorité — il peut interrompre le trajet avant la fin.
+            if (contract.IsAccidentDue)
+            {
+                FinalizeAccident(contract, data);
+                _save.activeContracts.RemoveAt(idx);
+                return true;
+            }
+
             if (!contract.IsReadyToComplete) return false;
 
             Finalize(contract, data);
+            _save.activeContracts.RemoveAt(idx);
+            return true;
+        }
+
+        /// <summary>
+        /// Vérifie et déclenche un accident en cours de trajet sans attendre la complétion.
+        /// À appeler depuis la boucle de jeu pour les notifications temps-réel.
+        /// </summary>
+        public bool TryTriggerAccidentIfDue(string contractInstanceId, VehicleData data)
+        {
+            int idx = _save.activeContracts.FindIndex(c => c.instanceId == contractInstanceId);
+            if (idx < 0) return false;
+
+            var contract = _save.activeContracts[idx];
+            if (contract.status != ContractStatus.InProgress || !contract.IsAccidentDue) return false;
+
+            FinalizeAccident(contract, data);
             _save.activeContracts.RemoveAt(idx);
             return true;
         }
@@ -112,40 +147,126 @@ namespace TransportManager.Systems.Contracts
             return TryCompleteIfReady(contractInstanceId, data);
         }
 
+        // ── Livraison normale (aucun accident) ───────────────────────────────
+
         private void Finalize(ContractInstance contract, VehicleData data)
         {
             var wallet = ServiceLocator.Get<WalletSystem>();
             wallet?.Add(CurrencyType.Dollar, contract.definition.baseReward);
 
-            var fleet = ServiceLocator.Get<FleetSystem>();
+            var fleet   = ServiceLocator.Get<FleetSystem>();
             var vehicle = fleet?.GetById(contract.assignedVehicleInstanceId);
+
             if (vehicle != null)
             {
-                vehicle.totalKilometers += Mathf.RoundToInt(contract.definition.distanceKm);
-                vehicle.activeContractInstanceId = null;
-                vehicle.status = VehicleStatus.Idle;
+                vehicle.totalKilometers          += Mathf.RoundToInt(contract.definition.distanceKm);
+                vehicle.activeContractInstanceId  = null;
+                vehicle.status                    = VehicleStatus.Idle;
 
                 if (data != null)
-                {
-                    var maintenance = ServiceLocator.Get<MaintenanceSystem>();
-                    maintenance?.EvaluateAfterContract(vehicle, data.maxKilometers);
-                }
+                    ServiceLocator.Get<MaintenanceSystem>()?.EvaluateAfterContract(vehicle, data.maxKilometers);
 
                 if (!string.IsNullOrEmpty(vehicle.assignedDriverInstanceId))
                 {
-                    var hr = ServiceLocator.Get<HrSystem>();
+                    var hr     = ServiceLocator.Get<HrSystem>();
                     var driver = hr?.GetHired(vehicle.assignedDriverInstanceId);
                     if (driver != null && hr != null)
                     {
+                        AccidentSystem.ApplyFatigueCycle(driver, contract.startTimeUtcTicks, contract.definition.distanceKm);
                         bool resigned = hr.ProcessPostContract(driver, contract.definition.distanceKm);
-                        if (resigned) Debug.Log($"[Contract] Driver {driver.FullName} a démissionné après livraison.");
-                        ServiceLocator.Get<XpSystem>()?.NotifyChanged();
+                        if (resigned) Debug.Log($"[Contract] {driver.FullName} a démissionné après livraison.");
                     }
                 }
             }
 
+            ServiceLocator.Get<XpSystem>()?.AddCompanyXpForContract(contract.definition.distanceKm);
             contract.status = ContractStatus.Completed;
             GameEvents.RaiseContractCompleted(contract);
+        }
+
+        // ── Accident en cours de trajet (pré-calculé à la signature) ─────────
+
+        private void FinalizeAccident(ContractInstance contract, VehicleData data)
+        {
+            var accident = new AccidentResult
+            {
+                severity          = contract.scheduledAccidentSeverity,
+                vehicleRepairCost = contract.scheduledAccidentRepairCost,
+                description       = contract.scheduledAccidentDescription
+            };
+
+            var fleet   = ServiceLocator.Get<FleetSystem>();
+            var vehicle = fleet?.GetById(contract.assignedVehicleInstanceId);
+            var hr      = ServiceLocator.Get<HrSystem>();
+
+            DriverInstance driver = null;
+            if (vehicle != null && !string.IsNullOrEmpty(vehicle.assignedDriverInstanceId))
+                driver = hr?.GetHired(vehicle.assignedDriverInstanceId);
+
+            // Kilométrage partiel jusqu'au point d'accident
+            float progress    = Mathf.Clamp01(contract.AccidentProgressRatio);
+            float kmAtCrash   = contract.definition.distanceKm * progress;
+
+            if (vehicle != null)
+            {
+                vehicle.totalKilometers         += Mathf.RoundToInt(kmAtCrash);
+                vehicle.activeContractInstanceId = null;
+                vehicle.status                   = VehicleStatus.Idle;
+
+                if (data != null)
+                    ServiceLocator.Get<MaintenanceSystem>()?.EvaluateAfterContract(vehicle, data.maxKilometers);
+            }
+
+            if (driver != null)
+            {
+                // Fatigue accumulée jusqu'au crash (distance partielle)
+                AccidentSystem.ApplyFatigueCycle(driver, contract.startTimeUtcTicks, kmAtCrash);
+
+                if (accident.IsFatal)
+                {
+                    if (vehicle != null) vehicle.assignedDriverInstanceId = null;
+                    hr?.KillDriver(driver);
+                    Debug.Log($"[Accident FATAL] {driver.FullName} a péri dans un accident ({progress:P0} du trajet).");
+                }
+                else
+                {
+                    if (accident.vehicleRepairCost > 0)
+                        ServiceLocator.Get<WalletSystem>()?.TrySpend(CurrencyType.Dollar, accident.vehicleRepairCost);
+
+                    GameEvents.RaiseDriverAccident(driver, accident);
+                    Debug.Log($"[Accident] {driver.FullName} — {accident.description} à {progress:P0} du trajet, réparation : {accident.vehicleRepairCost:N0} $");
+
+                    // Le conducteur ne perçoit pas de salaire (contrat annulé)
+                    driver.contractsCompleted++;
+                    GameEvents.RaiseDriverXpChanged(driver);
+                }
+            }
+
+            // Pas de récompense, pas d'XP entreprise — contrat annulé
+            contract.status = ContractStatus.Completed;
+            GameEvents.RaiseContractCompleted(contract);
+        }
+
+        // ── Pré-calcul de l'accident à la signature du contrat ────────────────
+
+        private void PrecomputeAccidentForContract(ContractInstance instance, DriverInstance driver, VehicleData data)
+        {
+            if (driver == null || data == null) return;
+
+            float fatigueAtEnd = AccidentSystem.ComputeFatigueAtEnd(
+                driver, instance.startTimeUtcTicks, instance.definition.distanceKm);
+
+            var result = AccidentSystem.Roll(
+                driver, fatigueAtEnd, instance.definition.distanceKm, data.purchasePrice);
+
+            if (!result.IsAccident) return;
+
+            instance.scheduledAccidentTimeTicks      = AccidentSystem.ScheduleAccidentTime(instance.startTimeUtcTicks, instance.completionTimeUtcTicks);
+            instance.scheduledAccidentSeverity       = result.severity;
+            instance.scheduledAccidentRepairCost     = result.vehicleRepairCost;
+            instance.scheduledAccidentDescription    = result.description;
+
+            Debug.Log($"[Accident prévu] {driver.FullName} — {result.description} à {new DateTime(instance.scheduledAccidentTimeTicks, DateTimeKind.Utc):HH:mm} UTC");
         }
     }
 }

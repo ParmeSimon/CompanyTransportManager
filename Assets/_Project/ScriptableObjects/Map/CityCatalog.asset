@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: CityCatalog
   m_EditorClassIdentifier: Assembly-CSharp::TransportManager.Entities.Map.CityCatalog
   cities:
+
+  # ── FRANCE ───────────────────────────────────────────────────────────────
   - id: paris
     displayName: Paris
     country: France
@@ -21,8 +23,8 @@ MonoBehaviour:
       longitude: 2.3522
     deliveryPointLabels:
     - Bercy
-    - La Vilette
-    - Rungis
+    - Rungis MIN
+    - La Villette
   - id: lyon
     displayName: Lyon
     country: France
@@ -30,8 +32,9 @@ MonoBehaviour:
       latitude: 45.764
       longitude: 4.8357
     deliveryPointLabels:
-    - Par-Dieu
-    - Gerland
+    - Part-Dieu
+    - Gerland ZI
+    - Saint-Priest ZI
   - id: marseille
     displayName: Marseille
     country: France
@@ -41,6 +44,7 @@ MonoBehaviour:
     deliveryPointLabels:
     - Port de Marseille
     - Les Arnavants
+    - Plan-de-Campagne
   - id: bordeaux
     displayName: Bordeaux
     country: France
@@ -48,8 +52,9 @@ MonoBehaviour:
       latitude: 44.8378
       longitude: -0.5792
     deliveryPointLabels:
-    - "Bassins \xE0 Flot"
-    - "M\xE9rignac"
+    - Bassins a Flot
+    - Merignac ZI
+    - Bruges ZI
   - id: lille
     displayName: Lille
     country: France
@@ -58,4 +63,1503 @@ MonoBehaviour:
       longitude: 3.0573
     deliveryPointLabels:
     - Euralille
-    - Lesquin
+    - Lesquin ZI
+    - Ronchin ZI
+  - id: toulouse
+    displayName: Toulouse
+    country: France
+    location:
+      latitude: 43.6047
+      longitude: 1.4442
+    deliveryPointLabels:
+    - ZI de Gramont
+    - Labege Innopole
+    - Eurocentre
+  - id: nantes
+    displayName: Nantes
+    country: France
+    location:
+      latitude: 47.2184
+      longitude: -1.5536
+    deliveryPointLabels:
+    - La Cheviree
+    - Saint-Herblain ZI
+    - Reze Port
+  - id: strasbourg
+    displayName: Strasbourg
+    country: France
+    location:
+      latitude: 48.5734
+      longitude: 7.7521
+    deliveryPointLabels:
+    - Port du Rhin
+    - Cronenbourg ZI
+    - Parc des Forges
+  - id: le_havre
+    displayName: Le Havre
+    country: France
+    location:
+      latitude: 49.4944
+      longitude: 0.1079
+    deliveryPointLabels:
+    - Port du Havre
+    - Harfleur ZI
+    - Rogerville
+  - id: nice
+    displayName: Nice
+    country: France
+    location:
+      latitude: 43.7102
+      longitude: 7.262
+    deliveryPointLabels:
+    - Carros ZI
+    - L'Arenas
+    - La Trinite ZI
+  - id: montpellier
+    displayName: Montpellier
+    country: France
+    location:
+      latitude: 43.6108
+      longitude: 3.8767
+    deliveryPointLabels:
+    - Parc 2000
+    - La Lauze ZI
+    - Agropolis
+  - id: rennes
+    displayName: Rennes
+    country: France
+    location:
+      latitude: 48.1173
+      longitude: -1.6778
+    deliveryPointLabels:
+    - ZA Sud-Est
+    - La Barre Thomas
+    - Ker Lann ZI
+  - id: dijon
+    displayName: Dijon
+    country: France
+    location:
+      latitude: 47.322
+      longitude: 5.0415
+    deliveryPointLabels:
+    - Mirande ZI
+    - Cap Nord
+    - Longvic ZI
+  - id: rouen
+    displayName: Rouen
+    country: France
+    location:
+      latitude: 49.4432
+      longitude: 1.0993
+    deliveryPointLabels:
+    - Port de Rouen
+    - Saint-Etienne-du-Rouvray ZI
+    - Oissel
+
+  # ── BELGIQUE ─────────────────────────────────────────────────────────────
+  - id: bruxelles
+    displayName: Bruxelles
+    country: Belgique
+    location:
+      latitude: 50.8503
+      longitude: 4.3517
+    deliveryPointLabels:
+    - ZI Laeken
+    - Anderlecht ZI
+    - Neder-over-Heembeek
+  - id: antwerpen
+    displayName: Anvers
+    country: Belgique
+    location:
+      latitude: 51.2194
+      longitude: 4.4025
+    deliveryPointLabels:
+    - Port d'Anvers
+    - Ekeren
+    - Wilrijk ZI
+  - id: liege
+    displayName: "Li\xE8ge"
+    country: Belgique
+    location:
+      latitude: 50.6326
+      longitude: 5.5797
+    deliveryPointLabels:
+    - Port de Liege
+    - Hauts-Sarts ZI
+    - Herstal ZI
+  - id: gand
+    displayName: Gand
+    country: Belgique
+    location:
+      latitude: 51.0543
+      longitude: 3.7174
+    deliveryPointLabels:
+    - Port de Gand
+    - Wondelgem ZI
+    - Evergem
+
+  # ── PAYS-BAS ──────────────────────────────────────────────────────────────
+  - id: amsterdam
+    displayName: Amsterdam
+    country: Pays-Bas
+    location:
+      latitude: 52.3676
+      longitude: 4.9041
+    deliveryPointLabels:
+    - Westpoort
+    - Schiphol Cargo
+    - Sloterdijk ZI
+  - id: rotterdam
+    displayName: Rotterdam
+    country: Pays-Bas
+    location:
+      latitude: 51.9244
+      longitude: 4.4777
+    deliveryPointLabels:
+    - Maasvlakte
+    - Waalhaven
+    - Botlek
+  - id: utrecht
+    displayName: Utrecht
+    country: Pays-Bas
+    location:
+      latitude: 52.0907
+      longitude: 5.1214
+    deliveryPointLabels:
+    - Lage Weide
+    - Overvecht ZI
+    - Maarssen
+  - id: eindhoven
+    displayName: Eindhoven
+    country: Pays-Bas
+    location:
+      latitude: 51.4416
+      longitude: 5.4697
+    deliveryPointLabels:
+    - De Hurk ZI
+    - Flight Forum
+    - Acht ZI
+  - id: den_haag
+    displayName: La Haye
+    country: Pays-Bas
+    location:
+      latitude: 52.0705
+      longitude: 4.3007
+    deliveryPointLabels:
+    - Binckhorst
+    - Plaspoelpolder
+    - Forepark ZI
+
+  # ── ALLEMAGNE ────────────────────────────────────────────────────────────
+  - id: hamburg
+    displayName: Hambourg
+    country: Allemagne
+    location:
+      latitude: 53.5511
+      longitude: 9.9937
+    deliveryPointLabels:
+    - Port de Hambourg
+    - Billbrook ZI
+    - Wandsbek
+  - id: frankfurt
+    displayName: Francfort
+    country: Allemagne
+    location:
+      latitude: 50.1109
+      longitude: 8.6821
+    deliveryPointLabels:
+    - ZI Fechenheim
+    - Industriepark Hoechst
+    - Gateway Gardens
+  - id: munich
+    displayName: Munich
+    country: Allemagne
+    location:
+      latitude: 48.1351
+      longitude: 11.582
+    deliveryPointLabels:
+    - Freiham ZI
+    - Riem
+    - Allach ZI
+  - id: cologne
+    displayName: Cologne
+    country: Allemagne
+    location:
+      latitude: 50.9333
+      longitude: 6.95
+    deliveryPointLabels:
+    - ZI Porz
+    - Godorf
+    - Deutz ZI
+  - id: berlin
+    displayName: Berlin
+    country: Allemagne
+    location:
+      latitude: 52.52
+      longitude: 13.405
+    deliveryPointLabels:
+    - Tempelhof Feld
+    - Spandau ZI
+    - Grossbeeren
+  - id: stuttgart
+    displayName: Stuttgart
+    country: Allemagne
+    location:
+      latitude: 48.7758
+      longitude: 9.1829
+    deliveryPointLabels:
+    - Feuerbach ZI
+    - Zuffenhausen
+    - Leinfelden ZI
+  - id: dortmund
+    displayName: Dortmund
+    country: Allemagne
+    location:
+      latitude: 51.5136
+      longitude: 7.4653
+    deliveryPointLabels:
+    - Hafen Dortmund
+    - Westfalenhutte
+    - Kley ZI
+  - id: dusseldorf
+    displayName: "D\xFCsseldorf"
+    country: Allemagne
+    location:
+      latitude: 51.2217
+      longitude: 6.7762
+    deliveryPointLabels:
+    - Reisholz ZI
+    - Flughafen Cargo
+    - Heerdt ZI
+  - id: bremen
+    displayName: Bremen
+    country: Allemagne
+    location:
+      latitude: 53.0793
+      longitude: 8.8017
+    deliveryPointLabels:
+    - Port de Bremen
+    - Hastedt ZI
+    - Brinkum ZI
+  - id: nuremberg
+    displayName: Nuremberg
+    country: Allemagne
+    location:
+      latitude: 49.4521
+      longitude: 11.0767
+    deliveryPointLabels:
+    - Hafen Nuernberg
+    - Langwasser ZI
+    - Feucht Gewerbegebiet
+  - id: leipzig
+    displayName: Leipzig
+    country: Allemagne
+    location:
+      latitude: 51.3397
+      longitude: 12.3731
+    deliveryPointLabels:
+    - Hafen Leipzig
+    - Schkeuditz Cargo
+    - Mockau ZI
+  - id: dresden
+    displayName: Dresden
+    country: Allemagne
+    location:
+      latitude: 51.0504
+      longitude: 13.7373
+    deliveryPointLabels:
+    - Gittersee ZI
+    - Friedrichstadt Hafen
+    - Nickern ZI
+
+  # ── ITALIE ────────────────────────────────────────────────────────────────
+  - id: milan
+    displayName: Milan
+    country: Italie
+    location:
+      latitude: 45.4642
+      longitude: 9.19
+    deliveryPointLabels:
+    - Sesto San Giovanni
+    - Segrate
+    - Rho Fiera
+  - id: turin
+    displayName: Turin
+    country: Italie
+    location:
+      latitude: 45.0703
+      longitude: 7.6869
+    deliveryPointLabels:
+    - Mirafiori ZI
+    - Rivoli
+    - Settimo Torinese
+  - id: rome
+    displayName: Rome
+    country: Italie
+    location:
+      latitude: 41.9028
+      longitude: 12.4964
+    deliveryPointLabels:
+    - Pomezia ZI
+    - Fiumicino Cargo
+    - Tiburtina ZI
+  - id: naples
+    displayName: Naples
+    country: Italie
+    location:
+      latitude: 40.8518
+      longitude: 14.2681
+    deliveryPointLabels:
+    - Port de Naples
+    - Nola CIS
+    - Acerra ZI
+  - id: bologne
+    displayName: Bologne
+    country: Italie
+    location:
+      latitude: 44.4949
+      longitude: 11.3426
+    deliveryPointLabels:
+    - ZI Borgo Panigale
+    - Interporto Bologna
+    - San Lazzaro
+  - id: genes
+    displayName: "G\xEAnes"
+    country: Italie
+    location:
+      latitude: 44.4056
+      longitude: 8.9463
+    deliveryPointLabels:
+    - Port de Genes
+    - Sampierdarena
+    - Rivarolo ZI
+  - id: florence
+    displayName: Florence
+    country: Italie
+    location:
+      latitude: 43.7696
+      longitude: 11.2558
+    deliveryPointLabels:
+    - Osmannoro ZI
+    - Calenzano
+    - Scandicci ZI
+  - id: palerme
+    displayName: Palerme
+    country: Italie
+    location:
+      latitude: 38.1157
+      longitude: 13.3615
+    deliveryPointLabels:
+    - Port de Palerme
+    - Brancaccio ZI
+    - Carini ZI
+
+  # ── ESPAGNE ───────────────────────────────────────────────────────────────
+  - id: barcelona
+    displayName: Barcelone
+    country: Espagne
+    location:
+      latitude: 41.3851
+      longitude: 2.1734
+    deliveryPointLabels:
+    - Zona Franca
+    - El Prat Cargo
+    - Mercabarna
+  - id: madrid
+    displayName: Madrid
+    country: Espagne
+    location:
+      latitude: 40.4168
+      longitude: -3.7038
+    deliveryPointLabels:
+    - Coslada ZI
+    - Getafe ZI
+    - Corredor Henares
+  - id: valence_es
+    displayName: Valence
+    country: Espagne
+    location:
+      latitude: 39.4699
+      longitude: -0.3763
+    deliveryPointLabels:
+    - Port de Valence
+    - Parc Tecnologic
+    - Fuente del Jarro
+  - id: seville
+    displayName: "S\xE9ville"
+    country: Espagne
+    location:
+      latitude: 37.3891
+      longitude: -5.9845
+    deliveryPointLabels:
+    - Puerto de Sevilla
+    - Carretera Amarilla
+    - La Isla ZI
+  - id: bilbao
+    displayName: Bilbao
+    country: Espagne
+    location:
+      latitude: 43.263
+      longitude: -2.935
+    deliveryPointLabels:
+    - Port de Bilbao
+    - Ugao-Miraballes ZI
+    - Basauri ZI
+  - id: saragosse
+    displayName: Saragosse
+    country: Espagne
+    location:
+      latitude: 41.6488
+      longitude: -0.8891
+    deliveryPointLabels:
+    - PLAZA Logistica
+    - Malpica ZI
+    - Cogullada ZI
+
+  # ── PORTUGAL ──────────────────────────────────────────────────────────────
+  - id: lisbon
+    displayName: Lisbonne
+    country: Portugal
+    location:
+      latitude: 38.7223
+      longitude: -9.1393
+    deliveryPointLabels:
+    - Alcochete ZI
+    - Azambuja
+    - Vialonga
+  - id: porto
+    displayName: Porto
+    country: Portugal
+    location:
+      latitude: 41.1579
+      longitude: -8.6291
+    deliveryPointLabels:
+    - Maia ZI
+    - Valongo
+    - Leca da Palmeira
+  - id: faro
+    displayName: Faro
+    country: Portugal
+    location:
+      latitude: 37.0194
+      longitude: -7.9322
+    deliveryPointLabels:
+    - ZI de Faro
+    - Gambelas
+    - Lagoa ZI
+  - id: coimbra
+    displayName: Coimbra
+    country: Portugal
+    location:
+      latitude: 40.2033
+      longitude: -8.4103
+    deliveryPointLabels:
+    - Taveiro ZI
+    - Eiras ZI
+    - Antanhol
+
+  # ── SUISSE ────────────────────────────────────────────────────────────────
+  - id: geneva
+    displayName: "Gen\xE8ve"
+    country: Suisse
+    location:
+      latitude: 46.2044
+      longitude: 6.1432
+    deliveryPointLabels:
+    - ZI Meyrin
+    - Satigny
+    - Lancy
+  - id: zurich
+    displayName: Zurich
+    country: Suisse
+    location:
+      latitude: 47.3769
+      longitude: 8.5417
+    deliveryPointLabels:
+    - Kloten Cargo
+    - Altstetten ZI
+    - Spreitenbach
+  - id: bale
+    displayName: "B\xE2le"
+    country: Suisse
+    location:
+      latitude: 47.5596
+      longitude: 7.5886
+    deliveryPointLabels:
+    - Port du Rhin Basel
+    - Dreispitz ZI
+    - Pratteln
+  - id: berne
+    displayName: Berne
+    country: Suisse
+    location:
+      latitude: 46.948
+      longitude: 7.4474
+    deliveryPointLabels:
+    - Bern Expo ZI
+    - Bethlehem ZI
+    - Ostermundigen
+
+  # ── AUTRICHE ──────────────────────────────────────────────────────────────
+  - id: vienna
+    displayName: Vienne
+    country: Autriche
+    location:
+      latitude: 48.2082
+      longitude: 16.3738
+    deliveryPointLabels:
+    - ZI Inzersdorf
+    - Lobau
+    - Simmering ZI
+  - id: graz
+    displayName: Graz
+    country: Autriche
+    location:
+      latitude: 47.0707
+      longitude: 15.4395
+    deliveryPointLabels:
+    - Puntigam ZI
+    - Raaba ZI
+    - Seiersberg
+  - id: linz
+    displayName: Linz
+    country: Autriche
+    location:
+      latitude: 48.3069
+      longitude: 14.2858
+    deliveryPointLabels:
+    - Hafen Linz
+    - Chemiepark Linz
+    - Traun ZI
+  - id: salzburg
+    displayName: Salzbourg
+    country: Autriche
+    location:
+      latitude: 47.8095
+      longitude: 13.055
+    deliveryPointLabels:
+    - Wals-Siezenheim ZI
+    - Bergheim ZI
+    - Salzburg Cargo
+  - id: innsbruck
+    displayName: Innsbruck
+    country: Autriche
+    location:
+      latitude: 47.2692
+      longitude: 11.4041
+    deliveryPointLabels:
+    - Hall in Tirol ZI
+    - Patsch ZI
+    - Zirl Gewerbegebiet
+
+  # ── LUXEMBOURG ────────────────────────────────────────────────────────────
+  - id: luxembourg
+    displayName: Luxembourg
+    country: Luxembourg
+    location:
+      latitude: 49.6116
+      longitude: 6.1319
+    deliveryPointLabels:
+    - Gasperich
+    - Leudelange ZI
+    - Kirchberg
+
+  # ── ROYAUME-UNI ───────────────────────────────────────────────────────────
+  - id: london
+    displayName: Londres
+    country: Royaume-Uni
+    location:
+      latitude: 51.5074
+      longitude: -0.1278
+    deliveryPointLabels:
+    - Heathrow Cargo
+    - Park Royal ZI
+    - Tilbury Docks
+  - id: manchester
+    displayName: Manchester
+    country: Royaume-Uni
+    location:
+      latitude: 53.4808
+      longitude: -2.2426
+    deliveryPointLabels:
+    - Trafford Park
+    - Manchester Airport Cargo
+    - Salford Quays
+  - id: birmingham
+    displayName: Birmingham
+    country: Royaume-Uni
+    location:
+      latitude: 52.4862
+      longitude: -1.8904
+    deliveryPointLabels:
+    - Tyseley ZI
+    - Aston ZI
+    - Castle Bromwich
+  - id: glasgow
+    displayName: Glasgow
+    country: Royaume-Uni
+    location:
+      latitude: 55.8642
+      longitude: -4.2518
+    deliveryPointLabels:
+    - Clyde Port
+    - Hillington ZI
+    - Shieldhall
+  - id: leeds
+    displayName: Leeds
+    country: Royaume-Uni
+    location:
+      latitude: 53.8008
+      longitude: -1.5491
+    deliveryPointLabels:
+    - Morley ZI
+    - Hunslet ZI
+    - Tingley Goods
+  - id: bristol
+    displayName: Bristol
+    country: Royaume-Uni
+    location:
+      latitude: 51.4545
+      longitude: -2.5879
+    deliveryPointLabels:
+    - Avonmouth Docks
+    - Filton ZI
+    - Aztec West
+
+  # ── IRLANDE ───────────────────────────────────────────────────────────────
+  - id: dublin
+    displayName: Dublin
+    country: Irlande
+    location:
+      latitude: 53.3498
+      longitude: -6.2603
+    deliveryPointLabels:
+    - Dublin Port
+    - Blanchardstown ZI
+    - Tallaght ZI
+  - id: cork
+    displayName: Cork
+    country: Irlande
+    location:
+      latitude: 51.8985
+      longitude: -8.4756
+    deliveryPointLabels:
+    - Cork Port
+    - Little Island ZI
+    - Ringaskiddy
+
+  # ── DANEMARK ──────────────────────────────────────────────────────────────
+  - id: copenhague
+    displayName: Copenhague
+    country: Danemark
+    location:
+      latitude: 55.6761
+      longitude: 12.5683
+    deliveryPointLabels:
+    - Nordhavn
+    - Albertslund ZI
+    - Avedore ZI
+  - id: aarhus
+    displayName: Aarhus
+    country: Danemark
+    location:
+      latitude: 56.1629
+      longitude: 10.2039
+    deliveryPointLabels:
+    - Port d'Aarhus
+    - Viby ZI
+    - Hasselager
+  - id: odense
+    displayName: Odense
+    country: Danemark
+    location:
+      latitude: 55.4038
+      longitude: 10.4024
+    deliveryPointLabels:
+    - Port d'Odense
+    - Hollufgard ZI
+    - Munkebo
+
+  # ── SUEDE ─────────────────────────────────────────────────────────────────
+  - id: stockholm
+    displayName: Stockholm
+    country: "Su\xE8de"
+    location:
+      latitude: 59.3293
+      longitude: 18.0686
+    deliveryPointLabels:
+    - Arlanda Cargo
+    - Kungsangen ZI
+    - Rosersberg
+  - id: goteborg
+    displayName: "G\xF6teborg"
+    country: "Su\xE8de"
+    location:
+      latitude: 57.7089
+      longitude: 11.9746
+    deliveryPointLabels:
+    - Port de Goteborg
+    - Arendal ZI
+    - Molndal ZI
+  - id: malmo
+    displayName: "Malm\xF6"
+    country: "Su\xE8de"
+    location:
+      latitude: 55.605
+      longitude: 13.0038
+    deliveryPointLabels:
+    - Malmoe Port
+    - Fosie ZI
+    - Arloevsomrade
+  - id: uppsala
+    displayName: Uppsala
+    country: "Su\xE8de"
+    location:
+      latitude: 59.8586
+      longitude: 17.6389
+    deliveryPointLabels:
+    - Bolanderna ZI
+    - Fyrislund ZI
+    - Rasbo
+
+  # ── NORVEGE ───────────────────────────────────────────────────────────────
+  - id: oslo
+    displayName: Oslo
+    country: "Norv\xE8ge"
+    location:
+      latitude: 59.9139
+      longitude: 10.7522
+    deliveryPointLabels:
+    - Port d'Oslo
+    - Alnabru ZI
+    - Grorud
+  - id: bergen
+    displayName: Bergen
+    country: "Norv\xE8ge"
+    location:
+      latitude: 60.3913
+      longitude: 5.3221
+    deliveryPointLabels:
+    - Port de Bergen
+    - Nygardshoyden
+    - Minde ZI
+  - id: stavanger
+    displayName: Stavanger
+    country: "Norv\xE8ge"
+    location:
+      latitude: 58.97
+      longitude: 5.7331
+    deliveryPointLabels:
+    - Stavanger Port
+    - Forus ZI
+    - Sola ZI
+  - id: trondheim
+    displayName: Trondheim
+    country: "Norv\xE8ge"
+    location:
+      latitude: 63.4305
+      longitude: 10.3951
+    deliveryPointLabels:
+    - Port de Trondheim
+    - Leangen ZI
+    - Tiller ZI
+
+  # ── FINLANDE ──────────────────────────────────────────────────────────────
+  - id: helsinki
+    displayName: Helsinki
+    country: Finlande
+    location:
+      latitude: 60.1699
+      longitude: 24.9384
+    deliveryPointLabels:
+    - Vuosaari Port
+    - Pitajanmaki ZI
+    - Vantaa Cargo
+  - id: tampere
+    displayName: Tampere
+    country: Finlande
+    location:
+      latitude: 61.4978
+      longitude: 23.761
+    deliveryPointLabels:
+    - Hiedanranta ZI
+    - Tarastenjärvi ZI
+    - Pirkkala Cargo
+  - id: turku
+    displayName: Turku
+    country: Finlande
+    location:
+      latitude: 60.4518
+      longitude: 22.2666
+    deliveryPointLabels:
+    - Port de Turku
+    - Naantali ZI
+    - Raisio ZI
+  - id: oulu
+    displayName: Oulu
+    country: Finlande
+    location:
+      latitude: 65.0121
+      longitude: 25.4651
+    deliveryPointLabels:
+    - Port d'Oulu
+    - Kontinkangas ZI
+    - Kempele
+
+  # ── POLOGNE ───────────────────────────────────────────────────────────────
+  - id: warsaw
+    displayName: Varsovie
+    country: Pologne
+    location:
+      latitude: 52.2297
+      longitude: 21.0122
+    deliveryPointLabels:
+    - Targowek ZI
+    - Warsaw Hub Cargo
+    - Praga ZI
+  - id: krakow
+    displayName: Cracovie
+    country: Pologne
+    location:
+      latitude: 50.0647
+      longitude: 19.945
+    deliveryPointLabels:
+    - Nowa Huta ZI
+    - Balice Cargo
+    - Swoszowice ZI
+  - id: gdansk
+    displayName: Gdansk
+    country: Pologne
+    location:
+      latitude: 54.352
+      longitude: 18.6466
+    deliveryPointLabels:
+    - Port de Gdansk
+    - Zabianka ZI
+    - Pruszcz Gdanski
+  - id: wroclaw
+    displayName: Wroclaw
+    country: Pologne
+    location:
+      latitude: 51.1079
+      longitude: 17.0385
+    deliveryPointLabels:
+    - WSSE Invest Park
+    - Bielany Wroclawskie
+    - Strachowice Cargo
+  - id: poznan
+    displayName: Poznan
+    country: Pologne
+    location:
+      latitude: 52.4064
+      longitude: 16.9252
+    deliveryPointLabels:
+    - Grunwald ZI
+    - Swadzim SPDI
+    - Lubon ZI
+  - id: lodz
+    displayName: Lodz
+    country: Pologne
+    location:
+      latitude: 51.7592
+      longitude: 19.456
+    deliveryPointLabels:
+    - Lodz Special Economic Zone
+    - Rzgow ZI
+    - Konstantynow ZI
+  - id: katowice
+    displayName: Katowice
+    country: Pologne
+    location:
+      latitude: 50.2649
+      longitude: 19.0238
+    deliveryPointLabels:
+    - Sosnowiec ZI
+    - Tychy ZI
+    - Katowice Airport Cargo
+
+  # ── REPUBLIQUE TCHEQUE ────────────────────────────────────────────────────
+  - id: prague
+    displayName: Prague
+    country: "R\xE9publique Tch\xE8que"
+    location:
+      latitude: 50.0755
+      longitude: 14.4378
+    deliveryPointLabels:
+    - Letnany ZI
+    - Rudna ZI
+    - Uhrineves
+  - id: brno
+    displayName: Brno
+    country: "R\xE9publique Tch\xE8que"
+    location:
+      latitude: 49.1951
+      longitude: 16.6068
+    deliveryPointLabels:
+    - Modrice ZI
+    - Helenin ZI
+    - Slatina Cargo
+  - id: ostrava
+    displayName: Ostrava
+    country: "R\xE9publique Tch\xE8que"
+    location:
+      latitude: 49.8209
+      longitude: 18.2625
+    deliveryPointLabels:
+    - Ostrava-Bartovice ZI
+    - Hrabova ZI
+    - Mosnov Cargo
+
+  # ── SLOVAQUIE ────────────────────────────────────────────────────────────
+  - id: bratislava
+    displayName: Bratislava
+    country: Slovaquie
+    location:
+      latitude: 48.1486
+      longitude: 17.1077
+    deliveryPointLabels:
+    - Devinska Nova Ves ZI
+    - Vajnory ZI
+    - Bratislava Cargo
+  - id: kosice
+    displayName: Kosice
+    country: Slovaquie
+    location:
+      latitude: 48.7164
+      longitude: 21.2611
+    deliveryPointLabels:
+    - Barca ZI
+    - Sever ZI
+    - Kosice Steel ZI
+
+  # ── HONGRIE ───────────────────────────────────────────────────────────────
+  - id: budapest
+    displayName: Budapest
+    country: Hongrie
+    location:
+      latitude: 47.4979
+      longitude: 19.0402
+    deliveryPointLabels:
+    - Csepel Free Port
+    - Soroksari ZI
+    - Matyasfold ZI
+  - id: debrecen
+    displayName: Debrecen
+    country: Hongrie
+    location:
+      latitude: 47.5316
+      longitude: 21.6273
+    deliveryPointLabels:
+    - Airport Cargo Debrecen
+    - INPARK Debrecen
+    - Ondod ZI
+  - id: gyor
+    displayName: "Győr"
+    country: Hongrie
+    location:
+      latitude: 47.6875
+      longitude: 17.6504
+    deliveryPointLabels:
+    - Gyor ZI
+    - Audi Gyor
+    - Szentivanpuszta
+
+  # ── ROUMANIE ──────────────────────────────────────────────────────────────
+  - id: bucharest
+    displayName: Bucarest
+    country: Roumanie
+    location:
+      latitude: 44.4268
+      longitude: 26.1025
+    deliveryPointLabels:
+    - Militari ZI
+    - Otopeni Cargo
+    - Popesti-Leordeni ZI
+  - id: cluj
+    displayName: Cluj-Napoca
+    country: Roumanie
+    location:
+      latitude: 46.7712
+      longitude: 23.6236
+    deliveryPointLabels:
+    - Tetarom ZI
+    - Apahida ZI
+    - Floresti ZI
+  - id: timisoara
+    displayName: "Timişoara"
+    country: Roumanie
+    location:
+      latitude: 45.7489
+      longitude: 21.2087
+    deliveryPointLabels:
+    - Ghiroda ZI
+    - Freidorf ZI
+    - Timisoara Airport ZI
+  - id: iasi
+    displayName: Iasi
+    country: Roumanie
+    location:
+      latitude: 47.1585
+      longitude: 27.6014
+    deliveryPointLabels:
+    - Dancu ZI
+    - Rediu ZI
+    - Iasi Cargo
+  - id: constanta
+    displayName: "Constanţa"
+    country: Roumanie
+    location:
+      latitude: 44.1733
+      longitude: 28.6383
+    deliveryPointLabels:
+    - Port de Constanta
+    - Palas ZI
+    - Agigea Terminal
+
+  # ── BULGARIE ──────────────────────────────────────────────────────────────
+  - id: sofia
+    displayName: Sofia
+    country: Bulgarie
+    location:
+      latitude: 42.6977
+      longitude: 23.3219
+    deliveryPointLabels:
+    - Buhovo ZI
+    - Kremikovtsi ZI
+    - Sofia Airport Cargo
+  - id: plovdiv
+    displayName: Plovdiv
+    country: Bulgarie
+    location:
+      latitude: 42.1354
+      longitude: 24.7453
+    deliveryPointLabels:
+    - Trakia Economic Zone
+    - Plovdiv Airport ZI
+    - Kuklen ZI
+  - id: varna
+    displayName: Varna
+    country: Bulgarie
+    location:
+      latitude: 43.2141
+      longitude: 27.9147
+    deliveryPointLabels:
+    - Port de Varna
+    - Free Zone Varna
+    - Devnya ZI
+
+  # ── GRECE ─────────────────────────────────────────────────────────────────
+  - id: athenes
+    displayName: "Ath\xE8nes"
+    country: "Gr\xE8ce"
+    location:
+      latitude: 37.9838
+      longitude: 23.7275
+    deliveryPointLabels:
+    - Port du Piree
+    - Aspropyrgos ZI
+    - Elefsina ZI
+  - id: thessalonique
+    displayName: Thessalonique
+    country: "Gr\xE8ce"
+    location:
+      latitude: 40.6401
+      longitude: 22.9444
+    deliveryPointLabels:
+    - Port de Thessalonique
+    - Sindos ZI
+    - Kalohori ZI
+  - id: patras
+    displayName: Patras
+    country: "Gr\xE8ce"
+    location:
+      latitude: 38.2466
+      longitude: 21.7346
+    deliveryPointLabels:
+    - Port de Patras
+    - Rion ZI
+    - Patras Cargo
+
+  # ── CROATIE ───────────────────────────────────────────────────────────────
+  - id: zagreb
+    displayName: Zagreb
+    country: Croatie
+    location:
+      latitude: 45.815
+      longitude: 15.9819
+    deliveryPointLabels:
+    - Jankomir ZI
+    - Lucko ZI
+    - Zagreb Cargo
+  - id: split
+    displayName: Split
+    country: Croatie
+    location:
+      latitude: 43.5081
+      longitude: 16.4402
+    deliveryPointLabels:
+    - Port de Split
+    - Karepovac ZI
+    - Solin
+  - id: rijeka
+    displayName: Rijeka
+    country: Croatie
+    location:
+      latitude: 45.3271
+      longitude: 14.4422
+    deliveryPointLabels:
+    - Port de Rijeka
+    - Kukuljanovo ZI
+    - Bakar Terminal
+
+  # ── SLOVENIE ──────────────────────────────────────────────────────────────
+  - id: ljubljana
+    displayName: Ljubljana
+    country: "Slov\xE9nie"
+    location:
+      latitude: 46.0569
+      longitude: 14.5058
+    deliveryPointLabels:
+    - Brdo ZI
+    - Trzin ZI
+    - Ljubljana Cargo
+  - id: maribor
+    displayName: Maribor
+    country: "Slov\xE9nie"
+    location:
+      latitude: 46.5547
+      longitude: 15.6459
+    deliveryPointLabels:
+    - Tezno ZI
+    - Hoce ZI
+    - Maribor Airport
+
+  # ── SERBIE ────────────────────────────────────────────────────────────────
+  - id: belgrade
+    displayName: Belgrade
+    country: Serbie
+    location:
+      latitude: 44.7866
+      longitude: 20.4489
+    deliveryPointLabels:
+    - Makis ZI
+    - Novi Beograd ZI
+    - Belgrade Cargo
+  - id: novi_sad
+    displayName: Novi Sad
+    country: Serbie
+    location:
+      latitude: 45.2671
+      longitude: 19.8335
+    deliveryPointLabels:
+    - Port de Novi Sad
+    - Sajam ZI
+    - Industrijka Zona Sever
+  - id: nis
+    displayName: "Niš"
+    country: Serbie
+    location:
+      latitude: 43.3209
+      longitude: 21.8958
+    deliveryPointLabels:
+    - Crvena Zastava ZI
+    - Polet ZI
+    - Nis Airport ZI
+
+  # ── BOSNIE-HERZEGOVINE ────────────────────────────────────────────────────
+  - id: sarajevo
+    displayName: Sarajevo
+    country: Bosnie-H.
+    location:
+      latitude: 43.8564
+      longitude: 18.4131
+    deliveryPointLabels:
+    - Rajlovac ZI
+    - Blazuj
+    - Stup ZI
+  - id: banja_luka
+    displayName: Banja Luka
+    country: Bosnie-H.
+    location:
+      latitude: 44.7722
+      longitude: 17.191
+    deliveryPointLabels:
+    - Zaluzani ZI
+    - Ramici ZI
+    - Banja Luka Cargo
+
+  # ── MONTENEGRO ────────────────────────────────────────────────────────────
+  - id: podgorica
+    displayName: Podgorica
+    country: "Mont\xE9n\xE9gro"
+    location:
+      latitude: 42.4304
+      longitude: 19.2594
+    deliveryPointLabels:
+    - Industrijska Zona
+    - Golubovci Cargo
+    - Tuzi ZI
+
+  # ── ALBANIE ───────────────────────────────────────────────────────────────
+  - id: tirana
+    displayName: Tirana
+    country: Albanie
+    location:
+      latitude: 41.3275
+      longitude: 19.8187
+    deliveryPointLabels:
+    - ZI Kashar
+    - Tirana International Cargo
+    - Kombinati ZI
+  - id: durres
+    displayName: "Durr\xEBs"
+    country: Albanie
+    location:
+      latitude: 41.3246
+      longitude: 19.4565
+    deliveryPointLabels:
+    - Port de Durres
+    - Shijak ZI
+    - Spitalle Terminal
+
+  # ── MACEDOINE DU NORD ─────────────────────────────────────────────────────
+  - id: skopje
+    displayName: Skopje
+    country: "Mac\xE9doine du Nord"
+    location:
+      latitude: 41.9981
+      longitude: 21.4254
+    deliveryPointLabels:
+    - Bunyakovec ZI
+    - Ramkovski ZI
+    - Skopje Airport Cargo
+
+  # ── KOSOVO ────────────────────────────────────────────────────────────────
+  - id: pristina
+    displayName: Pristina
+    country: Kosovo
+    location:
+      latitude: 42.6629
+      longitude: 21.1655
+    deliveryPointLabels:
+    - Pristina Airport ZI
+    - Gracanica ZI
+    - Obiliq ZI
+
+  # ── MOLDAVIE ──────────────────────────────────────────────────────────────
+  - id: chisinau
+    displayName: "Chişinău"
+    country: Moldavie
+    location:
+      latitude: 47.0105
+      longitude: 28.8638
+    deliveryPointLabels:
+    - "Zona Libera Chisinau"
+    - Ciocana ZI
+    - Cricova ZI
+  - id: balti
+    displayName: "Bălţi"
+    country: Moldavie
+    location:
+      latitude: 47.7617
+      longitude: 27.9289
+    deliveryPointLabels:
+    - ZI Nord Balti
+    - Glodeni ZI
+    - Falesti
+
+  # ── UKRAINE ───────────────────────────────────────────────────────────────
+  - id: kyiv
+    displayName: Kiev
+    country: Ukraine
+    location:
+      latitude: 50.4501
+      longitude: 30.5234
+    deliveryPointLabels:
+    - Boryspil Cargo
+    - Podil ZI
+    - Brovary ZI
+  - id: lviv
+    displayName: Lviv
+    country: Ukraine
+    location:
+      latitude: 49.8397
+      longitude: 24.0297
+    deliveryPointLabels:
+    - Ryasne ZI
+    - Sknilov Cargo
+    - Lviv Airport ZI
+  - id: odessa
+    displayName: Odessa
+    country: Ukraine
+    location:
+      latitude: 46.4825
+      longitude: 30.7233
+    deliveryPointLabels:
+    - Port d'Odessa
+    - Kotovskogo ZI
+    - Chornomorsk Terminal
+  - id: kharkiv
+    displayName: Kharkiv
+    country: Ukraine
+    location:
+      latitude: 49.9935
+      longitude: 36.2304
+    deliveryPointLabels:
+    - Osnova ZI
+    - Kharkiv Airport Cargo
+    - Mala Danylivka ZI
+  - id: dnipro
+    displayName: Dnipro
+    country: Ukraine
+    location:
+      latitude: 48.4647
+      longitude: 35.0462
+    deliveryPointLabels:
+    - Industrialny ZI
+    - Dnipro Port
+    - Pidhorodne ZI
+
+  # ── BIELORUSSIE ───────────────────────────────────────────────────────────
+  - id: minsk
+    displayName: Minsk
+    country: "Bi\xE9lorussie"
+    location:
+      latitude: 53.9045
+      longitude: 27.5615
+    deliveryPointLabels:
+    - Minsk Free Economic Zone
+    - Shabany ZI
+    - Kolyadichi ZI
+  - id: grodno
+    displayName: Grodno
+    country: "Bi\xE9lorussie"
+    location:
+      latitude: 53.6884
+      longitude: 23.8258
+    deliveryPointLabels:
+    - Grodno Free Zone
+    - Korolev ZI
+    - Skidel ZI
+
+  # ── LITUANIE ──────────────────────────────────────────────────────────────
+  - id: vilnius
+    displayName: Vilnius
+    country: Lituanie
+    location:
+      latitude: 54.6872
+      longitude: 25.2797
+    deliveryPointLabels:
+    - Vilnius Cargo
+    - Ateities Pl ZI
+    - Vaidotai ZI
+  - id: kaunas
+    displayName: Kaunas
+    country: Lituanie
+    location:
+      latitude: 54.8985
+      longitude: 23.9036
+    deliveryPointLabels:
+    - Kaunas Free Economic Zone
+    - Aleksotas ZI
+    - Kaunas Cargo
+  - id: klaipeda
+    displayName: "Klaipėda"
+    country: Lituanie
+    location:
+      latitude: 55.7033
+      longitude: 21.1443
+    deliveryPointLabels:
+    - Port de Klaipeda
+    - Free Economic Zone Klaipeda
+    - Sventoji Terminal
+
+  # ── LETTONIE ──────────────────────────────────────────────────────────────
+  - id: riga
+    displayName: Riga
+    country: Lettonie
+    location:
+      latitude: 56.9496
+      longitude: 24.1052
+    deliveryPointLabels:
+    - Port de Riga
+    - Freeport Riga
+    - Maskavas ZI
+  - id: daugavpils
+    displayName: Daugavpils
+    country: Lettonie
+    location:
+      latitude: 55.8749
+      longitude: 26.5361
+    deliveryPointLabels:
+    - Daugavpils SEZ
+    - Stropu ZI
+    - Medumu ZI
+
+  # ── ESTONIE ───────────────────────────────────────────────────────────────
+  - id: tallinn
+    displayName: Tallinn
+    country: Estonie
+    location:
+      latitude: 59.437
+      longitude: 24.7536
+    deliveryPointLabels:
+    - Port de Tallinn
+    - Ulemiste ZI
+    - Lasnamae ZI
+  - id: tartu
+    displayName: Tartu
+    country: Estonie
+    location:
+      latitude: 58.3776
+      longitude: 26.7291
+    deliveryPointLabels:
+    - Tartu Cargo
+    - Ropka ZI
+    - Annelinn ZI
+
+  # ── ISLANDE ───────────────────────────────────────────────────────────────
+  - id: reykjavik
+    displayName: Reykjavik
+    country: Islande
+    location:
+      latitude: 64.1355
+      longitude: -21.8954
+    deliveryPointLabels:
+    - Sundahofn Port
+    - Keflavik Cargo
+    - Hafnarfjordur ZI
+
+  # ── MALTE ─────────────────────────────────────────────────────────────────
+  - id: valletta
+    displayName: La Valette
+    country: Malte
+    location:
+      latitude: 35.8997
+      longitude: 14.5147
+    deliveryPointLabels:
+    - Port Grand Harbour
+    - Hal Far ZI
+    - Marsa ZI
+
+  # ── CHYPRE ────────────────────────────────────────────────────────────────
+  - id: nicosia
+    displayName: Nicosie
+    country: Chypre
+    location:
+      latitude: 35.1856
+      longitude: 33.3823
+    deliveryPointLabels:
+    - Strovolos ZI
+    - Latsia ZI
+    - Ergates ZI
+  - id: limassol
+    displayName: Limassol
+    country: Chypre
+    location:
+      latitude: 34.6786
+      longitude: 33.0413
+    deliveryPointLabels:
+    - Port de Limassol
+    - Zakaki ZI
+    - Polemidia ZI

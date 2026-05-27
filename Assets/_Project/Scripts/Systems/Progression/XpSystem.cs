@@ -10,15 +10,7 @@ namespace TransportManager.Systems.Progression
 
         public XpSystem(GameSaveData save) { _save = save; }
 
-        public int CompanyXp
-        {
-            get
-            {
-                int sum = 0;
-                for (int i = 0; i < _save.hiredDrivers.Count; i++) sum += _save.hiredDrivers[i].xp;
-                return sum;
-            }
-        }
+        public int CompanyXp => _save.companyXp;
 
         public int CompanyLevel => XpCurve.CompanyLevelFromXp(CompanyXp);
 
@@ -33,6 +25,13 @@ namespace TransportManager.Systems.Progression
         }
 
         public bool IsVehicleUnlocked(int minLevelRequired) => CompanyLevel >= minLevelRequired;
+
+        public void AddCompanyXpForContract(float distanceKm)
+        {
+            int gain = XpCurve.ContractXpReward(distanceKm);
+            _save.companyXp += gain;
+            GameEvents.RaiseCompanyXpChanged(CompanyXp, CompanyLevel);
+        }
 
         public void NotifyChanged()
         {

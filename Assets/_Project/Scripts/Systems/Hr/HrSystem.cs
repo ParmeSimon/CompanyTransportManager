@@ -153,6 +153,13 @@ namespace TransportManager.Systems.Hr
             return true;
         }
 
+        /// <summary>Supprime définitivement un conducteur suite à un accident mortel.</summary>
+        public void KillDriver(DriverInstance driver)
+        {
+            RemoveFromPayroll(driver);
+            GameEvents.RaiseDriverDied(driver);
+        }
+
         private void RemoveFromPayroll(DriverInstance driver)
         {
             if (!string.IsNullOrEmpty(driver.assignedVehicleInstanceId))

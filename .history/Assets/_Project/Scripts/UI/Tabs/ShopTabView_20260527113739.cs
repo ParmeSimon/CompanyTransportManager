@@ -288,7 +288,7 @@ namespace TransportManager.UI.Tabs
 
         private void BuildStarterOffersSection(Transform parent)
         {
-            // Header
+            // Header avec countdown intégré
             var head = MakeRow(parent, height: 24, spacing: 10);
             head.GetComponent<HorizontalLayoutGroup>().padding = new RectOffset(2, 2, 0, 0);
 
@@ -297,74 +297,65 @@ namespace TransportManager.UI.Tabs
             lbl.characterSpacing = 5f;
             lbl.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
 
-            // Rangée de 2 offres IAP
+            _starterCountdownLabel = AddTMP("Countdown", head.transform, "", 11, FontStyles.Bold, ColOrange);
+            _starterCountdownLabel.alignment = TextAlignmentOptions.MidlineRight;
+            _starterCountdownLabel.gameObject.AddComponent<LayoutElement>().preferredWidth = 180;
+
+            // Rangée de 2 offres
             var row = BuildPairRow(parent);
 
-            _starterPackCountdownLabel = BuildOfferCard(row.transform,
+            BuildOfferCard(row.transform,
                 offerId:       "starter_pack",
                 accent:        ColPurple,
                 resourceImage: "UI/Shop/offer_starter",
-                title:         "PACK DE DÉMARRAGE",
-                bigValue:      "15K $",
-                items:         new[] { "15 000 $", "15 lingots", "Camion exclusif", "-25% maintenance 7j" },
-                badge:         "2 SEM.",
+                title:         "PACK STARTER",
+                bigValue:      "12K $",
+                description:   "8 000 $ + 4 lingots",
+                badge:         "x3",
                 badgeColor:    ColRed,
-                realPriceText: "4,99 €",
-                dollarsReward: 15000,
-                goldReward:    15,
-                isAvailable:   s => s.IsStarterPackAvailable,
-                getTimeLeft:   s => s.StarterPackTimeLeft);
+                cost:          "4 000 $",
+                dollarsCost:   4000,
+                dollarsReward: 8000,
+                goldReward:    4);
 
-            _beginnerPackCountdownLabel = BuildOfferCard(row.transform,
-                offerId:       "beginner_pack",
+            BuildOfferCard(row.transform,
+                offerId:       "weekend_boost",
                 accent:        ColPurple,
-                resourceImage: "UI/Shop/offer_beginner",
-                title:         "PACK DE DÉBUTANT",
-                bigValue:      "40K $",
-                items:         new[] { "40 000 $", "30 lingots", "Camion exclusif", "Conducteur exclusif", "+1 emplacement", "-50% maintenance" },
-                badge:         "3 SEM.",
+                resourceImage: "UI/Shop/offer_weekend",
+                title:         "BOOST WEEK-END",
+                bigValue:      "8 ◆",
+                description:   "Lingots d'or",
+                badge:         "+33%",
                 badgeColor:    ColOrange,
-                realPriceText: "9,99 €",
-                dollarsReward: 40000,
-                goldReward:    30,
-                isAvailable:   s => s.IsBeginnerPackAvailable,
-                getTimeLeft:   s => s.BeginnerPackTimeLeft);
+                cost:          "6 000 $",
+                dollarsCost:   6000,
+                dollarsReward: 0,
+                goldReward:    8);
         }
 
-        private void RefreshPackCountdowns()
+        private void RefreshStarterCountdown()
         {
-            RefreshPackCountdown(_starterPackCountdownLabel,
-                s => s.IsStarterPackAvailable, s => s.StarterPackTimeLeft);
-            RefreshPackCountdown(_beginnerPackCountdownLabel,
-                s => s.IsBeginnerPackAvailable, s => s.BeginnerPackTimeLeft);
-        }
-
-        private void RefreshPackCountdown(TMP_Text label,
-            Func<ShopSystem, bool> isAvailable, Func<ShopSystem, TimeSpan> getTimeLeft)
-        {
-            if (label == null) return;
+            if (_starterCountdownLabel == null) return;
             var shop = ServiceLocator.Get<ShopSystem>();
             if (shop == null) return;
 
-            if (isAvailable(shop))
+            if (shop.AreStarterOffersAvailable)
             {
-                var left = getTimeLeft(shop);
-                label.color = left.TotalDays > 3 ? ColOrange : ColRed;
-                label.text  = $"EXPIRE {FormatStarterCountdown(left)}";
+                var left = shop.StarterOffersTimeLeft;
+                _starterCountdownLabel.color = left.TotalDays > 3 ? ColOrange : ColRed;
+                _starterCountdownLabel.text  = $"EXPIRE DANS {FormatStarterCountdown(left)}";
             }
             else
             {
-                label.color = TextMuted;
-                label.text  = "EXPIRÉE";
+                _starterCountdownLabel.color = TextMuted;
+                _starterCountdownLabel.text  = "EXPIRÉES";
             }
         }
 
-        private TMP_Text BuildOfferCard(Transform parent, string offerId, Color32 accent,
-                                       string resourceImage, string title, string bigValue,
-                                       string[] items, string badge, Color32 badgeColor,
-                                       string realPriceText, int dollarsReward, int goldReward,
-                                       Func<ShopSystem, bool> isAvailable,
-                                       Func<ShopSystem, TimeSpan> getTimeLeft)
+        private void BuildOfferCard(Transform parent, string offerId, Color32 accent,
+                                    string resourceImage, string title, string bigValue,
+                                    string description, string badge, Color32 badgeColor,
+                                    string cost, int dollarsCost, int dollarsReward, int goldReward)
         {
             var card = MakeRoundedCard(parent, BgCard, 0);
             var vlg = card.GetComponent<VerticalLayoutGroup>();
@@ -423,27 +414,18 @@ namespace TransportManager.UI.Tabs
             var valueLbl = AddTMP("Big", infoGo.transform, bigValue, 26, FontStyles.Bold, accent);
             valueLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 32;
 
-            foreach (var item in items)
-            {
-                var itemLbl = AddTMP("Item", infoGo.transform, "· " + item, 11, FontStyles.Normal, TextSec);
-                itemLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 14;
-            }
-
-            // Compte à rebours par pack
-            var countdownLbl = AddTMP("Countdown", infoGo.transform, "", 10, FontStyles.Normal, ColOrange);
-            countdownLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 14;
+            var descLbl = AddTMP("Desc", infoGo.transform, description, 12, FontStyles.Normal, TextMuted);
+            descLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 16;
 
             var spacerGo = MakeGO("Sp", infoGo.transform);
-            spacerGo.AddComponent<LayoutElement>().preferredHeight = 6;
+            spacerGo.AddComponent<LayoutElement>().preferredHeight = 8;
 
-            // CTA — achat avec argent réel (IAP)
-            var cta = BuildCtaButton(infoGo.transform, "ACHETER  ·  " + realPriceText, accent, Color.white, 44, null);
+            // CTA
+            var cta = BuildCtaButton(infoGo.transform, "ACHETER  ·  " + cost, accent, Color.white, 44, null);
             cta.button.onClick.AddListener(() =>
             {
                 var shop = ServiceLocator.Get<ShopSystem>();
-                // TODO: déclencher la validation IAP store (Google Play / App Store) avant d'appeler cette méthode.
-                // En attendant l'intégration IAP complète, on crédite directement à des fins de test.
-                if (shop != null && shop.TryClaimSpecialOfferIAP(offerId, dollarsReward, goldReward))
+                if (shop != null && shop.TryClaimSpecialOffer(offerId, dollarsCost, dollarsReward, goldReward))
                     RefreshAll();
             });
 
@@ -476,52 +458,41 @@ namespace TransportManager.UI.Tabs
             // Refresh callback
             Action refresh = () =>
             {
-                var shop = ServiceLocator.Get<ShopSystem>();
-                if (shop == null) return;
+                var shop   = ServiceLocator.Get<ShopSystem>();
+                var wallet = ServiceLocator.Get<WalletSystem>();
+                if (shop == null || wallet == null) return;
 
-                bool claimed = shop.IsSpecialOfferClaimed(offerId);
-                bool expired = !isAvailable(shop);
+                bool claimed   = shop.IsSpecialOfferClaimed(offerId);
+                bool expired   = !shop.AreStarterOffersAvailable;
+                bool canAfford = wallet.CanAfford(Enums.CurrencyType.Dollar, dollarsCost);
 
                 if (claimed)
                 {
                     overlay.SetActive(true);
-                    lockTitle.text  = "✓  OBTENUE";
+                    lockTitle.text = "✓  OBTENUE";
                     lockTitle.color = ColGreen;
-                    lockSub.text    = "Cette offre a été utilisée";
+                    lockSub.text   = "Cette offre a été utilisée";
                 }
                 else if (expired)
                 {
                     overlay.SetActive(true);
-                    lockTitle.text  = "OFFRE EXPIRÉE";
+                    lockTitle.text = "OFFRE EXPIRÉE";
                     lockTitle.color = TextSec;
-                    lockSub.text    = "Offre à durée limitée";
+                    lockSub.text   = "Réservée aux 2 premières semaines";
                 }
                 else
                 {
                     overlay.SetActive(false);
-                    cta.button.interactable = true;
-                    cta.bg.color    = accent;
-                    cta.label.color = Color.white;
-                    cta.label.text  = "ACHETER  ·  " + realPriceText;
-                }
-
-                // Countdown inline dans la carte
-                if (isAvailable(shop))
-                {
-                    var left = getTimeLeft(shop);
-                    countdownLbl.color = left.TotalDays > 3 ? ColOrange : ColRed;
-                    countdownLbl.text  = $"EXPIRE {FormatStarterCountdown(left)}";
-                }
-                else
-                {
-                    countdownLbl.color = TextMuted;
-                    countdownLbl.text  = "EXPIRÉE";
+                    cta.button.interactable = canAfford;
+                    cta.bg.color    = canAfford ? accent : ColDisabled;
+                    cta.label.color = canAfford ? Color.white : TextSec;
+                    cta.label.text  = canAfford
+                        ? "ACHETER  ·  " + cost
+                        : cost + "  (insuffisant)";
                 }
             };
             _refreshActions.Add(refresh);
             refresh();
-
-            return countdownLbl;
         }
 
         // ╔════════════════════════════════════════════════════════════════════╗
@@ -539,11 +510,11 @@ namespace TransportManager.UI.Tabs
 
             var r1 = BuildPairRow(parent);
             BuildPackCard(r1.transform, "PETIT SAC",    20,  "1,99 €",  null,    "UI/Shop/pack_small");
-            BuildPackCard(r1.transform, "COFFRE",       50,  "4,99 €",  "+10%",  "UI/Shop/pack_medium");
+            BuildPackCard(r1.transform, "COFFRE",       55,  "4,99 €",  "+10%",  "UI/Shop/pack_medium");
 
             var r2 = BuildPairRow(parent);
-            BuildPackCard(r2.transform, "GRAND COFFRE", 100, "9,99 €",  "+20%",  "UI/Shop/pack_large");
-            BuildPackCard(r2.transform, "TRÉSOR",       280, "24,99 €", "+40%",  "UI/Shop/pack_mega");
+            BuildPackCard(r2.transform, "GRAND COFFRE", 120, "9,99 €",  "+20%",  "UI/Shop/pack_large");
+            BuildPackCard(r2.transform, "TRÉSOR",       350, "24,99 €", "+45%",  "UI/Shop/pack_mega");
         }
 
         private void BuildPackCard(Transform parent, string title, int goldAmount, string priceText,

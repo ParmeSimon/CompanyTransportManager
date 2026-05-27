@@ -54,12 +54,16 @@ namespace TransportManager.Events
         public static event Action<DriverInstance> OnDriverAssigned;
         public static event Action<DriverInstance> OnDriverXpChanged;
         public static event Action<DriverInstance> OnDriverWageChanged;
+        public static event Action<DriverInstance, Entities.Drivers.AccidentResult> OnDriverAccident;
+        public static event Action<DriverInstance> OnDriverDied;
         public static void RaiseDriverHired(DriverInstance d) => OnDriverHired?.Invoke(d);
         public static void RaiseDriverFired(DriverInstance d) => OnDriverFired?.Invoke(d);
         public static void RaiseDriverResigned(DriverInstance d) => OnDriverResigned?.Invoke(d);
         public static void RaiseDriverAssigned(DriverInstance d) => OnDriverAssigned?.Invoke(d);
         public static void RaiseDriverXpChanged(DriverInstance d) => OnDriverXpChanged?.Invoke(d);
         public static void RaiseDriverWageChanged(DriverInstance d) => OnDriverWageChanged?.Invoke(d);
+        public static void RaiseDriverAccident(DriverInstance d, Entities.Drivers.AccidentResult r) => OnDriverAccident?.Invoke(d, r);
+        public static void RaiseDriverDied(DriverInstance d) => OnDriverDied?.Invoke(d);
 
         // Progression
         public static event Action<int, int> OnCompanyXpChanged;
@@ -68,6 +72,10 @@ namespace TransportManager.Events
         // UI
         public static event Action<TabType> OnTabChanged;
         public static void RaiseTabChanged(TabType t) => OnTabChanged?.Invoke(t);
+
+        // Map — visualisation de route
+        public static event Action<ContractData> OnShowContractRoute;
+        public static void RaiseShowContractRoute(ContractData def) => OnShowContractRoute?.Invoke(def);
 
         // Tutorial / Buildings
         public static event Action OnCompanyCreated;

@@ -74,6 +74,33 @@ namespace TransportManager.Systems.Map.Visualization
         public void ZoomIn() => SetView(centerLatitude, centerLongitude, zoom + 1);
         public void ZoomOut() => SetView(centerLatitude, centerLongitude, zoom - 1);
 
+        /// Zoom et centre la vue de sorte que les deux points soient visibles avec une marge.
+        public void FitBounds(double latA, double lonA, double latB, double lonB)
+        {
+            if (config == null || tilesContainer == null) return;
+
+            double cLat = (latA + latB) / 2.0;
+            double cLon = (lonA + lonB) / 2.0;
+
+            var rect = tilesContainer.rect;
+            int ts = config.tilePixelSize;
+            // On vise 65 % de la surface (marge de 35 %)
+            float maxW = rect.width  * 0.65f;
+            float maxH = rect.height * 0.65f;
+
+            int targetZoom = config.minZoom;
+            for (int z = config.maxZoom; z >= config.minZoom; z--)
+            {
+                var (axPx, ayPx) = TileCoordinate.LatLonToPixel(latA, lonA, z, ts);
+                var (bxPx, byPx) = TileCoordinate.LatLonToPixel(latB, lonB, z, ts);
+                double spanX = Math.Abs(axPx - bxPx);
+                double spanY = Math.Abs(ayPx - byPx);
+                if (spanX <= maxW && spanY <= maxH) { targetZoom = z; break; }
+            }
+
+            SetView(cLat, cLon, targetZoom);
+        }
+
         private int ComputeMinZoom()
         {
             if (config == null || tilesContainer == null) return 1;

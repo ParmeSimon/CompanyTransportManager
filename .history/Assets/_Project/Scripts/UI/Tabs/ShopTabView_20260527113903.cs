@@ -305,13 +305,13 @@ namespace TransportManager.UI.Tabs
                 accent:        ColPurple,
                 resourceImage: "UI/Shop/offer_starter",
                 title:         "PACK DE DÉMARRAGE",
-                bigValue:      "15K $",
-                items:         new[] { "15 000 $", "15 lingots", "Camion exclusif", "-25% maintenance 7j" },
+                bigValue:      "12K $",
+                description:   "8 000 $ + 4 lingots",
                 badge:         "2 SEM.",
                 badgeColor:    ColRed,
-                realPriceText: "4,99 €",
-                dollarsReward: 15000,
-                goldReward:    15,
+                realPriceText: "1,99 €",
+                dollarsReward: 8000,
+                goldReward:    4,
                 isAvailable:   s => s.IsStarterPackAvailable,
                 getTimeLeft:   s => s.StarterPackTimeLeft);
 
@@ -320,13 +320,13 @@ namespace TransportManager.UI.Tabs
                 accent:        ColPurple,
                 resourceImage: "UI/Shop/offer_beginner",
                 title:         "PACK DE DÉBUTANT",
-                bigValue:      "40K $",
-                items:         new[] { "40 000 $", "30 lingots", "Camion exclusif", "Conducteur exclusif", "+1 emplacement", "-50% maintenance" },
+                bigValue:      "20K $",
+                description:   "12 000 $ + 8 lingots",
                 badge:         "3 SEM.",
                 badgeColor:    ColOrange,
-                realPriceText: "9,99 €",
-                dollarsReward: 40000,
-                goldReward:    30,
+                realPriceText: "2,99 €",
+                dollarsReward: 12000,
+                goldReward:    8,
                 isAvailable:   s => s.IsBeginnerPackAvailable,
                 getTimeLeft:   s => s.BeginnerPackTimeLeft);
         }
@@ -361,7 +361,7 @@ namespace TransportManager.UI.Tabs
 
         private TMP_Text BuildOfferCard(Transform parent, string offerId, Color32 accent,
                                        string resourceImage, string title, string bigValue,
-                                       string[] items, string badge, Color32 badgeColor,
+                                       string description, string badge, Color32 badgeColor,
                                        string realPriceText, int dollarsReward, int goldReward,
                                        Func<ShopSystem, bool> isAvailable,
                                        Func<ShopSystem, TimeSpan> getTimeLeft)
@@ -423,11 +423,8 @@ namespace TransportManager.UI.Tabs
             var valueLbl = AddTMP("Big", infoGo.transform, bigValue, 26, FontStyles.Bold, accent);
             valueLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 32;
 
-            foreach (var item in items)
-            {
-                var itemLbl = AddTMP("Item", infoGo.transform, "· " + item, 11, FontStyles.Normal, TextSec);
-                itemLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 14;
-            }
+            var descLbl = AddTMP("Desc", infoGo.transform, description, 12, FontStyles.Normal, TextMuted);
+            descLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 16;
 
             // Compte à rebours par pack
             var countdownLbl = AddTMP("Countdown", infoGo.transform, "", 10, FontStyles.Normal, ColOrange);
@@ -539,11 +536,11 @@ namespace TransportManager.UI.Tabs
 
             var r1 = BuildPairRow(parent);
             BuildPackCard(r1.transform, "PETIT SAC",    20,  "1,99 €",  null,    "UI/Shop/pack_small");
-            BuildPackCard(r1.transform, "COFFRE",       50,  "4,99 €",  "+10%",  "UI/Shop/pack_medium");
+            BuildPackCard(r1.transform, "COFFRE",       55,  "4,99 €",  "+10%",  "UI/Shop/pack_medium");
 
             var r2 = BuildPairRow(parent);
-            BuildPackCard(r2.transform, "GRAND COFFRE", 100, "9,99 €",  "+20%",  "UI/Shop/pack_large");
-            BuildPackCard(r2.transform, "TRÉSOR",       280, "24,99 €", "+40%",  "UI/Shop/pack_mega");
+            BuildPackCard(r2.transform, "GRAND COFFRE", 120, "9,99 €",  "+20%",  "UI/Shop/pack_large");
+            BuildPackCard(r2.transform, "TRÉSOR",       350, "24,99 €", "+45%",  "UI/Shop/pack_mega");
         }
 
         private void BuildPackCard(Transform parent, string title, int goldAmount, string priceText,

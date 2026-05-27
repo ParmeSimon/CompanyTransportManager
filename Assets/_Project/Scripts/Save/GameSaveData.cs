@@ -14,10 +14,12 @@ namespace TransportManager.Save
     {
         public int saveVersion = 1;
         public long lastSaveUtcTicks;
+        public long installDateUtcTicks;
 
         public CompanyProfile company = new CompanyProfile();
         public int dollars = 15000;
         public int goldIngots = 10;
+        public int companyXp = 0;
 
         public DepotState depot = new DepotState();
         public FuelStationState fuelStation = new FuelStationState();
@@ -32,6 +34,10 @@ namespace TransportManager.Save
 
         public TutorialState tutorial = new TutorialState();
         public BuildingLevels buildingLevels = new BuildingLevels();
+
+        public List<StatSnapshot> snapshots = new List<StatSnapshot>();
+
+        public ShopState shop = new ShopState();
     }
 
     [Serializable]

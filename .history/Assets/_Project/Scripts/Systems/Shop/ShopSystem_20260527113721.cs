@@ -27,12 +27,6 @@ namespace TransportManager.Systems.Shop
         public const int StarterPackDurationDays  = 14; // Pack de Démarrage : 2 semaines
         public const int BeginnerPackDurationDays = 21; // Pack de Débutant  : 3 semaines
 
-        // Récompenses packs débutant
-        public const int StarterPackDollars  = 15000; // Pack Démarrage 4,99€
-        public const int StarterPackGold     = 15;
-        public const int BeginnerPackDollars = 40000; // Pack Débutant 9,99€
-        public const int BeginnerPackGold    = 30;
-
         public ShopSystem(GameSaveData save)
         {
             _save = save;
@@ -158,22 +152,6 @@ namespace TransportManager.Systems.Shop
             if (dollarsReward > 0) wallet.Add(CurrencyType.Dollar, dollarsReward);
             if (goldReward    > 0) wallet.Add(CurrencyType.GoldIngot, goldReward);
             _save.shop.claimedSpecialOfferIds.Add(offerId);
-
-            switch (offerId)
-            {
-                case "starter_pack":
-                    // TODO: débloquer le camion exclusif starter (VehicleSystem)
-                    // TODO: activer -25% temps maintenance pendant 7 jours (MaintenanceSystem)
-                    break;
-
-                case "beginner_pack":
-                    // TODO: débloquer le camion exclusif beginner (VehicleSystem)
-                    // TODO: débloquer le conducteur exclusif (DriverSystem)
-                    // TODO: ajouter +1 emplacement de véhicule (FleetSystem)
-                    // TODO: activer -50% temps maintenance permanent (MaintenanceSystem)
-                    break;
-            }
-
             return true;
         }
     }
