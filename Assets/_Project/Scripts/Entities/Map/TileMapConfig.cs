@@ -14,9 +14,6 @@ namespace TransportManager.Entities.Map
         [Tooltip("Required by OSM tile usage policy. Identify your app.")]
         public string userAgent = "TransportManagerMobile/0.1 (contact@example.com)";
 
-        [Tooltip("Displayed in-game as required by OSM ToS.")]
-        public string attribution = "© OpenStreetMap contributors";
-
         public int minZoom = 1;
         public int maxZoom = 18;
         public int tilePixelSize = 256;

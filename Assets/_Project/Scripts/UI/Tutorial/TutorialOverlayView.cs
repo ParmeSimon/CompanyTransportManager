@@ -22,6 +22,10 @@ namespace TransportManager.UI.Tutorial
         private TutorialSystem _tutorial;
         private TutorialSystem.StepData _currentStep;
 
+        private RectTransform _secretaryRt;
+        private Image _secretaryImg;
+        private Sprite _secretarySprite;
+
         private void Awake() => BuildUI();
 
         private void Start()
@@ -77,11 +81,13 @@ namespace TransportManager.UI.Tutorial
             bubbleImg.sprite = MakeRoundedSprite();
             bubbleImg.type = Image.Type.Sliced;
             _bubbleRt = bubbleGo.GetComponent<RectTransform>();
+            // Anchored relative to a single point so the bubble has a fixed compact
+            // size (not stretched). Position is updated per step alongside the secretary.
             _bubbleRt.anchorMin = new Vector2(0, 0);
-            _bubbleRt.anchorMax = new Vector2(1, 0);
-            _bubbleRt.pivot = new Vector2(0.5f, 0);
-            _bubbleRt.offsetMin = new Vector2(12, 90);
-            _bubbleRt.offsetMax = new Vector2(-12, 240);
+            _bubbleRt.anchorMax = new Vector2(0, 0);
+            _bubbleRt.pivot     = new Vector2(0, 0);
+            _bubbleRt.sizeDelta = new Vector2(420, 150);
+            _bubbleRt.anchoredPosition = new Vector2(280, 80);
 
             // Title
             var titleGo = new GameObject("Title", typeof(RectTransform));
@@ -145,6 +151,17 @@ namespace TransportManager.UI.Tutorial
             btnLblRt.anchorMax = Vector2.one;
             btnLblRt.offsetMin = Vector2.zero;
             btnLblRt.offsetMax = Vector2.zero;
+
+            // Secretary portrait — repositioned each step away from the halo.
+            _secretarySprite = LoadSpriteFlexible("UI/Tutorial/secretary03");
+            var secGo = new GameObject("Secretary", typeof(RectTransform));
+            secGo.transform.SetParent(transform, false);
+            _secretaryImg = secGo.AddComponent<Image>();
+            _secretaryImg.sprite = _secretarySprite;
+            _secretaryImg.preserveAspect = true;
+            _secretaryImg.raycastTarget = false;
+            _secretaryRt = secGo.GetComponent<RectTransform>();
+            _secretaryRt.sizeDelta = new Vector2(220, 220);
         }
 
         private void OnStepChanged(TutorialSystem.StepData step)
@@ -160,6 +177,74 @@ namespace TransportManager.UI.Tutorial
             _titleLabel.text = step.advisorTitle;
             _messageLabel.text = step.advisorMessage;
             UpdateHaloPosition();
+            UpdateSecretaryPosition();
+        }
+
+        private void UpdateSecretaryPosition()
+        {
+            if (_secretaryRt == null || _bubbleRt == null) return;
+
+            const float secSize    = 220f;
+            const float bubbleW    = 420f;
+            const float bubbleH    = 150f;
+            const float gap        = 16f;   // horizontal gap between secretary and bubble
+            const float marginEdge = 40f;   // margin from screen edge
+            const float marginBottom = 80f;
+
+            var target = _currentStep != null ? TutorialTargetRegistry.Get(_currentStep.highlightTarget) : null;
+            bool placeLeft;
+            if (target == null)
+            {
+                placeLeft = false; // default: right side
+            }
+            else
+            {
+                var corners = new Vector3[4];
+                target.GetWorldCorners(corners);
+                float haloCenterX = (corners[0].x + corners[2].x) * 0.5f;
+                placeLeft = haloCenterX > Screen.width * 0.5f; // halo right → group left
+            }
+
+            if (placeLeft)
+            {
+                // Secretary leftmost, bubble immediately to its right.
+                PositionRT(_secretaryRt, new Vector2(0, 0), new Vector2(0, 0),
+                           new Vector2(marginEdge, marginBottom), new Vector2(secSize, secSize));
+                PositionRT(_bubbleRt, new Vector2(0, 0), new Vector2(0, 0),
+                           new Vector2(marginEdge + secSize + gap, marginBottom + (secSize - bubbleH) * 0.5f),
+                           new Vector2(bubbleW, bubbleH));
+            }
+            else
+            {
+                // Secretary rightmost, bubble immediately to its left.
+                PositionRT(_secretaryRt, new Vector2(1, 0), new Vector2(1, 0),
+                           new Vector2(-marginEdge, marginBottom), new Vector2(secSize, secSize));
+                // bubble pivot top-right (1,1) so anchoredPosition Y is from the top
+                _bubbleRt.anchorMin = new Vector2(1, 0);
+                _bubbleRt.anchorMax = new Vector2(1, 0);
+                _bubbleRt.pivot     = new Vector2(1, 0);
+                _bubbleRt.sizeDelta = new Vector2(bubbleW, bubbleH);
+                _bubbleRt.anchoredPosition = new Vector2(-(marginEdge + secSize + gap), marginBottom + (secSize - bubbleH) * 0.5f);
+            }
+        }
+
+        private static void PositionRT(RectTransform rt, Vector2 anchor, Vector2 pivot, Vector2 anchoredPos, Vector2 size)
+        {
+            rt.anchorMin = anchor;
+            rt.anchorMax = anchor;
+            rt.pivot     = pivot;
+            rt.sizeDelta = size;
+            rt.anchoredPosition = anchoredPos;
+        }
+
+        private static Sprite LoadSpriteFlexible(string path)
+        {
+            var s = Resources.Load<Sprite>(path);
+            if (s != null) return s;
+            var t = Resources.Load<Texture2D>(path);
+            return t != null
+                ? Sprite.Create(t, new Rect(0, 0, t.width, t.height), new Vector2(0.5f, 0.5f))
+                : null;
         }
 
         private void OnCompleted()

@@ -14,7 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TransportManager.Entities.Map.TileMapConfig
   urlTemplate: https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png
   userAgent: TransportManagerMobile/0.1 (parmesimon@gmail.com)
-  attribution: "\xA9 OpenStreetMap contributors, \xA9 CARTO"
   subdomains: abcd
   minZoom: 1
   maxZoom: 18

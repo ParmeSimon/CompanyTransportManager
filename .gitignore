@@ -68,6 +68,9 @@ savegame.json
 route_cache.json
 osm_tiles/
 
+# External installers / large binaries — never commit, exceed GitHub's 100MB limit
+*.exe
+
 # If you ever store an ORS API key in OrsConfig.asset and want to keep it
 # out of the repo, uncomment the next line and commit an OrsConfig.example.asset
 # instead.
