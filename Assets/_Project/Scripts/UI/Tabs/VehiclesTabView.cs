@@ -35,6 +35,7 @@ namespace TransportManager.UI.Tabs
         private TMP_Text _buyDollarLabel;
         private TMP_Text _buyIngotLabel;
         private TMP_Text _detailStatus;
+        private Image _detailStatusIcon;
         private Image _detailImage;
         private TMP_Text _detailImagePlaceholder;
         private TMP_Text _detailSpecs;       // top-left: technical description
@@ -393,14 +394,40 @@ namespace TransportManager.UI.Tabs
             // Legacy ref kept for compatibility (unused now)
             _detailStats = _detailSpecs;
 
-            // Status line
+            // Status line — horizontal row: [warehouse icon] [text]
+            var statusRow = new GameObject("StatusRow", typeof(RectTransform));
+            statusRow.transform.SetParent(_detailContent.transform, false);
+            var statusHlg = statusRow.AddComponent<HorizontalLayoutGroup>();
+            statusHlg.spacing = 6;
+            statusHlg.childAlignment = TextAnchor.MiddleCenter;
+            statusHlg.childForceExpandWidth = false;
+            statusHlg.childForceExpandHeight = false;
+            statusHlg.childControlWidth = true;
+            statusHlg.childControlHeight = true;
+            statusRow.AddComponent<LayoutElement>().preferredHeight = 22;
+
+            var statusIconGo = new GameObject("StatusIcon", typeof(RectTransform));
+            statusIconGo.transform.SetParent(statusRow.transform, false);
+            _detailStatusIcon = statusIconGo.AddComponent<Image>();
+            _detailStatusIcon.sprite = Resources.Load<Sprite>("UI/Icons/icons/warehouse");
+            _detailStatusIcon.color = new Color(1f, 0.75f, 0.3f);
+            _detailStatusIcon.preserveAspect = true;
+            _detailStatusIcon.raycastTarget = false;
+            var statusIconLe = statusIconGo.AddComponent<LayoutElement>();
+            statusIconLe.preferredWidth = 20;
+            statusIconLe.preferredHeight = 20;
+            statusIconGo.SetActive(false);
+
             var statusGo = new GameObject("Status", typeof(RectTransform));
-            statusGo.transform.SetParent(_detailContent.transform, false);
+            statusGo.transform.SetParent(statusRow.transform, false);
             _detailStatus = statusGo.AddComponent<TextMeshProUGUI>();
             _detailStatus.fontSize = 13;
             _detailStatus.color = new Color(1f, 0.75f, 0.3f);
-            _detailStatus.alignment = TextAlignmentOptions.Center;
-            statusGo.AddComponent<LayoutElement>().preferredHeight = 22;
+            _detailStatus.alignment = TextAlignmentOptions.MidlineLeft;
+            _detailStatus.raycastTarget = false;
+            var statusLe = statusGo.AddComponent<LayoutElement>();
+            statusLe.preferredHeight = 22;
+            statusLe.flexibleWidth = 1;
 
             // Buy row
             var buyRow = new GameObject("BuyRow", typeof(RectTransform));
@@ -415,10 +442,12 @@ namespace TransportManager.UI.Tabs
             _buyDollarBtn = MakeButton(buyRow.transform, "", new Color(0.18f, 0.50f, 0.22f), -1, 58);
             _buyDollarLabel = _buyDollarBtn.GetComponentInChildren<TMP_Text>();
             _buyDollarBtn.onClick.AddListener(OnBuyWithDollars);
+            AddButtonLeftIcon(_buyDollarBtn.transform, "UI/Icons/Infos/dollars", 32);
 
             _buyIngotBtn = MakeButton(buyRow.transform, "", new Color(0.65f, 0.48f, 0.10f), -1, 58);
             _buyIngotLabel = _buyIngotBtn.GetComponentInChildren<TMP_Text>();
             _buyIngotBtn.onClick.AddListener(OnBuyWithIngots);
+            AddButtonLeftIcon(_buyIngotBtn.transform, "UI/Icons/Infos/gold", 32);
 
             _detailContent.SetActive(false);
             return panel;
@@ -729,11 +758,20 @@ namespace TransportManager.UI.Tabs
 
             // Status message
             if (!unlocked)
+            {
                 _detailStatus.text = $"🔒 Requiert niveau entreprise {data.minCompanyLevelRequired}";
+                if (_detailStatusIcon != null) _detailStatusIcon.gameObject.SetActive(false);
+            }
             else if (depotFull)
-                _detailStatus.text = "⚠ Dépôt plein — améliorez le hangar";
+            {
+                _detailStatus.text = "Dépôt plein — améliorez le hangar";
+                if (_detailStatusIcon != null) _detailStatusIcon.gameObject.SetActive(true);
+            }
             else
+            {
                 _detailStatus.text = "";
+                if (_detailStatusIcon != null) _detailStatusIcon.gameObject.SetActive(false);
+            }
 
             bool canBuy = unlocked && !depotFull;
 
@@ -744,7 +782,7 @@ namespace TransportManager.UI.Tabs
                 ? new Color(0.18f, 0.50f, 0.22f)
                 : new Color(0.28f, 0.28f, 0.32f);
 
-            _buyIngotLabel.text = $"Acheter\n🔶 {ingotCost} lingots";
+            _buyIngotLabel.text = $"Acheter\n{ingotCost} lingots";
             _buyIngotBtn.interactable = canBuy && canAffordIngot;
             var ingotImg = _buyIngotBtn.GetComponent<Image>();
             ingotImg.color = (canBuy && canAffordIngot)
@@ -786,7 +824,12 @@ namespace TransportManager.UI.Tabs
             if (wallet == null || depot == null || fleet == null) return;
 
             int ingotCost = Mathf.Max(1, _selectedVehicle.purchasePrice / 1000);
-            if (!depot.HasRoomForOneMore()) { _detailStatus.text = "⚠ Dépôt plein"; return; }
+            if (!depot.HasRoomForOneMore())
+            {
+                _detailStatus.text = "Dépôt plein";
+                if (_detailStatusIcon != null) _detailStatusIcon.gameObject.SetActive(true);
+                return;
+            }
             if (!wallet.TrySpend(CurrencyType.GoldIngot, ingotCost)) { _detailStatus.text = "Lingots insuffisants"; return; }
 
             var instance = new Entities.Vehicles.VehicleInstance
@@ -877,6 +920,24 @@ namespace TransportManager.UI.Tabs
         }
 
         // ---- Helpers ----
+
+        private static void AddButtonLeftIcon(Transform btn, string spritePath, int size)
+        {
+            var sprite = Resources.Load<Sprite>(spritePath);
+            if (sprite == null) return;
+            var go = new GameObject("Icon", typeof(RectTransform));
+            go.transform.SetParent(btn, false);
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0, 0.5f);
+            rt.anchorMax = new Vector2(0, 0.5f);
+            rt.pivot = new Vector2(0, 0.5f);
+            rt.anchoredPosition = new Vector2(8, 0);
+            rt.sizeDelta = new Vector2(size, size);
+            var img = go.AddComponent<Image>();
+            img.sprite = sprite;
+            img.preserveAspect = true;
+            img.raycastTarget = false;
+        }
 
         private static Button MakeButton(Transform parent, string label, Color color, float width, float height)
         {

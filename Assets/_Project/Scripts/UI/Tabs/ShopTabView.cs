@@ -239,10 +239,11 @@ namespace TransportManager.UI.Tabs
             var spacer = MakeGO("Sp", card.transform);
             spacer.AddComponent<LayoutElement>().preferredHeight = 6;
 
-            var btn = BuildCtaButton(card.transform, "▶  REGARDER LA PUB", ColGold, TextDark, 52, OnWatchAdClicked);
+            var btn = BuildCtaButton(card.transform, "REGARDER LA PUB", ColGold, TextDark, 52, OnWatchAdClicked);
             _adButton      = btn.button;
             _adButtonLabel = btn.label;
             _adButtonBg    = btn.bg;
+            AddCtaLeftIcon(btn.button.transform, "UI/Icons/icons/add", TextDark, 26);
         }
 
         private void RefreshAdButton()
@@ -258,7 +259,7 @@ namespace TransportManager.UI.Tabs
             {
                 _adButton.interactable = true;
                 _adButtonBg.color      = ColGold;
-                _adButtonLabel.text    = "▶  REGARDER LA PUB";
+                _adButtonLabel.text    = "REGARDER LA PUB";
                 _adButtonLabel.color   = TextDark;
             }
             else
@@ -791,6 +792,25 @@ namespace TransportManager.UI.Tabs
             var le = go.AddComponent<LayoutElement>();
             le.preferredWidth  = size;
             le.preferredHeight = size;
+        }
+
+        private static void AddCtaLeftIcon(Transform btn, string spritePath, Color32 color, int size)
+        {
+            var sprite = Resources.Load<Sprite>(spritePath);
+            if (sprite == null) return;
+            var go = new GameObject("Icon", typeof(RectTransform));
+            go.transform.SetParent(btn, false);
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0, 0.5f);
+            rt.anchorMax = new Vector2(0, 0.5f);
+            rt.pivot = new Vector2(0, 0.5f);
+            rt.anchoredPosition = new Vector2(14, 0);
+            rt.sizeDelta = new Vector2(size, size);
+            var img = go.AddComponent<Image>();
+            img.sprite = sprite;
+            img.color = color;
+            img.preserveAspect = true;
+            img.raycastTarget = false;
         }
 
         private void BuildIconImage(Transform parent, string spritePath, Color32 color, int size)
