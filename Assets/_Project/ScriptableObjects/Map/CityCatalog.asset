@@ -13,8 +13,6 @@ MonoBehaviour:
   m_Name: CityCatalog
   m_EditorClassIdentifier: Assembly-CSharp::TransportManager.Entities.Map.CityCatalog
   cities:
-
-  # ── FRANCE ───────────────────────────────────────────────────────────────
   - id: paris
     displayName: Paris
     country: France
@@ -155,8 +153,6 @@ MonoBehaviour:
     - Port de Rouen
     - Saint-Etienne-du-Rouvray ZI
     - Oissel
-
-  # ── BELGIQUE ─────────────────────────────────────────────────────────────
   - id: bruxelles
     displayName: Bruxelles
     country: Belgique
@@ -197,8 +193,6 @@ MonoBehaviour:
     - Port de Gand
     - Wondelgem ZI
     - Evergem
-
-  # ── PAYS-BAS ──────────────────────────────────────────────────────────────
   - id: amsterdam
     displayName: Amsterdam
     country: Pays-Bas
@@ -249,8 +243,6 @@ MonoBehaviour:
     - Binckhorst
     - Plaspoelpolder
     - Forepark ZI
-
-  # ── ALLEMAGNE ────────────────────────────────────────────────────────────
   - id: hamburg
     displayName: Hambourg
     country: Allemagne
@@ -371,8 +363,6 @@ MonoBehaviour:
     - Gittersee ZI
     - Friedrichstadt Hafen
     - Nickern ZI
-
-  # ── ITALIE ────────────────────────────────────────────────────────────────
   - id: milan
     displayName: Milan
     country: Italie
@@ -453,8 +443,6 @@ MonoBehaviour:
     - Port de Palerme
     - Brancaccio ZI
     - Carini ZI
-
-  # ── ESPAGNE ───────────────────────────────────────────────────────────────
   - id: barcelona
     displayName: Barcelone
     country: Espagne
@@ -515,8 +503,6 @@ MonoBehaviour:
     - PLAZA Logistica
     - Malpica ZI
     - Cogullada ZI
-
-  # ── PORTUGAL ──────────────────────────────────────────────────────────────
   - id: lisbon
     displayName: Lisbonne
     country: Portugal
@@ -557,8 +543,6 @@ MonoBehaviour:
     - Taveiro ZI
     - Eiras ZI
     - Antanhol
-
-  # ── SUISSE ────────────────────────────────────────────────────────────────
   - id: geneva
     displayName: "Gen\xE8ve"
     country: Suisse
@@ -599,8 +583,6 @@ MonoBehaviour:
     - Bern Expo ZI
     - Bethlehem ZI
     - Ostermundigen
-
-  # ── AUTRICHE ──────────────────────────────────────────────────────────────
   - id: vienna
     displayName: Vienne
     country: Autriche
@@ -651,8 +633,6 @@ MonoBehaviour:
     - Hall in Tirol ZI
     - Patsch ZI
     - Zirl Gewerbegebiet
-
-  # ── LUXEMBOURG ────────────────────────────────────────────────────────────
   - id: luxembourg
     displayName: Luxembourg
     country: Luxembourg
@@ -663,8 +643,6 @@ MonoBehaviour:
     - Gasperich
     - Leudelange ZI
     - Kirchberg
-
-  # ── ROYAUME-UNI ───────────────────────────────────────────────────────────
   - id: london
     displayName: Londres
     country: Royaume-Uni
@@ -725,8 +703,6 @@ MonoBehaviour:
     - Avonmouth Docks
     - Filton ZI
     - Aztec West
-
-  # ── IRLANDE ───────────────────────────────────────────────────────────────
   - id: dublin
     displayName: Dublin
     country: Irlande
@@ -747,8 +723,6 @@ MonoBehaviour:
     - Cork Port
     - Little Island ZI
     - Ringaskiddy
-
-  # ── DANEMARK ──────────────────────────────────────────────────────────────
   - id: copenhague
     displayName: Copenhague
     country: Danemark
@@ -779,8 +753,6 @@ MonoBehaviour:
     - Port d'Odense
     - Hollufgard ZI
     - Munkebo
-
-  # ── SUEDE ─────────────────────────────────────────────────────────────────
   - id: stockholm
     displayName: Stockholm
     country: "Su\xE8de"
@@ -821,8 +793,6 @@ MonoBehaviour:
     - Bolanderna ZI
     - Fyrislund ZI
     - Rasbo
-
-  # ── NORVEGE ───────────────────────────────────────────────────────────────
   - id: oslo
     displayName: Oslo
     country: "Norv\xE8ge"
@@ -863,8 +833,6 @@ MonoBehaviour:
     - Port de Trondheim
     - Leangen ZI
     - Tiller ZI
-
-  # ── FINLANDE ──────────────────────────────────────────────────────────────
   - id: helsinki
     displayName: Helsinki
     country: Finlande
@@ -905,8 +873,6 @@ MonoBehaviour:
     - Port d'Oulu
     - Kontinkangas ZI
     - Kempele
-
-  # ── POLOGNE ───────────────────────────────────────────────────────────────
   - id: warsaw
     displayName: Varsovie
     country: Pologne
@@ -977,8 +943,6 @@ MonoBehaviour:
     - Sosnowiec ZI
     - Tychy ZI
     - Katowice Airport Cargo
-
-  # ── REPUBLIQUE TCHEQUE ────────────────────────────────────────────────────
   - id: prague
     displayName: Prague
     country: "R\xE9publique Tch\xE8que"
@@ -1009,8 +973,6 @@ MonoBehaviour:
     - Ostrava-Bartovice ZI
     - Hrabova ZI
     - Mosnov Cargo
-
-  # ── SLOVAQUIE ────────────────────────────────────────────────────────────
   - id: bratislava
     displayName: Bratislava
     country: Slovaquie
@@ -1031,8 +993,6 @@ MonoBehaviour:
     - Barca ZI
     - Sever ZI
     - Kosice Steel ZI
-
-  # ── HONGRIE ───────────────────────────────────────────────────────────────
   - id: budapest
     displayName: Budapest
     country: Hongrie
@@ -1063,8 +1023,6 @@ MonoBehaviour:
     - Gyor ZI
     - Audi Gyor
     - Szentivanpuszta
-
-  # ── ROUMANIE ──────────────────────────────────────────────────────────────
   - id: bucharest
     displayName: Bucarest
     country: Roumanie
@@ -1115,8 +1073,6 @@ MonoBehaviour:
     - Port de Constanta
     - Palas ZI
     - Agigea Terminal
-
-  # ── BULGARIE ──────────────────────────────────────────────────────────────
   - id: sofia
     displayName: Sofia
     country: Bulgarie
@@ -1147,8 +1103,6 @@ MonoBehaviour:
     - Port de Varna
     - Free Zone Varna
     - Devnya ZI
-
-  # ── GRECE ─────────────────────────────────────────────────────────────────
   - id: athenes
     displayName: "Ath\xE8nes"
     country: "Gr\xE8ce"
@@ -1179,8 +1133,6 @@ MonoBehaviour:
     - Port de Patras
     - Rion ZI
     - Patras Cargo
-
-  # ── CROATIE ───────────────────────────────────────────────────────────────
   - id: zagreb
     displayName: Zagreb
     country: Croatie
@@ -1211,8 +1163,6 @@ MonoBehaviour:
     - Port de Rijeka
     - Kukuljanovo ZI
     - Bakar Terminal
-
-  # ── SLOVENIE ──────────────────────────────────────────────────────────────
   - id: ljubljana
     displayName: Ljubljana
     country: "Slov\xE9nie"
@@ -1233,8 +1183,6 @@ MonoBehaviour:
     - Tezno ZI
     - Hoce ZI
     - Maribor Airport
-
-  # ── SERBIE ────────────────────────────────────────────────────────────────
   - id: belgrade
     displayName: Belgrade
     country: Serbie
@@ -1265,8 +1213,6 @@ MonoBehaviour:
     - Crvena Zastava ZI
     - Polet ZI
     - Nis Airport ZI
-
-  # ── BOSNIE-HERZEGOVINE ────────────────────────────────────────────────────
   - id: sarajevo
     displayName: Sarajevo
     country: Bosnie-H.
@@ -1287,8 +1233,6 @@ MonoBehaviour:
     - Zaluzani ZI
     - Ramici ZI
     - Banja Luka Cargo
-
-  # ── MONTENEGRO ────────────────────────────────────────────────────────────
   - id: podgorica
     displayName: Podgorica
     country: "Mont\xE9n\xE9gro"
@@ -1299,8 +1243,6 @@ MonoBehaviour:
     - Industrijska Zona
     - Golubovci Cargo
     - Tuzi ZI
-
-  # ── ALBANIE ───────────────────────────────────────────────────────────────
   - id: tirana
     displayName: Tirana
     country: Albanie
@@ -1321,8 +1263,6 @@ MonoBehaviour:
     - Port de Durres
     - Shijak ZI
     - Spitalle Terminal
-
-  # ── MACEDOINE DU NORD ─────────────────────────────────────────────────────
   - id: skopje
     displayName: Skopje
     country: "Mac\xE9doine du Nord"
@@ -1333,8 +1273,6 @@ MonoBehaviour:
     - Bunyakovec ZI
     - Ramkovski ZI
     - Skopje Airport Cargo
-
-  # ── KOSOVO ────────────────────────────────────────────────────────────────
   - id: pristina
     displayName: Pristina
     country: Kosovo
@@ -1345,8 +1283,6 @@ MonoBehaviour:
     - Pristina Airport ZI
     - Gracanica ZI
     - Obiliq ZI
-
-  # ── MOLDAVIE ──────────────────────────────────────────────────────────────
   - id: chisinau
     displayName: "Chişinău"
     country: Moldavie
@@ -1367,8 +1303,6 @@ MonoBehaviour:
     - ZI Nord Balti
     - Glodeni ZI
     - Falesti
-
-  # ── UKRAINE ───────────────────────────────────────────────────────────────
   - id: kyiv
     displayName: Kiev
     country: Ukraine
@@ -1419,8 +1353,6 @@ MonoBehaviour:
     - Industrialny ZI
     - Dnipro Port
     - Pidhorodne ZI
-
-  # ── BIELORUSSIE ───────────────────────────────────────────────────────────
   - id: minsk
     displayName: Minsk
     country: "Bi\xE9lorussie"
@@ -1441,8 +1373,6 @@ MonoBehaviour:
     - Grodno Free Zone
     - Korolev ZI
     - Skidel ZI
-
-  # ── LITUANIE ──────────────────────────────────────────────────────────────
   - id: vilnius
     displayName: Vilnius
     country: Lituanie
@@ -1473,8 +1403,6 @@ MonoBehaviour:
     - Port de Klaipeda
     - Free Economic Zone Klaipeda
     - Sventoji Terminal
-
-  # ── LETTONIE ──────────────────────────────────────────────────────────────
   - id: riga
     displayName: Riga
     country: Lettonie
@@ -1495,8 +1423,6 @@ MonoBehaviour:
     - Daugavpils SEZ
     - Stropu ZI
     - Medumu ZI
-
-  # ── ESTONIE ───────────────────────────────────────────────────────────────
   - id: tallinn
     displayName: Tallinn
     country: Estonie
@@ -1517,8 +1443,6 @@ MonoBehaviour:
     - Tartu Cargo
     - Ropka ZI
     - Annelinn ZI
-
-  # ── ISLANDE ───────────────────────────────────────────────────────────────
   - id: reykjavik
     displayName: Reykjavik
     country: Islande
@@ -1529,8 +1453,6 @@ MonoBehaviour:
     - Sundahofn Port
     - Keflavik Cargo
     - Hafnarfjordur ZI
-
-  # ── MALTE ─────────────────────────────────────────────────────────────────
   - id: valletta
     displayName: La Valette
     country: Malte
@@ -1541,8 +1463,6 @@ MonoBehaviour:
     - Port Grand Harbour
     - Hal Far ZI
     - Marsa ZI
-
-  # ── CHYPRE ────────────────────────────────────────────────────────────────
   - id: nicosia
     displayName: Nicosie
     country: Chypre

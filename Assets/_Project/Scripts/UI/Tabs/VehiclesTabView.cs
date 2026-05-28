@@ -48,6 +48,22 @@ namespace TransportManager.UI.Tabs
         private Texture2D _bgTex;
         private Vector2 _lastBgSize;
 
+        // ── Palette partagée (Header / Navbar / ContractsPanel) ───────────────────
+        private static readonly Color BgPanel     = new Color(0x2C / 255f, 0x30 / 255f, 0x38 / 255f, 0.94f); // fond panneau (#2C3038)
+        private static readonly Color BgElevated  = new Color(0x34 / 255f, 0x38 / 255f, 0x42 / 255f, 1f);    // cartes
+        private static readonly Color BgInset     = new Color(1f, 1f, 1f, 0.05f);                            // sous-cartes sur BgElevated
+        private static readonly Color BgPill      = new Color(0x1A / 255f, 0x1D / 255f, 0x24 / 255f, 230 / 255f); // pills/badges
+        private static readonly Color BorderFaint = new Color(1f, 1f, 1f, 0.08f);
+        private static readonly Color DividerCol  = new Color(0x3A / 255f, 0x3F / 255f, 0x4A / 255f, 150 / 255f);
+        private static readonly Color TextPrime   = new Color(0xEC / 255f, 0xEE / 255f, 0xF5 / 255f, 1f);
+        private static readonly Color TextSecond  = new Color(0x7A / 255f, 0x8F / 255f, 0xA6 / 255f, 1f);
+        private static readonly Color TextDim     = new Color(0.40f, 0.44f, 0.52f, 1f);
+        private static readonly Color AccentBlue  = new Color(0.22f, 0.52f, 1.00f, 1f);
+        private static readonly Color AccentGreen = new Color(0x3D / 255f, 0xC9 / 255f, 0x6E / 255f, 1f);
+        private static readonly Color AccentGold  = new Color(0xF2 / 255f, 0xD9 / 255f, 0x66 / 255f, 1f);
+
+        private Sprite _sprR8, _sprR12, _sprR16;
+
         private void Awake() => Build();
 
         private void Build()
@@ -60,6 +76,8 @@ namespace TransportManager.UI.Tabs
                 Destroy(child.gameObject);
 #endif
             }
+
+            EnsureRoundedSprites();
 
             var rt = GetComponent<RectTransform>();
             rt.anchorMin = Vector2.zero;
@@ -127,6 +145,13 @@ namespace TransportManager.UI.Tabs
             panelRt.offsetMin = new Vector2(SIDEBAR_RESERVE, BOTTOM_PADDING);
             panelRt.offsetMax = new Vector2(-SPLIT_GAP * 0.5f, -TOP_RESERVE);
 
+            // Rounded panel backdrop (même fond que le header #2C3038)
+            var panelBg = panel.AddComponent<Image>();
+            panelBg.sprite        = _sprR16;
+            panelBg.type          = Image.Type.Sliced;
+            panelBg.color         = BgPanel;
+            panelBg.raycastTarget = true;
+
             // Header bar — sits at the top of the list panel
             var header = new GameObject("Header", typeof(RectTransform));
             header.transform.SetParent(panel.transform, false);
@@ -137,12 +162,9 @@ namespace TransportManager.UI.Tabs
             headerRt.offsetMin = new Vector2(0, -HEADER_HEIGHT);
             headerRt.offsetMax = Vector2.zero;
 
-            var headerBg = header.AddComponent<Image>();
-            headerBg.color = new Color(0.05f, 0.07f, 0.11f, 0.78f);
-
             var headerHlg = header.AddComponent<HorizontalLayoutGroup>();
-            headerHlg.padding = new RectOffset(28, 28, 0, 0);
-            headerHlg.spacing = 16;
+            headerHlg.padding = new RectOffset(24, 24, 0, 0);
+            headerHlg.spacing = 14;
             headerHlg.childAlignment = TextAnchor.MiddleLeft;
             headerHlg.childForceExpandWidth = false;
             headerHlg.childForceExpandHeight = true;
@@ -151,17 +173,20 @@ namespace TransportManager.UI.Tabs
             var accentGo = new GameObject("HeaderAccent", typeof(RectTransform));
             accentGo.transform.SetParent(header.transform, false);
             var accentImg = accentGo.AddComponent<Image>();
-            accentImg.color = new Color(0.30f, 0.65f, 1f, 0.95f);
+            accentImg.sprite        = _sprR8;
+            accentImg.type          = Image.Type.Sliced;
+            accentImg.color         = AccentBlue;
+            accentImg.raycastTarget = false;
             var accentLe = accentGo.AddComponent<LayoutElement>();
             accentLe.preferredWidth = 3;
-            accentLe.preferredHeight = 28;
+            accentLe.preferredHeight = 26;
 
             var titleGo = new GameObject("Title", typeof(RectTransform));
             titleGo.transform.SetParent(header.transform, false);
             var titleTmp = titleGo.AddComponent<TextMeshProUGUI>();
-            titleTmp.text = "<b>GARAGE</b><color=#5a6d8a>   /   </color><color=#a8b8d0>Catalogue véhicules</color>";
-            titleTmp.fontSize = 19;
-            titleTmp.color = Color.white;
+            titleTmp.text = "<b>GARAGE</b><color=#5A6D8A>   /   </color><color=#7A8FA6>Catalogue véhicules</color>";
+            titleTmp.fontSize = 18;
+            titleTmp.color = TextPrime;
             titleTmp.alignment = TextAlignmentOptions.MidlineLeft;
             titleGo.AddComponent<LayoutElement>().flexibleWidth = 1;
 
@@ -169,9 +194,20 @@ namespace TransportManager.UI.Tabs
             countGo.transform.SetParent(header.transform, false);
             _fleetCountLabel = countGo.AddComponent<TextMeshProUGUI>();
             _fleetCountLabel.fontSize = 13;
-            _fleetCountLabel.color = new Color(0.72f, 0.85f, 1f);
+            _fleetCountLabel.color = TextSecond;
             _fleetCountLabel.alignment = TextAlignmentOptions.MidlineRight;
             countGo.AddComponent<LayoutElement>().preferredWidth = 260;
+
+            // Fine separator under the header
+            var hSep = new GameObject("HeaderSep", typeof(RectTransform));
+            hSep.transform.SetParent(panel.transform, false);
+            hSep.AddComponent<Image>().color = BorderFaint;
+            var hSepRt = hSep.GetComponent<RectTransform>();
+            hSepRt.anchorMin = new Vector2(0, 1);
+            hSepRt.anchorMax = new Vector2(1, 1);
+            hSepRt.pivot     = new Vector2(0.5f, 1f);
+            hSepRt.offsetMin = new Vector2(16, -HEADER_HEIGHT - 1);
+            hSepRt.offsetMax = new Vector2(-16, -HEADER_HEIGHT);
 
             // Scroll view — fills the panel below the header
             var scrollGo = new GameObject("Scroll", typeof(RectTransform));
@@ -179,8 +215,8 @@ namespace TransportManager.UI.Tabs
             var scrollRt = scrollGo.GetComponent<RectTransform>();
             scrollRt.anchorMin = new Vector2(0, 0);
             scrollRt.anchorMax = new Vector2(1, 1);
-            scrollRt.offsetMin = Vector2.zero;
-            scrollRt.offsetMax = new Vector2(0, -(HEADER_HEIGHT + 14));
+            scrollRt.offsetMin = new Vector2(12, 10);
+            scrollRt.offsetMax = new Vector2(-12, -(HEADER_HEIGHT + 12));
 
             var scrollRect = scrollGo.AddComponent<ScrollRect>();
             scrollRect.horizontal = false;
@@ -230,14 +266,17 @@ namespace TransportManager.UI.Tabs
             panelRt.offsetMax = new Vector2(-RIGHT_PADDING, -TOP_RESERVE);
 
             var panelBg = panel.AddComponent<Image>();
-            panelBg.color = new Color(0.07f, 0.09f, 0.13f, 0.92f);
+            panelBg.sprite        = _sprR16;
+            panelBg.type          = Image.Type.Sliced;
+            panelBg.color         = BgPanel;
+            panelBg.raycastTarget = true;
 
             // Placeholder when nothing is selected
             _detailPlaceholder = new GameObject("Placeholder", typeof(RectTransform));
             _detailPlaceholder.transform.SetParent(panel.transform, false);
             StretchFull(_detailPlaceholder.GetComponent<RectTransform>());
             var phTmp = _detailPlaceholder.AddComponent<TextMeshProUGUI>();
-            phTmp.text = "<color=#5a6d8a>Sélectionnez un véhicule pour voir ses caractéristiques</color>";
+            phTmp.text = "<color=#7A8FA6>Sélectionnez un véhicule pour voir ses caractéristiques</color>";
             phTmp.fontSize = 14;
             phTmp.alignment = TextAlignmentOptions.Center;
             phTmp.raycastTarget = false;
@@ -267,7 +306,10 @@ namespace TransportManager.UI.Tabs
             var titleAccent = new GameObject("Accent", typeof(RectTransform));
             titleAccent.transform.SetParent(titleRow.transform, false);
             var titleAccentImg = titleAccent.AddComponent<Image>();
-            titleAccentImg.color = new Color(0.30f, 0.65f, 1f, 1f);
+            titleAccentImg.sprite        = _sprR8;
+            titleAccentImg.type          = Image.Type.Sliced;
+            titleAccentImg.color         = AccentBlue;
+            titleAccentImg.raycastTarget = false;
             var titleAccentLe = titleAccent.AddComponent<LayoutElement>();
             titleAccentLe.preferredWidth = 4;
             titleAccentLe.preferredHeight = 34;
@@ -286,7 +328,7 @@ namespace TransportManager.UI.Tabs
             catGo.transform.SetParent(_detailContent.transform, false);
             _detailCategory = catGo.AddComponent<TextMeshProUGUI>();
             _detailCategory.fontSize = 13;
-            _detailCategory.color = new Color(0.55f, 0.70f, 0.95f);
+            _detailCategory.color = TextSecond;
             catGo.AddComponent<LayoutElement>().preferredHeight = 18;
 
             AddDivider(_detailContent.transform);
@@ -314,8 +356,7 @@ namespace TransportManager.UI.Tabs
             specsCard.transform.SetParent(topRow.transform, false);
             var specsLe = specsCard.AddComponent<LayoutElement>();
             specsLe.flexibleWidth = 1f;
-            var specsBg = specsCard.AddComponent<Image>();
-            specsBg.color = new Color(0.05f, 0.07f, 0.11f, 0.65f);
+            StyleInsetCard(specsCard);
 
             var specsInner = new GameObject("Inner", typeof(RectTransform));
             specsInner.transform.SetParent(specsCard.transform, false);
@@ -340,8 +381,7 @@ namespace TransportManager.UI.Tabs
             heroGo.transform.SetParent(topRow.transform, false);
             var heroLe = heroGo.AddComponent<LayoutElement>();
             heroLe.flexibleWidth = 1f;
-            var heroBg = heroGo.AddComponent<Image>();
-            heroBg.color = new Color(0.05f, 0.07f, 0.11f, 0.65f);
+            StyleInsetCard(heroGo);
 
             var imgHolder = new GameObject("Image", typeof(RectTransform));
             imgHolder.transform.SetParent(heroGo.transform, false);
@@ -370,8 +410,7 @@ namespace TransportManager.UI.Tabs
             var careerLe = careerCard.AddComponent<LayoutElement>();
             careerLe.flexibleHeight = 1.1f;
             careerLe.minHeight = 200;
-            var careerBg = careerCard.AddComponent<Image>();
-            careerBg.color = new Color(0.05f, 0.07f, 0.11f, 0.65f);
+            StyleInsetCard(careerCard);
 
             var careerInner = new GameObject("Inner", typeof(RectTransform));
             careerInner.transform.SetParent(careerCard.transform, false);
@@ -473,9 +512,12 @@ namespace TransportManager.UI.Tabs
             var card = new GameObject($"Card_{data.id}", typeof(RectTransform));
             card.transform.SetParent(_catalogContent, false);
             var cardBg = card.AddComponent<Image>();
-            cardBg.color = unlocked
-                ? new Color(0.09f, 0.11f, 0.16f, 0.96f)
-                : new Color(0.07f, 0.08f, 0.11f, 0.92f);
+            cardBg.sprite = _sprR16;
+            cardBg.type   = Image.Type.Sliced;
+            cardBg.color  = unlocked ? BgElevated : new Color(0x26 / 255f, 0x29 / 255f, 0x30 / 255f, 1f);
+            var cardShadow = card.AddComponent<Shadow>();
+            cardShadow.effectColor    = new Color(0f, 0f, 0f, 0.5f);
+            cardShadow.effectDistance = new Vector2(0f, -4f);
             var cardLe = card.AddComponent<LayoutElement>();
             cardLe.preferredHeight = CARD_HEIGHT;
             cardLe.minHeight = CARD_HEIGHT;
@@ -498,10 +540,12 @@ namespace TransportManager.UI.Tabs
             stripeRt.anchorMin = new Vector2(0, 0);
             stripeRt.anchorMax = new Vector2(0, 1);
             stripeRt.pivot     = new Vector2(0, 0.5f);
-            stripeRt.offsetMin = new Vector2(0, 10);
-            stripeRt.offsetMax = new Vector2(4, -10);
+            stripeRt.offsetMin = new Vector2(4, 12);
+            stripeRt.offsetMax = new Vector2(8, -12);
             var stripeImg = stripeGo.AddComponent<Image>();
-            stripeImg.color = unlocked ? CategoryAccent(data.category) : new Color(0.35f, 0.35f, 0.40f, 0.5f);
+            stripeImg.sprite        = _sprR8;
+            stripeImg.type          = Image.Type.Sliced;
+            stripeImg.color         = unlocked ? CategoryAccent(data.category) : new Color(0.35f, 0.35f, 0.40f, 0.5f);
             stripeImg.raycastTarget = false;
 
             // ---- Category badge (large rounded letter, sober) ----
@@ -515,9 +559,9 @@ namespace TransportManager.UI.Tabs
             badgeRt.sizeDelta = new Vector2(64, 64);
 
             var badgeBg = badgeZone.AddComponent<Image>();
-            badgeBg.color = unlocked
-                ? new Color(0.14f, 0.17f, 0.24f, 1f)
-                : new Color(0.11f, 0.12f, 0.15f, 1f);
+            badgeBg.sprite        = _sprR12;
+            badgeBg.type          = Image.Type.Sliced;
+            badgeBg.color         = BgPill;
             badgeBg.raycastTarget = false;
 
             // Icon on top of badge if available, else category letter
@@ -607,9 +651,11 @@ namespace TransportManager.UI.Tabs
             chipRt.sizeDelta = new Vector2(132, 40);
 
             var chipImg = chipGo.AddComponent<Image>();
-            chipImg.color = unlocked
-                ? new Color(0.16f, 0.22f, 0.34f, 1f)
-                : new Color(0.12f, 0.13f, 0.16f, 1f);
+            chipImg.sprite        = _sprR8;
+            chipImg.type          = Image.Type.Sliced;
+            chipImg.color         = unlocked
+                ? new Color(AccentBlue.r, AccentBlue.g, AccentBlue.b, 0.16f)
+                : BgPill;
             chipImg.raycastTarget = false;
 
             var chipLblGo = new GameObject("Label", typeof(RectTransform));
@@ -620,7 +666,7 @@ namespace TransportManager.UI.Tabs
             chipLbl.text = unlocked ? "Voir plus  ›" : "Verrouillé";
             chipLbl.fontSize = 13;
             chipLbl.fontStyle = FontStyles.Bold;
-            chipLbl.color = unlocked ? new Color(0.65f, 0.82f, 1f) : new Color(0.50f, 0.50f, 0.55f);
+            chipLbl.color = unlocked ? new Color(0.62f, 0.78f, 1f) : TextDim;
             chipLbl.alignment = TextAlignmentOptions.Center;
             chipLbl.raycastTarget = false;
         }
@@ -939,13 +985,15 @@ namespace TransportManager.UI.Tabs
             img.raycastTarget = false;
         }
 
-        private static Button MakeButton(Transform parent, string label, Color color, float width, float height)
+        private Button MakeButton(Transform parent, string label, Color color, float width, float height)
         {
             var go = new GameObject("Btn_" + label, typeof(RectTransform));
             go.transform.SetParent(parent, false);
 
             var img = go.AddComponent<Image>();
-            img.color = color;
+            img.sprite = _sprR12;
+            img.type   = Image.Type.Sliced;
+            img.color  = color;
 
             var btn = go.AddComponent<Button>();
             btn.targetGraphic = img;
@@ -977,8 +1025,61 @@ namespace TransportManager.UI.Tabs
         {
             var go = new GameObject("Divider", typeof(RectTransform));
             go.transform.SetParent(parent, false);
-            go.AddComponent<Image>().color = new Color(0.3f, 0.3f, 0.35f, 0.6f);
+            go.AddComponent<Image>().color = DividerCol;
             go.AddComponent<LayoutElement>().preferredHeight = 1;
+        }
+
+        // Sous-carte encadrée : coins arrondis + légère ombre, comme les cartes du panneau de contrats.
+        private void StyleInsetCard(GameObject go)
+        {
+            var img = go.GetComponent<Image>() ?? go.AddComponent<Image>();
+            img.sprite        = _sprR12;
+            img.type          = Image.Type.Sliced;
+            img.color         = BgInset;
+            img.raycastTarget = false;
+            var sh = go.AddComponent<Shadow>();
+            sh.effectColor    = new Color(0f, 0f, 0f, 0.45f);
+            sh.effectDistance = new Vector2(0f, -3f);
+        }
+
+        // ── Fabrique de sprites arrondis (9-slice, générés une fois) ────────────────
+        private void EnsureRoundedSprites()
+        {
+            if (_sprR16 != null) return;
+            _sprR8  = MakeRoundedSprite(8);
+            _sprR12 = MakeRoundedSprite(12);
+            _sprR16 = MakeRoundedSprite(16);
+        }
+
+        private static Sprite MakeRoundedSprite(int radius)
+        {
+            const int size = 64;
+            int r = Mathf.Clamp(radius, 1, size / 2);
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                wrapMode   = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Bilinear
+            };
+            var pixels = new Color[size * size];
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                    pixels[y * size + x] = new Color(1f, 1f, 1f, RoundedAlpha(x, y, size, r));
+            tex.SetPixels(pixels);
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0,
+                                 SpriteMeshType.FullRect, new Vector4(r, r, r, r));
+        }
+
+        private static float RoundedAlpha(int x, int y, int size, int r)
+        {
+            int cx = -1, cy = -1;
+            if      (x < r         && y < r)         { cx = r;        cy = r;        }
+            else if (x >= size - r && y < r)         { cx = size - r; cy = r;        }
+            else if (x < r         && y >= size - r) { cx = r;        cy = size - r; }
+            else if (x >= size - r && y >= size - r) { cx = size - r; cy = size - r; }
+            if (cx < 0) return 1f;
+            float d = Mathf.Sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
+            return Mathf.Clamp01(r - d + 0.5f);
         }
 
         private static void StretchFull(RectTransform rt)

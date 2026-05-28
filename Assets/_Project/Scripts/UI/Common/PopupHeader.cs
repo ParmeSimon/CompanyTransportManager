@@ -10,10 +10,12 @@ namespace TransportManager.UI.Common
     /// </summary>
     public static class PopupHeader
     {
-        private static readonly Color32 BgCard  = new Color32(0x1F, 0x23, 0x2B, 255);
-        private static readonly Color32 TextPri = new Color32(0xEC, 0xEF, 0xF5, 255);
-        private static readonly Color32 TextSec = new Color32(0x9A, 0xA5, 0xB8, 255);
-        private static readonly Color32 Divider = new Color32(0x28, 0x2D, 0x38, 255);
+        // Palette partagée (Header / Navbar / ContractsPanel / VehiclesTab)
+        private static readonly Color32 BgPill  = new Color32(0x1A, 0x1D, 0x24, 230);
+        private static readonly Color32 TextPri = new Color32(0xEC, 0xEE, 0xF5, 255);
+        private static readonly Color32 TextSec = new Color32(0x7A, 0x8F, 0xA6, 255);
+        private static readonly Color32 Divider = new Color32(0x3A, 0x3F, 0x4A, 150);
+        private static readonly Color32 Accent  = new Color32(0x38, 0x85, 0xFF, 255);
 
         public static void Build(Transform panel, string title, UnityEngine.Events.UnityAction onClose,
                                  int barHeight, Sprite roundedSprite)
@@ -34,7 +36,18 @@ namespace TransportManager.UI.Common
             hlg.childControlWidth      = true;
             hlg.childControlHeight     = true;
             hlg.padding                = new RectOffset(20, 14, 0, 0);
-            hlg.spacing                = 10;
+            hlg.spacing                = 12;
+
+            // Filet d'accent bleu avant le titre (cohérent avec le reste de l'UI)
+            var accent    = Make("Accent", bar.transform);
+            var accentImg = accent.AddComponent<Image>();
+            accentImg.sprite        = roundedSprite;
+            accentImg.type          = Image.Type.Sliced;
+            accentImg.color         = Accent;
+            accentImg.raycastTarget = false;
+            var accentLe = accent.AddComponent<LayoutElement>();
+            accentLe.preferredWidth  = 3;
+            accentLe.preferredHeight = 24;
 
             var tmp = MakeTMP("Title", bar.transform, title, 18, FontStyles.Bold, TextPri);
             tmp.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
@@ -44,7 +57,7 @@ namespace TransportManager.UI.Common
             var btnImg = btnGo.AddComponent<Image>();
             btnImg.sprite = roundedSprite;
             btnImg.type   = Image.Type.Sliced;
-            btnImg.color  = BgCard;
+            btnImg.color  = BgPill;
             var btn = btnGo.AddComponent<Button>();
             btn.targetGraphic = btnImg;
             btn.onClick.AddListener(onClose);

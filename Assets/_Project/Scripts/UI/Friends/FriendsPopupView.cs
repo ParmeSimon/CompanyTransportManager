@@ -12,16 +12,17 @@ namespace TransportManager.UI.Friends
 {
     public class FriendsPopupView : MonoBehaviour
     {
-        private static readonly Color32 BgOverlay  = new Color32(0x00, 0x00, 0x00, 180);
-        private static readonly Color32 BgPanel    = new Color32(0x16, 0x19, 0x1F, 255);
-        private static readonly Color32 BgCard     = new Color32(0x1F, 0x23, 0x2B, 255);
-        private static readonly Color32 BgPill     = new Color32(0x2C, 0x32, 0x3C, 255);
+        // Palette partagée (Header / Navbar / ContractsPanel / VehiclesTab)
+        private static readonly Color32 BgOverlay  = new Color32(0x00, 0x00, 0x00, 200);
+        private static readonly Color32 BgPanel    = new Color32(0x2C, 0x30, 0x38, 255);
+        private static readonly Color32 BgCard     = new Color32(0x34, 0x38, 0x42, 255);
+        private static readonly Color32 BgPill     = new Color32(0x1A, 0x1D, 0x24, 230);
         private static readonly Color32 Accent     = new Color32(0x3D, 0xC9, 0x6E, 255);
         private static readonly Color32 AccentBlue = new Color32(0x35, 0x8E, 0xF5, 255);
-        private static readonly Color32 TextPri    = new Color32(0xEC, 0xEF, 0xF5, 255);
-        private static readonly Color32 TextSec    = new Color32(0x9A, 0xA5, 0xB8, 255);
-        private static readonly Color32 TextMuted  = new Color32(0x55, 0x63, 0x78, 255);
-        private static readonly Color32 Divider    = new Color32(0x28, 0x2D, 0x38, 255);
+        private static readonly Color32 TextPri    = new Color32(0xEC, 0xEE, 0xF5, 255);
+        private static readonly Color32 TextSec    = new Color32(0x7A, 0x8F, 0xA6, 255);
+        private static readonly Color32 TextMuted  = new Color32(0x5A, 0x65, 0x77, 255);
+        private static readonly Color32 Divider    = new Color32(0x3A, 0x3F, 0x4A, 150);
 
         private Sprite    _sprRound12;
         private Sprite    _sprRound8;
@@ -74,6 +75,9 @@ namespace TransportManager.UI.Friends
             panelImg.type          = Image.Type.Sliced;
             panelImg.color         = BgPanel;
             panelImg.raycastTarget = true;
+            var panelShadow = panelGo.AddComponent<Shadow>();
+            panelShadow.effectColor    = new Color(0f, 0f, 0f, 0.5f);
+            panelShadow.effectDistance = new Vector2(0f, -4f);
             var panelRt = panelGo.GetComponent<RectTransform>();
             panelRt.anchorMin = new Vector2(0.05f, 0.06f);
             panelRt.anchorMax = new Vector2(0.95f, 0.94f);
@@ -348,9 +352,9 @@ namespace TransportManager.UI.Friends
         private static void RefreshRouteBtn(Image iconImg, TMP_Text lbl, bool isOn)
         {
             iconImg.sprite = Resources.Load<Sprite>(isOn ? "UI/Icons/icons/eye" : "UI/Icons/icons/eye-off");
-            iconImg.color  = isOn ? new Color32(0x3D, 0xC9, 0x6E, 255) : new Color32(0x9A, 0xA5, 0xB8, 255);
+            iconImg.color  = isOn ? new Color32(0x3D, 0xC9, 0x6E, 255) : new Color32(0x7A, 0x8F, 0xA6, 255);
             lbl.text       = isOn ? "Masquer" : "Trajets";
-            lbl.color      = isOn ? new Color32(0x3D, 0xC9, 0x6E, 255) : new Color32(0x9A, 0xA5, 0xB8, 255);
+            lbl.color      = isOn ? new Color32(0x3D, 0xC9, 0x6E, 255) : new Color32(0x7A, 0x8F, 0xA6, 255);
         }
 
         private void AddActionBtn(Transform parent, string label, string iconName, Action onClick)

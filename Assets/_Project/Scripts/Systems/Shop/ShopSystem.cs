@@ -28,10 +28,10 @@ namespace TransportManager.Systems.Shop
         public const int BeginnerPackDurationDays = 21; // Pack de Débutant  : 3 semaines
 
         // Récompenses packs débutant
-        public const int StarterPackDollars  = 15000; // Pack Démarrage 4,99€
-        public const int StarterPackGold     = 15;
-        public const int BeginnerPackDollars = 40000; // Pack Débutant 9,99€
-        public const int BeginnerPackGold    = 30;
+        public const int StarterPackDollars  = 20000; // Pack Démarrage 4,99€
+        public const int StarterPackGold     = 100;
+        public const int BeginnerPackDollars = 50000; // Pack Débutant 9,99€
+        public const int BeginnerPackGold    = 200;
 
         public ShopSystem(GameSaveData save)
         {
@@ -116,6 +116,15 @@ namespace TransportManager.Systems.Shop
             var wallet = ServiceLocator.Get<WalletSystem>();
             wallet?.Add(CurrencyType.GoldIngot, amount);
         }
+
+        public bool GrantEnergyDrinks(int count)
+        {
+            if (count <= 0) return false;
+            _save.energyDrinks += count;
+            return true;
+        }
+
+        public int EnergyDrinkCount => _save.energyDrinks;
 
         // ── Offres débutant (limitées dans le temps) ──────────────────────────
 

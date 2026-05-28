@@ -18,6 +18,10 @@ namespace TransportManager.UI.Common
         [SerializeField] private TMP_Text _dollarsLabel;
         [SerializeField] private TMP_Text _goldIngotsLabel;
 
+        private Sprite _sprR8, _sprR16;
+
+        private void Awake() => Build();
+
 #if UNITY_EDITOR
         [UnityEditor.MenuItem("CONTEXT/HeaderView/Build Header")]
         private static void BuildFromMenu(UnityEditor.MenuCommand cmd)
@@ -53,6 +57,8 @@ namespace TransportManager.UI.Common
             if (existingBg != null) Destroy(existingBg);
 #endif
 
+            EnsureRoundedSprites();
+
             var rt = GetComponent<RectTransform>();
             rt.anchorMin = new Vector2(0, 1);
             rt.anchorMax = new Vector2(1, 1);
@@ -70,8 +76,13 @@ namespace TransportManager.UI.Common
             leftRt.offsetMax = new Vector2(0, -10);
 
             var leftBg = left.AddComponent<Image>();
+            leftBg.sprite        = _sprR16;
+            leftBg.type          = Image.Type.Sliced;
             leftBg.color         = new Color32(0x2C, 0x30, 0x38, 255);
             leftBg.raycastTarget = false;
+            var leftShadow = left.AddComponent<Shadow>();
+            leftShadow.effectColor    = new Color(0f, 0f, 0f, 0.5f);
+            leftShadow.effectDistance = new Vector2(0f, -4f);
 
             // LeftSide = Logo | ColonneInfo côte à côte
             var leftHlg = left.AddComponent<HorizontalLayoutGroup>();
@@ -150,8 +161,13 @@ namespace TransportManager.UI.Common
             rightRt.offsetMax = new Vector2(-10, -10);
 
             var rightBg = right.AddComponent<Image>();
+            rightBg.sprite        = _sprR16;
+            rightBg.type          = Image.Type.Sliced;
             rightBg.color         = new Color32(0x2C, 0x30, 0x38, 255);
             rightBg.raycastTarget = false;
+            var rightShadow = right.AddComponent<Shadow>();
+            rightShadow.effectColor    = new Color(0f, 0f, 0f, 0.5f);
+            rightShadow.effectDistance = new Vector2(0f, -4f);
 
             var rightFitter = right.AddComponent<ContentSizeFitter>();
             rightFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -166,13 +182,18 @@ namespace TransportManager.UI.Common
             rightHlg.childControlWidth      = false;
             rightHlg.childControlHeight     = false;
 
-            MakeIconButton(right.transform, "BtnAnalytics", "chart");
+            var analyticsBtn = MakeIconButton(right.transform, "BtnAnalytics", "chart");
             MakeDivider(right.transform);
-            MakeIconButton(right.transform, "btnList",       "list");
+            var listBtn      = MakeIconButton(right.transform, "btnList",      "list");
             MakeDivider(right.transform);
-            MakeIconButton(right.transform, "BtnFriends",   "users");
+            var friendsBtn   = MakeIconButton(right.transform, "BtnFriends",   "users");
             MakeDivider(right.transform);
-            MakeIconButton(right.transform, "BtnSettings",  "settings");
+            var settingsBtn  = MakeIconButton(right.transform, "BtnSettings",  "settings");
+
+            analyticsBtn.onClick.AddListener(AnalyticsPopupView.Show);
+            listBtn.onClick.AddListener(FleetListPopupView.Show);
+            friendsBtn.onClick.AddListener(FriendsPopupView.Show);
+            settingsBtn.onClick.AddListener(SettingsPopupView.Show);
         }
 
         // ── Helpers ──────────────────────────────────────────────────────────
@@ -204,10 +225,12 @@ namespace TransportManager.UI.Common
             return tmp;
         }
 
-        private static TMP_Text MakePill(Transform parent, string name, string iconSpriteName, Color32 iconColor)
+        private TMP_Text MakePill(Transform parent, string name, string iconSpriteName, Color32 iconColor)
         {
             var pill    = MakeGO(name, parent);
             var pillImg = pill.AddComponent<Image>();
+            pillImg.sprite        = _sprR8;
+            pillImg.type          = Image.Type.Sliced;
             pillImg.color         = new Color32(0x1A, 0x1D, 0x24, 230);
             pillImg.raycastTarget = false;
 
@@ -251,15 +274,18 @@ namespace TransportManager.UI.Common
             return labelTmp;
         }
 
-        private static void MakeIconButton(Transform parent, string name, string iconName)
+        private Button MakeIconButton(Transform parent, string name, string iconName)
         {
             var go  = MakeGO(name, parent);
             var img = go.AddComponent<Image>();
-            img.color         = new Color32(0, 0, 0, 0);
+            img.sprite        = _sprR8;
+            img.type          = Image.Type.Sliced;
+            img.color         = new Color(1f, 1f, 1f, 0.05f);
             img.raycastTarget = true;
-            go.AddComponent<Button>();
-            SetLayout(go, 50, 50);
-            go.GetComponent<RectTransform>().sizeDelta = new Vector2(50, 50);
+            var btn = go.AddComponent<Button>();
+            btn.targetGraphic = img;
+            SetLayout(go, 44, 44);
+            go.GetComponent<RectTransform>().sizeDelta = new Vector2(44, 44);
 
             var iconGo  = MakeGO("Icon", go.transform);
             var iconImg = iconGo.AddComponent<Image>();
@@ -272,17 +298,20 @@ namespace TransportManager.UI.Common
             iconRt.anchorMax        = new Vector2(0.5f, 0.5f);
             iconRt.sizeDelta        = new Vector2(24, 24);
             iconRt.anchoredPosition = Vector2.zero;
+
+            return btn;
         }
 
         private static void MakeDivider(Transform parent)
         {
-            var tmp = MakeTMP("Divider", parent, "|", 20, FontStyles.Normal, new Color32(0x3A, 0x3F, 0x4A, 180));
-            tmp.alignment     = TextAlignmentOptions.Center;
-            tmp.raycastTarget = false;
-            var le = tmp.gameObject.AddComponent<LayoutElement>();
-            le.preferredWidth  = 10;
-            le.preferredHeight = 30;
-            tmp.GetComponent<RectTransform>().sizeDelta = new Vector2(10, 30);
+            var go  = MakeGO("Divider", parent);
+            var img = go.AddComponent<Image>();
+            img.color         = new Color32(0x3A, 0x3F, 0x4A, 150);
+            img.raycastTarget = false;
+            var le = go.AddComponent<LayoutElement>();
+            le.preferredWidth  = 1;
+            le.preferredHeight = 22;
+            go.GetComponent<RectTransform>().sizeDelta = new Vector2(1, 22);
         }
 
         // ── Events ───────────────────────────────────────────────────────────
@@ -305,23 +334,7 @@ namespace TransportManager.UI.Common
 
         private void Start()
         {
-            // Câblage runtime du bouton Settings
-            var rightSide = transform.Find("RightSide");
-            if (rightSide != null)
-            {
-                var settingsBtn = rightSide.Find("BtnSettings")?.GetComponent<Button>();
-                if (settingsBtn != null) settingsBtn.onClick.AddListener(SettingsPopupView.Show);
-
-                var friendsBtn = rightSide.Find("BtnFriends")?.GetComponent<Button>();
-                if (friendsBtn != null) friendsBtn.onClick.AddListener(FriendsPopupView.Show);
-
-                var analyticsBtn = rightSide.Find("BtnAnalytics")?.GetComponent<Button>();
-                if (analyticsBtn != null) analyticsBtn.onClick.AddListener(AnalyticsPopupView.Show);
-
-                var listBtn = rightSide.Find("btnList")?.GetComponent<Button>();
-                if (listBtn != null) listBtn.onClick.AddListener(FleetListPopupView.Show);
-            }
-
+            // Les boutons sont câblés dans Build(). Ici on initialise les valeurs.
             var gm = GameManager.Instance;
             if (gm == null || gm.Save == null) return;
             UpdateCompany();
@@ -356,5 +369,44 @@ namespace TransportManager.UI.Common
         private void UpdateDollars(int value)     { if (_dollarsLabel)    _dollarsLabel.text    = $"{value:N0}"; }
         private void UpdateGoldIngots(int value)  { if (_goldIngotsLabel) _goldIngotsLabel.text = $"{value:N0}"; }
         private void UpdateXp(int xp, int level)  { if (_xpLabel)         _xpLabel.text         = $"{xp:N0}"; }
+
+        // ── Rounded sprite factory (9-slice) ───────────────────────────────────
+        private void EnsureRoundedSprites()
+        {
+            if (_sprR16 != null) return;
+            _sprR8  = MakeRoundedSprite(8);
+            _sprR16 = MakeRoundedSprite(16);
+        }
+
+        private static Sprite MakeRoundedSprite(int radius)
+        {
+            const int size = 64;
+            int r = Mathf.Clamp(radius, 1, size / 2);
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                wrapMode   = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Bilinear
+            };
+            var pixels = new Color[size * size];
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                    pixels[y * size + x] = new Color(1f, 1f, 1f, RoundedAlpha(x, y, size, r));
+            tex.SetPixels(pixels);
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0,
+                                 SpriteMeshType.FullRect, new Vector4(r, r, r, r));
+        }
+
+        private static float RoundedAlpha(int x, int y, int size, int r)
+        {
+            int cx = -1, cy = -1;
+            if      (x < r         && y < r)         { cx = r;        cy = r;        }
+            else if (x >= size - r && y < r)         { cx = size - r; cy = r;        }
+            else if (x < r         && y >= size - r) { cx = r;        cy = size - r; }
+            else if (x >= size - r && y >= size - r) { cx = size - r; cy = size - r; }
+            if (cx < 0) return 1f;
+            float d = Mathf.Sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
+            return Mathf.Clamp01(r - d + 0.5f);
+        }
     }
 }

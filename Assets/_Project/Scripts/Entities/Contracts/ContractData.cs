@@ -21,7 +21,10 @@ namespace TransportManager.Entities.Contracts
         public float distanceKm;
         public float baseDurationSeconds;   // ORS-reported duration for reference
 
-        public int requiredCapacity;
+        public int requiredCapacity;        // min vehicle capacity (= cargoTons)
         public int baseReward;
+
+        public int cargoTons;               // quantity of goods to haul
+        public string cargoLabel;           // short description of the goods
     }
 }

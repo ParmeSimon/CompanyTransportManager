@@ -13,12 +13,16 @@ namespace TransportManager.UI.Common
         private Button _mapBtn;
         private Button _depotBtn;
         private Button _vehiclesBtn;
+        private Button _hrBtn;
         private Button _shopBtn;
 
         private Image _mapBg;
         private Image _depotBg;
         private Image _vehiclesBg;
+        private Image _hrBg;
         private Image _shopBg;
+
+        private Sprite _sprR8, _sprR16;
 
         private void Awake() => Build();
 
@@ -60,22 +64,28 @@ namespace TransportManager.UI.Common
 #endif
             }
 
+            EnsureRoundedSprites();
+
             // Position: left side, centered vertically, fit-content height
             var rt = GetComponent<RectTransform>();
             if (rt == null) rt = gameObject.AddComponent<RectTransform>();
             rt.anchorMin        = new Vector2(0, 0.5f);
             rt.anchorMax        = new Vector2(0, 0.5f);
             rt.pivot            = new Vector2(0, 0.5f);
-            rt.anchoredPosition = new Vector2(10, 0);
-            rt.sizeDelta        = new Vector2(90, 0);
+            rt.anchoredPosition = new Vector2(12, 0);
+            rt.sizeDelta        = new Vector2(110, 0);
 
-            // Background fit-content
+            // Rounded background + drop shadow
             var bg = GetComponent<Image>();
             if (bg == null) bg = gameObject.AddComponent<Image>();
             bg.color         = new Color32(0x2C, 0x30, 0x38, 255);
-            bg.sprite        = null;
-            bg.type          = Image.Type.Simple;
-            bg.raycastTarget = false;
+            bg.sprite        = _sprR16;
+            bg.type          = Image.Type.Sliced;
+            bg.raycastTarget = true;
+            var shadow = GetComponent<Shadow>();
+            if (shadow == null) shadow = gameObject.AddComponent<Shadow>();
+            shadow.effectColor    = new Color(0f, 0f, 0f, 0.5f);
+            shadow.effectDistance = new Vector2(3f, -4f);
 
             var fitter = GetComponent<ContentSizeFitter>();
             if (fitter == null) fitter = gameObject.AddComponent<ContentSizeFitter>();
@@ -85,8 +95,8 @@ namespace TransportManager.UI.Common
             // VerticalLayoutGroup
             var vlg = GetComponent<VerticalLayoutGroup>();
             if (vlg == null) vlg = gameObject.AddComponent<VerticalLayoutGroup>();
-            vlg.padding               = new RectOffset(0, 0, 8, 8);
-            vlg.spacing               = 0;
+            vlg.padding               = new RectOffset(8, 8, 10, 10);
+            vlg.spacing               = 4;
             vlg.childForceExpandWidth  = true;
             vlg.childForceExpandHeight = false;
             vlg.childAlignment        = TextAnchor.UpperCenter;
@@ -94,11 +104,13 @@ namespace TransportManager.UI.Common
             (_mapBtn, _mapBg)           = AddTab("Carte",     "UI/Icons/icons/map");
             (_depotBtn, _depotBg)       = AddTab("Dépôt",     "UI/Icons/icons/warehouse");
             (_vehiclesBtn, _vehiclesBg) = AddTab("Véhicules", "UI/Icons/icons/truck");
+            (_hrBtn, _hrBg)             = AddTab("Pilote",    "UI/Icons/icons/driver");
             (_shopBtn, _shopBg)         = AddTab("Magasin",   "UI/Icons/icons/store");
 
             _mapBtn.onClick.AddListener(() => SelectTab(TabType.Map));
             _depotBtn.onClick.AddListener(() => SelectTab(TabType.Depot));
             _vehiclesBtn.onClick.AddListener(() => SelectTab(TabType.Vehicles));
+            _hrBtn.onClick.AddListener(() => SelectTab(TabType.Hr));
             _shopBtn.onClick.AddListener(() => SelectTab(TabType.Shop));
 
             UpdateVisuals();
@@ -124,8 +136,8 @@ namespace TransportManager.UI.Common
 
             var bg = go.AddComponent<Image>();
             bg.color  = Color.clear;
-            bg.sprite = null;
-            bg.type   = Image.Type.Simple;
+            bg.sprite = _sprR8;
+            bg.type   = Image.Type.Sliced;
 
             var btn = go.AddComponent<Button>();
             var colors = ColorBlock.defaultColorBlock;
@@ -136,8 +148,8 @@ namespace TransportManager.UI.Common
             btn.targetGraphic = bg;
 
             var le = go.AddComponent<LayoutElement>();
-            le.preferredHeight = 90;
-            go.GetComponent<RectTransform>().sizeDelta = new Vector2(90, 90);
+            le.preferredHeight = 80;
+            go.GetComponent<RectTransform>().sizeDelta = new Vector2(80, 80);
 
             var inner = go.AddComponent<VerticalLayoutGroup>();
             inner.childAlignment         = TextAnchor.MiddleCenter;
@@ -193,6 +205,7 @@ namespace TransportManager.UI.Common
             SetTabActive(_mapBg, _mapBtn, _activeTab == TabType.Map);
             SetTabActive(_depotBg, _depotBtn, _activeTab == TabType.Depot);
             SetTabActive(_vehiclesBg, _vehiclesBtn, _activeTab == TabType.Vehicles);
+            SetTabActive(_hrBg, _hrBtn, _activeTab == TabType.Hr);
             SetTabActive(_shopBg, _shopBtn, _activeTab == TabType.Shop);
         }
 
@@ -218,6 +231,45 @@ namespace TransportManager.UI.Common
         {
             _activeTab = tab;
             UpdateVisuals();
+        }
+
+        // ── Rounded sprite factory (9-slice) ───────────────────────────────────
+        private void EnsureRoundedSprites()
+        {
+            if (_sprR16 != null) return;
+            _sprR8  = MakeRoundedSprite(8);
+            _sprR16 = MakeRoundedSprite(16);
+        }
+
+        private static Sprite MakeRoundedSprite(int radius)
+        {
+            const int size = 64;
+            int r = Mathf.Clamp(radius, 1, size / 2);
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                wrapMode   = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Bilinear
+            };
+            var pixels = new Color[size * size];
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                    pixels[y * size + x] = new Color(1f, 1f, 1f, RoundedAlpha(x, y, size, r));
+            tex.SetPixels(pixels);
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0,
+                                 SpriteMeshType.FullRect, new Vector4(r, r, r, r));
+        }
+
+        private static float RoundedAlpha(int x, int y, int size, int r)
+        {
+            int cx = -1, cy = -1;
+            if      (x < r         && y < r)         { cx = r;        cy = r;        }
+            else if (x >= size - r && y < r)         { cx = size - r; cy = r;        }
+            else if (x < r         && y >= size - r) { cx = r;        cy = size - r; }
+            else if (x >= size - r && y >= size - r) { cx = size - r; cy = size - r; }
+            if (cx < 0) return 1f;
+            float d = Mathf.Sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
+            return Mathf.Clamp01(r - d + 0.5f);
         }
     }
 }

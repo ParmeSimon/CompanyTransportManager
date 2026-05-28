@@ -19,6 +19,7 @@ namespace TransportManager.Save
         public CompanyProfile company = new CompanyProfile();
         public int dollars = 15000;
         public int goldIngots = 10;
+        public int energyDrinks = 0;
         public int companyXp = 0;
 
         public DepotState depot = new DepotState();

@@ -15,6 +15,7 @@ namespace TransportManager.Editor
                 "Assets/Resources/UI/Logo",
                 "Assets/Resources/UI/Tutorial",
                 "Assets/Resources/UI/WareHouse",
+                "Assets/Resources/UI/offers",
             };
 
             int count = 0;

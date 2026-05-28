@@ -21,21 +21,22 @@ namespace TransportManager.UI.Tabs
         // ║ Palette                                                            ║
         // ╚════════════════════════════════════════════════════════════════════╝
 
-        private static readonly Color32 BgPanel    = new Color32(0x10, 0x12, 0x17, 235);
-        private static readonly Color32 BgCard     = new Color32(0x1B, 0x1F, 0x27, 255);
-        private static readonly Color32 BgCardSoft = new Color32(0x23, 0x28, 0x32, 255);
-        private static readonly Color32 BgHero     = new Color32(0x2A, 0x22, 0x14, 255);
-        private static readonly Color32 BgImgSlot  = new Color32(0x0E, 0x10, 0x16, 255);
-        private static readonly Color32 BgLockedOv = new Color32(0x07, 0x09, 0x0E, 230);
-        private static readonly Color32 Divider    = new Color32(0x2A, 0x2F, 0x3A, 255);
+        // Palette partagée (Header / Navbar / ContractsPanel / VehiclesTab)
+        private static readonly Color32 BgPanel    = new Color32(0x2C, 0x30, 0x38, 240);
+        private static readonly Color32 BgCard     = new Color32(0x34, 0x38, 0x42, 255);
+        private static readonly Color32 BgCardSoft = new Color32(0x1A, 0x1D, 0x24, 230);
+        private static readonly Color32 BgHero     = new Color32(0x3A, 0x33, 0x22, 255);   // carte mise en avant, teinte dorée
+        private static readonly Color32 BgImgSlot  = new Color32(0x1A, 0x1D, 0x24, 255);
+        private static readonly Color32 BgLockedOv = new Color32(0x1A, 0x1D, 0x24, 235);
+        private static readonly Color32 Divider    = new Color32(0x3A, 0x3F, 0x4A, 150);
 
-        private static readonly Color32 TextPri    = new Color32(0xFA, 0xFB, 0xFD, 255);
-        private static readonly Color32 TextSec    = new Color32(0xA0, 0xAB, 0xBE, 255);
-        private static readonly Color32 TextMuted  = new Color32(0x5A, 0x66, 0x7A, 255);
+        private static readonly Color32 TextPri    = new Color32(0xEC, 0xEE, 0xF5, 255);
+        private static readonly Color32 TextSec    = new Color32(0x7A, 0x8F, 0xA6, 255);
+        private static readonly Color32 TextMuted  = new Color32(0x5A, 0x65, 0x77, 255);
         private static readonly Color32 TextDark   = new Color32(0x12, 0x14, 0x1A, 255);
 
         private static readonly Color32 ColGreen   = new Color32(0x3D, 0xC9, 0x6E, 255);
-        private static readonly Color32 ColGold    = new Color32(0xF2, 0xD0, 0x66, 255);
+        private static readonly Color32 ColGold    = new Color32(0xF2, 0xD9, 0x66, 255);
         private static readonly Color32 ColBlue    = new Color32(0x4D, 0x9C, 0xFF, 255);
         private static readonly Color32 ColPurple  = new Color32(0xA8, 0x7E, 0xFF, 255);
         private static readonly Color32 ColOrange  = new Color32(0xFA, 0xA0, 0x24, 255);
@@ -47,10 +48,20 @@ namespace TransportManager.UI.Tabs
         // ╚════════════════════════════════════════════════════════════════════╝
 
         [Header("Safe area (offsets pour éviter header + navbar)")]
-        [SerializeField] private int safeTop    = 120;
-        [SerializeField] private int safeLeft   = 110;
+        [SerializeField] private int safeTop    = 140;
+        [SerializeField] private int safeLeft   = 130;
         [SerializeField] private int safeRight  = 20;
         [SerializeField] private int safeBottom = 20;
+
+        // ── Pour ajouter une offre : cliquer sur + ci-dessous, remplir title / quantity / priceText / bonus / resourceImage ──
+        [Header("Boissons Énergisantes — ajoutez vos offres ici sans toucher au code")]
+        [SerializeField] private EnergyDrinkOfferData[] _energyDrinkOffers = new EnergyDrinkOfferData[]
+        {
+            new EnergyDrinkOfferData { title = "SOLO",    quantity = 1, priceText = "0,99 €", bonus = ""           },
+            new EnergyDrinkOfferData { title = "DUO",     quantity = 2, priceText = "1,79 €", bonus = ""           },
+            new EnergyDrinkOfferData { title = "PACK X3", quantity = 3, priceText = "2,49 €", bonus = "+1 offert"  },
+            new EnergyDrinkOfferData { title = "STOCK",   quantity = 5, priceText = "3,99 €", bonus = "+2 offerts" },
+        };
 
         // ╔════════════════════════════════════════════════════════════════════╗
         // ║ État interne                                                       ║
@@ -187,7 +198,8 @@ namespace TransportManager.UI.Tabs
 
             // Sections
             BuildHeroAdSection(content.transform);
-            BuildStarterOffersSection(content.transform);
+            BuildTemporaryOffersSection(content.transform);
+            BuildEnergyDrinksSection(content.transform);
             BuildGoldPacksSection(content.transform);
             BuildConvertSection(content.transform);
         }
@@ -239,11 +251,28 @@ namespace TransportManager.UI.Tabs
             var spacer = MakeGO("Sp", card.transform);
             spacer.AddComponent<LayoutElement>().preferredHeight = 6;
 
-            var btn = BuildCtaButton(card.transform, "REGARDER LA PUB", ColGold, TextDark, 52, OnWatchAdClicked);
-            _adButton      = btn.button;
-            _adButtonLabel = btn.label;
-            _adButtonBg    = btn.bg;
-            AddCtaLeftIcon(btn.button.transform, "UI/Icons/icons/add", TextDark, 26);
+            var btn = BuildCtaButton(card.transform, "", ColGold, TextDark, 52, OnWatchAdClicked);
+            _adButton  = btn.button;
+            _adButtonBg = btn.bg;
+            btn.label.gameObject.SetActive(false); // remplacé par contentRow
+
+            // Contenu centré : icône + texte côte à côte
+            var contentRow = MakeGO("ContentRow", btn.button.transform);
+            FillParent(contentRow.GetComponent<RectTransform>());
+            var cHlg = contentRow.AddComponent<HorizontalLayoutGroup>();
+            cHlg.childAlignment        = TextAnchor.MiddleCenter;
+            cHlg.spacing               = 8;
+            cHlg.childForceExpandWidth  = false;
+            cHlg.childForceExpandHeight = false;
+            cHlg.childControlWidth      = true;
+            cHlg.childControlHeight     = true;
+
+            BuildIconImage(contentRow.transform, "UI/Icons/icons/add", TextDark, 22);
+
+            var adLbl = AddTMP("AdLbl", contentRow.transform, "REGARDER LA PUB", 14, FontStyles.Bold, TextDark);
+            adLbl.textWrappingMode = TextWrappingModes.NoWrap;
+            adLbl.characterSpacing = 3f;
+            _adButtonLabel = adLbl;
         }
 
         private void RefreshAdButton()
@@ -284,17 +313,17 @@ namespace TransportManager.UI.Tabs
         }
 
         // ╔════════════════════════════════════════════════════════════════════╗
-        // ║ Section 2 — Offres débutant (verrouillées après 14 jours)          ║
+        // ║ Section 2 — Offres temporaires (limitées dans le temps)            ║
         // ╚════════════════════════════════════════════════════════════════════╝
 
-        private void BuildStarterOffersSection(Transform parent)
+        private void BuildTemporaryOffersSection(Transform parent)
         {
             // Header
             var head = MakeRow(parent, height: 24, spacing: 10);
             head.GetComponent<HorizontalLayoutGroup>().padding = new RectOffset(2, 2, 0, 0);
 
-            BuildAccentDot(head.transform, ColPurple, 8);
-            var lbl = AddTMP("Lbl", head.transform, "OFFRES DÉBUTANT", 12, FontStyles.Bold, TextPri);
+            BuildAccentDot(head.transform, ColRed, 8);
+            var lbl = AddTMP("Lbl", head.transform, "OFFRES TEMPORAIRES", 12, FontStyles.Bold, TextPri);
             lbl.characterSpacing = 5f;
             lbl.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
 
@@ -304,30 +333,30 @@ namespace TransportManager.UI.Tabs
             _starterPackCountdownLabel = BuildOfferCard(row.transform,
                 offerId:       "starter_pack",
                 accent:        ColPurple,
-                resourceImage: "UI/Shop/offer_starter",
+                resourceImage: "UI/offers/starter_pack",
                 title:         "PACK DE DÉMARRAGE",
-                bigValue:      "15K $",
-                items:         new[] { "15 000 $", "15 lingots", "Camion exclusif", "-25% maintenance 7j" },
+                bigValue:      "20K $",
+                items:         new[] { "20 000 $", "100 lingots", "Camion exclusif", "-25% maintenance 7j" },
                 badge:         "2 SEM.",
                 badgeColor:    ColRed,
                 realPriceText: "4,99 €",
-                dollarsReward: 15000,
-                goldReward:    15,
+                dollarsReward: 20000,
+                goldReward:    100,
                 isAvailable:   s => s.IsStarterPackAvailable,
                 getTimeLeft:   s => s.StarterPackTimeLeft);
 
             _beginnerPackCountdownLabel = BuildOfferCard(row.transform,
                 offerId:       "beginner_pack",
                 accent:        ColPurple,
-                resourceImage: "UI/Shop/offer_beginner",
+                resourceImage: "UI/offers/beginner_pack",
                 title:         "PACK DE DÉBUTANT",
-                bigValue:      "40K $",
-                items:         new[] { "40 000 $", "30 lingots", "Camion exclusif", "Conducteur exclusif", "+1 emplacement", "-50% maintenance" },
+                bigValue:      "50K $",
+                items:         new[] { "50 000 $", "200 lingots", "Camion exclusif", "Conducteur exclusif", "+1 emplacement", "-50% maintenance" },
                 badge:         "3 SEM.",
                 badgeColor:    ColOrange,
                 realPriceText: "9,99 €",
-                dollarsReward: 40000,
-                goldReward:    30,
+                dollarsReward: 50000,
+                goldReward:    200,
                 isAvailable:   s => s.IsBeginnerPackAvailable,
                 getTimeLeft:   s => s.BeginnerPackTimeLeft);
         }
@@ -367,7 +396,8 @@ namespace TransportManager.UI.Tabs
                                        Func<ShopSystem, bool> isAvailable,
                                        Func<ShopSystem, TimeSpan> getTimeLeft)
         {
-            var card = MakeRoundedCard(parent, BgCard, 0);
+            // fitContentHeight:false → la rangée impose une hauteur égale aux deux cartes.
+            var card = MakeRoundedCard(parent, BgCard, 0, fitContentHeight: false);
             var vlg = card.GetComponent<VerticalLayoutGroup>();
             vlg.padding = new RectOffset(0, 0, 0, 0);
             vlg.spacing = 0;
@@ -380,19 +410,20 @@ namespace TransportManager.UI.Tabs
             visualImg.sprite = _sprRound16;
             visualImg.type   = Image.Type.Sliced;
             visualImg.color  = BgImgSlot;
+            var mask = visualGo.AddComponent<Mask>();
+            mask.showMaskGraphic = true;
 
             // Image (sprite drop later via Resources)
             var imgGo = MakeGO("PackImage", visualGo.transform);
             var imgRt = imgGo.GetComponent<RectTransform>();
             FillParent(imgRt);
-            imgRt.offsetMin = new Vector2(12, 12);
-            imgRt.offsetMax = new Vector2(-12, -12);
             var packImg = imgGo.AddComponent<Image>();
-            packImg.sprite         = Resources.Load<Sprite>(resourceImage);
-            packImg.preserveAspect = true;
-            packImg.color          = packImg.sprite == null
-                ? new Color(accent.r / 255f, accent.g / 255f, accent.b / 255f, 0.18f)
-                : Color.white;
+            var loadedSprite = LoadSprite(resourceImage);
+            packImg.sprite         = loadedSprite;
+            packImg.preserveAspect = false;
+            packImg.color          = loadedSprite != null
+                ? Color.white
+                : new Color(accent.r / 255f, accent.g / 255f, accent.b / 255f, 0.18f);
             packImg.raycastTarget  = false;
 
             // Badge en haut-droite
@@ -409,13 +440,16 @@ namespace TransportManager.UI.Tabs
             stripeRt.sizeDelta = new Vector2(4, 0);
             stripeRt.anchoredPosition = Vector2.zero;
 
-            // ── Contenu textuel ──
+            // ── Contenu textuel ── (flexibleHeight pour remplir la carte égalisée)
             var infoGo = MakeGO("Info", card.transform);
+            infoGo.AddComponent<LayoutElement>().flexibleHeight = 1;
             var infoVlg = infoGo.AddComponent<VerticalLayoutGroup>();
             infoVlg.padding = new RectOffset(18, 18, 14, 16);
             infoVlg.spacing = 4;
             infoVlg.childForceExpandWidth = true;
             infoVlg.childControlWidth     = true;
+            infoVlg.childControlHeight    = true;
+            infoVlg.childForceExpandHeight = false;
 
             var titleLbl = AddTMP("Title", infoGo.transform, title, 11, FontStyles.Bold, TextSec);
             titleLbl.characterSpacing = 4f;
@@ -434,8 +468,11 @@ namespace TransportManager.UI.Tabs
             var countdownLbl = AddTMP("Countdown", infoGo.transform, "", 10, FontStyles.Normal, ColOrange);
             countdownLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 14;
 
+            // Spacer flexible : pousse le CTA en bas pour aligner les boutons des 2 cartes.
             var spacerGo = MakeGO("Sp", infoGo.transform);
-            spacerGo.AddComponent<LayoutElement>().preferredHeight = 6;
+            var spacerLe = spacerGo.AddComponent<LayoutElement>();
+            spacerLe.preferredHeight = 6;
+            spacerLe.flexibleHeight  = 1;
 
             // CTA — achat avec argent réel (IAP)
             var cta = BuildCtaButton(infoGo.transform, "ACHETER  ·  " + realPriceText, accent, Color.white, 44, null);
@@ -526,7 +563,114 @@ namespace TransportManager.UI.Tabs
         }
 
         // ╔════════════════════════════════════════════════════════════════════╗
-        // ║ Section 3 — Packs de lingots                                       ║
+        // ║ Section 3 — Boissons Énergisantes                                  ║
+        // ╚════════════════════════════════════════════════════════════════════╝
+
+        private void BuildEnergyDrinksSection(Transform parent)
+        {
+            if (_energyDrinkOffers == null || _energyDrinkOffers.Length == 0) return;
+
+            var head = MakeRow(parent, height: 24, spacing: 10);
+            head.GetComponent<HorizontalLayoutGroup>().padding = new RectOffset(2, 2, 0, 0);
+            BuildAccentDot(head.transform, ColBlue, 8);
+            var lbl = AddTMP("Lbl", head.transform, "BOISSONS ÉNERGISANTES", 12, FontStyles.Bold, TextPri);
+            lbl.characterSpacing = 5f;
+            lbl.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
+
+            var sub = AddTMP("Sub", parent, "Protège vos conducteurs contre les accidents", 11, FontStyles.Normal, TextSec);
+            sub.gameObject.AddComponent<LayoutElement>().preferredHeight = 16;
+
+            var row = BuildPairRow(parent);
+            foreach (var offer in _energyDrinkOffers)
+                BuildEnergyDrinkCard(row.transform, offer);
+        }
+
+        private void BuildEnergyDrinkCard(Transform parent, EnergyDrinkOfferData offer)
+        {
+            var card = MakeRoundedCard(parent, BgCard, 0);
+            var vlg = card.GetComponent<VerticalLayoutGroup>();
+            vlg.padding = new RectOffset(0, 0, 0, 0);
+            vlg.spacing = 0;
+
+            // Image
+            var imgWrap = MakeGO("ImageWrap", card.transform);
+            imgWrap.AddComponent<LayoutElement>().preferredHeight = 68;
+            var imgBg = imgWrap.AddComponent<Image>();
+            imgBg.sprite = _sprRound16;
+            imgBg.type   = Image.Type.Sliced;
+            imgBg.color  = BgImgSlot;
+
+            var imgGo  = MakeGO("DrinkImg", imgWrap.transform);
+            var imgRt  = imgGo.GetComponent<RectTransform>();
+            FillParent(imgRt);
+            imgRt.offsetMin = new Vector2(8, 8);
+            imgRt.offsetMax = new Vector2(-8, -8);
+            var drinkImg = imgGo.AddComponent<Image>();
+            drinkImg.sprite = !string.IsNullOrEmpty(offer.resourceImage)
+                ? Resources.Load<Sprite>(offer.resourceImage)
+                : null;
+            drinkImg.preserveAspect = true;
+            drinkImg.raycastTarget  = false;
+            if (drinkImg.sprite == null)
+            {
+                drinkImg.sprite = Resources.Load<Sprite>("UI/Icons/Infos/energy");
+                drinkImg.color  = new Color(0.3f, 0.6f, 1f, 0.22f);
+            }
+
+            // Contenu
+            var infoGo  = MakeGO("Info", card.transform);
+            var infoVlg = infoGo.AddComponent<VerticalLayoutGroup>();
+            infoVlg.padding               = new RectOffset(8, 8, 8, 10);
+            infoVlg.spacing               = 1;
+            infoVlg.childAlignment        = TextAnchor.UpperCenter;
+            infoVlg.childForceExpandWidth = true;
+            infoVlg.childControlWidth     = true;
+
+            var titleLbl = AddTMP("Title", infoGo.transform, offer.title, 10, FontStyles.Bold, TextSec);
+            titleLbl.alignment        = TextAlignmentOptions.Center;
+            titleLbl.characterSpacing = 3f;
+            titleLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 12;
+
+            var qtyRow = MakeRow(infoGo.transform, height: 36, spacing: 3);
+            qtyRow.GetComponent<HorizontalLayoutGroup>().childAlignment        = TextAnchor.MiddleCenter;
+            qtyRow.GetComponent<HorizontalLayoutGroup>().childForceExpandWidth = false;
+
+            var qtyLbl = AddTMP("Qty", qtyRow.transform, offer.quantity.ToString(), 28, FontStyles.Bold, ColBlue);
+            qtyLbl.alignment = TextAlignmentOptions.MidlineRight;
+            qtyLbl.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+
+            var unitLbl = AddTMP("Unit", qtyRow.transform,
+                offer.quantity <= 1 ? "bois." : "bois.", 8, FontStyles.Normal, TextMuted);
+            unitLbl.alignment = TextAlignmentOptions.MidlineLeft;
+
+            var descLbl = AddTMP("Desc", infoGo.transform, "Évite accidents", 9, FontStyles.Normal, TextMuted);
+            descLbl.alignment = TextAlignmentOptions.Center;
+            descLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 11;
+
+            if (!string.IsNullOrEmpty(offer.bonus))
+            {
+                var bonusLbl = AddTMP("Bonus", infoGo.transform, offer.bonus, 10, FontStyles.Bold, ColGreen);
+                bonusLbl.alignment = TextAlignmentOptions.Center;
+                bonusLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 13;
+            }
+            else
+            {
+                MakeGO("Sp", infoGo.transform).AddComponent<LayoutElement>().preferredHeight = 13;
+            }
+
+            MakeGO("Sp2", infoGo.transform).AddComponent<LayoutElement>().preferredHeight = 4;
+
+            var cta = BuildCtaButton(infoGo.transform, offer.priceText, ColBlue, Color.white, 36, null);
+            cta.button.onClick.AddListener(() =>
+            {
+                var shop = ServiceLocator.Get<ShopSystem>();
+                if (shop != null && shop.GrantEnergyDrinks(offer.quantity))
+                    Debug.Log($"[Shop] Boisson achetée : +{offer.quantity} ({offer.priceText})");
+            });
+        }
+
+        // ╔════════════════════════════════════════════════════════════════════╗
+        // ║ Section 4 — Packs de lingots                                       ║
         // ╚════════════════════════════════════════════════════════════════════╝
 
         private void BuildGoldPacksSection(Transform parent)
@@ -539,12 +683,14 @@ namespace TransportManager.UI.Tabs
             lbl.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
 
             var r1 = BuildPairRow(parent);
-            BuildPackCard(r1.transform, "PETIT SAC",    20,  "1,99 €",  null,    "UI/Shop/pack_small");
-            BuildPackCard(r1.transform, "COFFRE",       50,  "4,99 €",  "+10%",  "UI/Shop/pack_medium");
+            BuildPackCard(r1.transform, "STARTER",      10,   "0,99 €",  null,    "UI/Shop/pack_starter");
+            BuildPackCard(r1.transform, "PETIT SAC",    30,   "1,99 €",  null,    "UI/Shop/pack_small");
+            BuildPackCard(r1.transform, "COFFRE",       75,   "4,99 €",  "+10%",  "UI/Shop/pack_medium");
 
             var r2 = BuildPairRow(parent);
-            BuildPackCard(r2.transform, "GRAND COFFRE", 100, "9,99 €",  "+20%",  "UI/Shop/pack_large");
-            BuildPackCard(r2.transform, "TRÉSOR",       280, "24,99 €", "+40%",  "UI/Shop/pack_mega");
+            BuildPackCard(r2.transform, "GRAND COFFRE", 150,  "9,99 €",  "+20%",  "UI/Shop/pack_large");
+            BuildPackCard(r2.transform, "TRÉSOR",       400,  "24,99 €", "+40%",  "UI/Shop/pack_mega");
+            BuildPackCard(r2.transform, "COFFRE-FORT",  1000, "49,99 €", "+60%",  "UI/Shop/pack_vault");
         }
 
         private void BuildPackCard(Transform parent, string title, int goldAmount, string priceText,
@@ -571,13 +717,12 @@ namespace TransportManager.UI.Tabs
             imgRt.offsetMax = new Vector2(-10, -10);
 
             var packImg = imgGo.AddComponent<Image>();
-            packImg.sprite         = Resources.Load<Sprite>(resourceImage);
+            packImg.sprite         = LoadSprite(resourceImage);
             packImg.preserveAspect = true;
             packImg.raycastTarget  = false;
             if (packImg.sprite == null)
             {
-                // Placeholder visible : icône gold géante semi-transparente
-                packImg.sprite = Resources.Load<Sprite>("UI/Icons/Infos/gold");
+                packImg.sprite = LoadSprite("UI/Icons/Infos/gold");
                 packImg.color  = new Color(1f, 0.82f, 0.4f, 0.18f);
             }
 
@@ -601,6 +746,9 @@ namespace TransportManager.UI.Tabs
 
             var qtyLbl = AddTMP("Qty", qtyRow.transform, goldAmount.ToString("N0"),
                                 42, FontStyles.Bold, TextPri);
+            qtyLbl.enableAutoSizing = true;
+            qtyLbl.fontSizeMin      = 22;
+            qtyLbl.fontSizeMax      = 42;
             qtyLbl.gameObject.AddComponent<LayoutElement>().preferredWidth = 100;
             qtyLbl.alignment = TextAlignmentOptions.MidlineRight;
 
@@ -633,7 +781,7 @@ namespace TransportManager.UI.Tabs
         }
 
         // ╔════════════════════════════════════════════════════════════════════╗
-        // ║ Section 4 — Bureau de change (gold → dollars uniquement)           ║
+        // ║ Section 5 — Bureau de change (gold → dollars uniquement)           ║
         // ╚════════════════════════════════════════════════════════════════════╝
 
         private void BuildConvertSection(Transform parent)
@@ -717,7 +865,7 @@ namespace TransportManager.UI.Tabs
                 var w = ServiceLocator.Get<WalletSystem>();
                 bool ok = w != null && w.CanAfford(Enums.CurrencyType.GoldIngot, amount);
                 btn.interactable = ok;
-                img.color        = ok ? BgCardSoft : new Color32(0x18, 0x1C, 0x24, 255);
+                img.color        = ok ? BgCardSoft : new Color32(0x14, 0x16, 0x1C, 255);
                 qtyLbl.color     = ok ? ColGold : TextMuted;
                 valueLbl.color   = ok ? ColGreen : TextMuted;
             };
@@ -729,7 +877,7 @@ namespace TransportManager.UI.Tabs
         // ║ Helpers UI                                                         ║
         // ╚════════════════════════════════════════════════════════════════════╝
 
-        private GameObject MakeRoundedCard(Transform parent, Color32 color, int minHeight)
+        private GameObject MakeRoundedCard(Transform parent, Color32 color, int minHeight, bool fitContentHeight = true)
         {
             var card = MakeGO("Card", parent);
             var img  = card.AddComponent<Image>();
@@ -738,6 +886,10 @@ namespace TransportManager.UI.Tabs
             img.color         = color;
             img.raycastTarget = false;
 
+            var shadow = card.AddComponent<Shadow>();
+            shadow.effectColor    = new Color(0f, 0f, 0f, 0.5f);
+            shadow.effectDistance = new Vector2(0f, -4f);
+
             var vlg = card.AddComponent<VerticalLayoutGroup>();
             vlg.padding                = new RectOffset(0, 0, 0, 0);
             vlg.spacing                = 0;
@@ -745,7 +897,9 @@ namespace TransportManager.UI.Tabs
             vlg.childForceExpandHeight = false;
             vlg.childControlWidth      = true;
             vlg.childControlHeight     = true;
-            card.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            // Sans fitter, la hauteur est imposée par le parent (rangée) → cartes de hauteur égale.
+            if (fitContentHeight)
+                card.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
             var le = card.AddComponent<LayoutElement>();
             le.flexibleWidth = 1;
@@ -762,9 +916,10 @@ namespace TransportManager.UI.Tabs
             hlg.spacing                = 16;
             hlg.childAlignment         = TextAnchor.UpperLeft;
             hlg.childForceExpandWidth  = true;
-            hlg.childForceExpandHeight = false;
+            hlg.childForceExpandHeight = true;
             hlg.childControlWidth      = true;
             hlg.childControlHeight     = true;
+            row.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             return row;
         }
 
@@ -927,6 +1082,16 @@ namespace TransportManager.UI.Tabs
             tmp.alignment     = TextAlignmentOptions.MidlineLeft;
             tmp.raycastTarget = false;
             return tmp;
+        }
+
+        private static Sprite LoadSprite(string resourcePath)
+        {
+            if (string.IsNullOrEmpty(resourcePath)) return null;
+            var spr = Resources.Load<Sprite>(resourcePath);
+            if (spr != null) return spr;
+            var tex = Resources.Load<Texture2D>(resourcePath);
+            if (tex == null) return null;
+            return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
         }
 
         private static void FillParent(RectTransform rt)
