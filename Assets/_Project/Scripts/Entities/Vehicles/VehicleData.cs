@@ -33,6 +33,13 @@ namespace TransportManager.Entities.Vehicles
         [Tooltip("Minimum company level required to purchase this vehicle.")]
         public int minCompanyLevelRequired = 1;
 
+        /// <summary>
+        /// Niveau d'entreprise réellement requis : le maximum entre le niveau propre au
+        /// véhicule et le plancher de sa classe (<see cref="VehicleClassUnlock"/>).
+        /// </summary>
+        public int RequiredCompanyLevel =>
+            Mathf.Max(minCompanyLevelRequired, VehicleClassUnlock.ForCategory(category));
+
         public float MaxRangeKm()
         {
             return fuelConsumptionLPer100Km > 0f

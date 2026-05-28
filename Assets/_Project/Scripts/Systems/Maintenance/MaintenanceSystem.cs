@@ -1,9 +1,11 @@
-﻿using TransportManager.Core;
+﻿using UnityEngine;
+using TransportManager.Core;
 using TransportManager.Entities.Vehicles;
 using TransportManager.Enums;
 using TransportManager.Events;
 using TransportManager.Save;
 using TransportManager.Systems.Economy;
+using TransportManager.Systems.Progression;
 
 namespace TransportManager.Systems.Maintenance
 {
@@ -35,7 +37,9 @@ namespace TransportManager.Systems.Maintenance
         {
             var wallet = ServiceLocator.Get<WalletSystem>();
             if (wallet == null) return false;
-            if (!wallet.TrySpend(CurrencyType.Dollar, maintenanceCost)) return false;
+            float reduction = ServiceLocator.Get<SkillTreeSystem>()?.Pct(SkillEffectType.RepairCostReduction) ?? 0f;
+            int cost = Mathf.Max(0, Mathf.RoundToInt(maintenanceCost * (1f - reduction)));
+            if (!wallet.TrySpend(CurrencyType.Dollar, cost)) return false;
             ApplyRepair(vehicle);
             return true;
         }

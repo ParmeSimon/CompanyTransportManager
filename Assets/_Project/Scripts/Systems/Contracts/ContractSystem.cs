@@ -36,7 +36,8 @@ namespace TransportManager.Systems.Contracts
         {
             if (contract == null || data == null) return false;
             float consumption = data.fuelConsumptionLPer100Km;
-            if (driver != null) consumption *= (1f - driver.stats.fuelEfficiencyBonus);
+            if (driver != null) consumption *= driver.stats.FuelConsumptionMultiplier;
+            consumption *= (1f - (ServiceLocator.Get<SkillTreeSystem>()?.Pct(SkillEffectType.FuelConsumptionReduction) ?? 0f));
             if (consumption <= 0f) return false;
             float maxRange = data.fuelTankCapacityLiters * 100f / consumption;
             return maxRange >= contract.distanceKm;
@@ -53,8 +54,11 @@ namespace TransportManager.Systems.Contracts
             var driver = hr?.GetHired(vehicle.assignedDriverInstanceId);
             if (driver == null) return null;
 
-            float effectiveSpeed = data.speedKmh * (1f + driver.stats.speedBonus);
-            float effectiveConsumption = data.fuelConsumptionLPer100Km * (1f - driver.stats.fuelEfficiencyBonus);
+            var skills = ServiceLocator.Get<SkillTreeSystem>();
+            float effectiveSpeed = data.speedKmh * driver.stats.SpeedMultiplier
+                * (1f + (skills?.Pct(SkillEffectType.TripSpeedBonus) ?? 0f));
+            float effectiveConsumption = data.fuelConsumptionLPer100Km * driver.stats.FuelConsumptionMultiplier
+                * (1f - (ServiceLocator.Get<SkillTreeSystem>()?.Pct(SkillEffectType.FuelConsumptionReduction) ?? 0f));
             if (effectiveSpeed <= 0f || effectiveConsumption <= 0f) return null;
             float effectiveMaxRange = data.fuelTankCapacityLiters * 100f / effectiveConsumption;
             if (effectiveMaxRange < definition.distanceKm) return null;
@@ -152,7 +156,9 @@ namespace TransportManager.Systems.Contracts
         private void Finalize(ContractInstance contract, VehicleData data)
         {
             var wallet = ServiceLocator.Get<WalletSystem>();
-            wallet?.Add(CurrencyType.Dollar, contract.definition.baseReward);
+            float rewardBonus = ServiceLocator.Get<SkillTreeSystem>()?.Pct(SkillEffectType.ContractRewardBonus) ?? 0f;
+            int reward = Mathf.RoundToInt(contract.definition.baseReward * (1f + rewardBonus));
+            wallet?.Add(CurrencyType.Dollar, reward);
 
             var fleet   = ServiceLocator.Get<FleetSystem>();
             var vehicle = fleet?.GetById(contract.assignedVehicleInstanceId);

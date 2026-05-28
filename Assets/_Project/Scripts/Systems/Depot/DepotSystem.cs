@@ -6,6 +6,7 @@ using TransportManager.Events;
 using TransportManager.Save;
 using TransportManager.Systems.Economy;
 using TransportManager.Systems.Fleet;
+using TransportManager.Systems.Progression;
 
 namespace TransportManager.Systems.Depot
 {
@@ -22,7 +23,15 @@ namespace TransportManager.Systems.Depot
         public int Level => _save.depot.level;
 
         // Max vehicles the depot can host. Level 1 = 1 truck, level N = N trucks.
-        public int MaxVehicleSlots => _save.depot.level;
+        // Bonifié par les compétences débloquées (branche Dépôt).
+        public int MaxVehicleSlots
+        {
+            get
+            {
+                int bonus = ServiceLocator.Get<SkillTreeSystem>()?.Flat(SkillEffectType.ExtraVehicleSlots) ?? 0;
+                return _save.depot.level + bonus;
+            }
+        }
 
         public int GetUsedSlots()
         {
@@ -34,7 +43,9 @@ namespace TransportManager.Systems.Depot
 
         public int GetNextUpgradeCost()
         {
-            return (int)Math.Round(BaseUpgradeCost * Math.Pow(UpgradeGrowthFactor, _save.depot.level - 1));
+            double baseCost = BaseUpgradeCost * Math.Pow(UpgradeGrowthFactor, _save.depot.level - 1);
+            float reduction = ServiceLocator.Get<SkillTreeSystem>()?.Pct(SkillEffectType.DepotUpgradeCostReduction) ?? 0f;
+            return (int)Math.Round(baseCost * (1f - reduction));
         }
 
         public bool CanUpgrade()

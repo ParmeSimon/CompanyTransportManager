@@ -1,6 +1,9 @@
 using System;
 using UnityEngine;
+using TransportManager.Core;
+using TransportManager.Enums;
 using TransportManager.Entities.Drivers;
+using TransportManager.Systems.Progression;
 
 namespace TransportManager.Systems.Accidents
 {
@@ -15,6 +18,8 @@ namespace TransportManager.Systems.Accidents
     ///   effectiveDodge = dodge × (1 − fatigue/100)
     ///
     /// Accident fatal : chance = 0.20 × (1 − concentration/100)
+    ///
+    /// Coût de réparation × Lerp(1.0, 0.5, safety/100)  (sécurité élevée = moins cher)
     /// </summary>
     public static class AccidentSystem
     {
@@ -37,7 +42,8 @@ namespace TransportManager.Systems.Accidents
         public static float ComputeFatigueGain(float distanceKm, float endurance)
         {
             float factor = Mathf.Lerp(0.50f, 0.10f, endurance / 100f);
-            return distanceKm * factor;
+            float reduction = ServiceLocator.Get<SkillTreeSystem>()?.Pct(SkillEffectType.FatigueReduction) ?? 0f;
+            return distanceKm * factor * Mathf.Clamp01(1f - reduction);
         }
 
         /// <summary>
@@ -117,6 +123,9 @@ namespace TransportManager.Systems.Accidents
                 repairFactor = UnityEngine.Random.Range(0.30f, 0.50f);
                 desc         = "Accident grave";
             }
+
+            // La sécurité du conducteur réduit le coût de réparation (jusqu'à -50%).
+            repairFactor *= driver.stats.RepairCostFactor;
 
             return new AccidentResult
             {

@@ -69,6 +69,16 @@ namespace TransportManager.Events
         public static event Action<int, int> OnCompanyXpChanged;
         public static void RaiseCompanyXpChanged(int xp, int level) => OnCompanyXpChanged?.Invoke(xp, level);
 
+        // Company level-up (oldLevel, newLevel)
+        public static event Action<int, int> OnCompanyLevelUp;
+        public static void RaiseCompanyLevelUp(int oldLevel, int newLevel) => OnCompanyLevelUp?.Invoke(oldLevel, newLevel);
+
+        // Skill tree
+        public static event Action<int> OnSkillPointsChanged;     // points disponibles
+        public static event Action<string> OnSkillNodeUnlocked;   // id du nœud
+        public static void RaiseSkillPointsChanged(int available) => OnSkillPointsChanged?.Invoke(available);
+        public static void RaiseSkillNodeUnlocked(string nodeId) => OnSkillNodeUnlocked?.Invoke(nodeId);
+
         // UI
         public static event Action<TabType> OnTabChanged;
         public static void RaiseTabChanged(TabType t) => OnTabChanged?.Invoke(t);

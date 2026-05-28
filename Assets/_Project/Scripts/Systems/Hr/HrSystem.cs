@@ -9,6 +9,7 @@ using TransportManager.Events;
 using TransportManager.Save;
 using TransportManager.Systems.Economy;
 using TransportManager.Systems.Fleet;
+using TransportManager.Systems.Progression;
 
 namespace TransportManager.Systems.Hr
 {
@@ -126,14 +127,25 @@ namespace TransportManager.Systems.Hr
         {
             if (driver == null) return false;
 
-            var wallet = ServiceLocator.Get<WalletSystem>();
-            wallet?.TrySpend(CurrencyType.Dollar, driver.assignedWagePerContract);
+            var skills = ServiceLocator.Get<SkillTreeSystem>();
 
-            int xpGain = XpCurve.ContractXpReward(distanceKm);
+            var wallet = ServiceLocator.Get<WalletSystem>();
+            float wageReduction = skills?.Pct(SkillEffectType.DriverWageReduction) ?? 0f;
+            int wage = Mathf.Max(0, Mathf.RoundToInt(driver.assignedWagePerContract * (1f - wageReduction)));
+            wallet?.TrySpend(CurrencyType.Dollar, wage);
+
+            int prevLevel = XpCurve.DriverLevelFromXp(driver.xp);
+            float xpBonus = skills?.Pct(SkillEffectType.DriverXpGainBonus) ?? 0f;
+            int xpGain = Mathf.RoundToInt(XpCurve.ContractXpReward(distanceKm) * (1f + xpBonus));
             driver.xp += xpGain;
             driver.contractsCompleted++;
 
             int newLevel = XpCurve.DriverLevelFromXp(driver.xp);
+
+            // Montée de niveau → les stats grimpent (graine de talent conservée).
+            if (newLevel != prevLevel && driver.statSeed != 0)
+                DriverGenerator.ApplyStatsForLevel(driver.stats, newLevel, driver.statSeed);
+
             driver.desiredWagePerContract = DriverGenerator.ComputeDesiredWage(newLevel, driver.stats);
 
             GameEvents.RaiseDriverXpChanged(driver);

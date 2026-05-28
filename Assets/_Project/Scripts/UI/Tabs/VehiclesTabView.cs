@@ -633,7 +633,7 @@ namespace TransportManager.UI.Tabs
             string dot = "<color=#3a4458>  •  </color>";
             subTmp.text = unlocked
                 ? $"<color=#8899bb>{data.category}</color>{dot}<color=#c8d2e0>{data.capacity}t</color>{dot}<color=#c8d2e0>{data.speedKmh} km/h</color>{dot}<color=#f0c060>${data.purchasePrice:N0}</color>{ownedBadge}"
-                : $"<color=#cc7733>◆ Niveau entreprise {data.minCompanyLevelRequired} requis</color>";
+                : $"<color=#cc7733>◆ Niveau entreprise {data.RequiredCompanyLevel} requis</color>";
             subTmp.fontSize = 12;
             subTmp.color = new Color(0.70f, 0.72f, 0.80f);
             subTmp.raycastTarget = false;
@@ -697,7 +697,7 @@ namespace TransportManager.UI.Tabs
             var xp = ServiceLocator.Get<XpSystem>();
             var fleet = ServiceLocator.Get<FleetSystem>();
 
-            bool unlocked = xp == null || xp.IsVehicleUnlocked(data.minCompanyLevelRequired);
+            bool unlocked = xp == null || xp.IsVehicleUnlocked(data.RequiredCompanyLevel);
             bool depotFull = depot != null && !depot.HasRoomForOneMore();
             bool canAffordDollar = wallet != null && wallet.CanAfford(CurrencyType.Dollar, data.purchasePrice);
             int ingotCost = Mathf.Max(1, data.purchasePrice / 1000);
@@ -709,7 +709,7 @@ namespace TransportManager.UI.Tabs
                     if (v.vehicleDataId == data.id) ownedCount++;
 
             _detailName.text = data.displayName;
-            _detailCategory.text = $"<b>{data.category}</b>   <color=#3a4458>•</color>   Niveau min: <b>{data.minCompanyLevelRequired}</b>   <color=#3a4458>•</color>   Profil: <b>{data.routingProfile}</b>";
+            _detailCategory.text = $"<b>{data.category}</b>   <color=#3a4458>•</color>   Niveau min: <b>{data.RequiredCompanyLevel}</b>   <color=#3a4458>•</color>   Profil: <b>{data.routingProfile}</b>";
 
             // Hero image: use sprite if available, else show category letter as placeholder
             if (data.icon != null)
@@ -805,7 +805,7 @@ namespace TransportManager.UI.Tabs
             // Status message
             if (!unlocked)
             {
-                _detailStatus.text = $"🔒 Requiert niveau entreprise {data.minCompanyLevelRequired}";
+                _detailStatus.text = $"🔒 Requiert niveau entreprise {data.RequiredCompanyLevel}";
                 if (_detailStatusIcon != null) _detailStatusIcon.gameObject.SetActive(false);
             }
             else if (depotFull)
@@ -950,7 +950,7 @@ namespace TransportManager.UI.Tabs
 
             foreach (var data in catalog.vehicles)
             {
-                bool unlocked = xp == null || xp.IsVehicleUnlocked(data.minCompanyLevelRequired);
+                bool unlocked = xp == null || xp.IsVehicleUnlocked(data.RequiredCompanyLevel);
                 bool canAfford = wallet != null && wallet.CanAfford(CurrencyType.Dollar, data.purchasePrice);
                 int ownedCount = 0;
                 if (fleet != null)

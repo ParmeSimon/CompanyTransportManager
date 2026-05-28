@@ -7,6 +7,7 @@ using TransportManager.Enums;
 using TransportManager.Events;
 using TransportManager.Save;
 using TransportManager.Systems.Economy;
+using TransportManager.Systems.Progression;
 
 namespace TransportManager.Systems.Fuel
 {
@@ -26,7 +27,15 @@ namespace TransportManager.Systems.Fuel
         public FuelStationConfig Config => _config;
         public FuelPumpTier CurrentTier => _config?.GetTier(_save.fuelStation.pumpLevel);
 
-        public float MaxCapacityLiters => CurrentTier != null ? CurrentTier.storageCapacityLiters : 0f;
+        public float MaxCapacityLiters
+        {
+            get
+            {
+                float baseCap = CurrentTier != null ? CurrentTier.storageCapacityLiters : 0f;
+                float bonus = ServiceLocator.Get<SkillTreeSystem>()?.Pct(SkillEffectType.StationCapacityBonus) ?? 0f;
+                return baseCap * (1f + bonus);
+            }
+        }
         public float CurrentLiters => _save.fuelStation.currentLiters;
         public float RemainingCapacity => Mathf.Max(0f, MaxCapacityLiters - CurrentLiters);
         public bool IsRefilling => _save.fuelStation.refillInProgress;
@@ -76,11 +85,15 @@ namespace TransportManager.Systems.Fuel
             liters = Mathf.Min(liters, RemainingCapacity);
             if (liters <= 0f) return false;
 
-            int cost = Mathf.CeilToInt(liters * _config.dollarsPerLiter);
+            var skills = ServiceLocator.Get<SkillTreeSystem>();
+            float priceReduction = skills?.Pct(SkillEffectType.FuelPriceReduction) ?? 0f;
+            int cost = Mathf.CeilToInt(liters * _config.dollarsPerLiter * (1f - priceReduction));
             var wallet = ServiceLocator.Get<WalletSystem>();
             if (wallet == null || !wallet.TrySpend(CurrencyType.Dollar, cost)) return false;
 
-            float seconds = liters / tier.storageCapacityLiters * tier.fullRefillDurationSeconds;
+            float refillSpeedBonus = skills?.Pct(SkillEffectType.RefillSpeedBonus) ?? 0f;
+            float seconds = liters / tier.storageCapacityLiters * tier.fullRefillDurationSeconds
+                          * Mathf.Max(0.1f, 1f - refillSpeedBonus);
             _save.fuelStation.refillInProgress = true;
             _save.fuelStation.pendingRefillLiters = liters;
             _save.fuelStation.refillCompleteUtcTicks = DateTime.UtcNow.AddSeconds(seconds).Ticks;

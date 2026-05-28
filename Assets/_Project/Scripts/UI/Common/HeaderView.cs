@@ -7,6 +7,7 @@ using TransportManager.UI.Analytics;
 using TransportManager.UI.Fleet;
 using TransportManager.UI.Friends;
 using TransportManager.UI.Settings;
+using TransportManager.UI.Skills;
 
 namespace TransportManager.UI.Common
 {
@@ -188,11 +189,16 @@ namespace TransportManager.UI.Common
             MakeDivider(right.transform);
             var friendsBtn   = MakeIconButton(right.transform, "BtnFriends",   "users");
             MakeDivider(right.transform);
+            // Placeholder : icône "add" réutilisée. Déposer un sprite dédié dans
+            // Resources/UI/Icons/icons/ et changer le nom ici pour une vraie icône.
+            var skillsBtn    = MakeIconButton(right.transform, "BtnSkills",   "add");
+            MakeDivider(right.transform);
             var settingsBtn  = MakeIconButton(right.transform, "BtnSettings",  "settings");
 
             analyticsBtn.onClick.AddListener(AnalyticsPopupView.Show);
             listBtn.onClick.AddListener(FleetListPopupView.Show);
             friendsBtn.onClick.AddListener(FriendsPopupView.Show);
+            skillsBtn.onClick.AddListener(SkillTreePopupView.Show);
             settingsBtn.onClick.AddListener(SettingsPopupView.Show);
         }
 

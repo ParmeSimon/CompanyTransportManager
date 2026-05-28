@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 namespace TransportManager.Entities.Drivers
@@ -6,25 +6,38 @@ namespace TransportManager.Entities.Drivers
     [Serializable]
     public class DriverStats
     {
-        [Tooltip("Speed multiplier bonus. -0.10 to +0.20 = -10% to +20% trip speed.")]
-        public float speedBonus;
+        // Toutes les stats de performance sont sur une échelle 0-100.
+        // Plus la valeur est haute, plus l'effet associé est fort (bénéfique au joueur).
 
-        [Tooltip("Fuel efficiency bonus. -0.05 to +0.15 = -5% to +15% less consumption.")]
-        public float fuelEfficiencyBonus;
+        [Tooltip("Vitesse 0-100. Plus haut = trajets plus rapides.")]
+        public float speed;
 
-        [Tooltip("Safety score 0-100. Higher reduces vehicle wear.")]
-        public float safetyScore;
+        [Tooltip("Carburant 0-100. Plus haut = consommation réduite.")]
+        public float fuelEfficiency;
 
-        [Tooltip("Salary demand factor 0.0-0.5. Higher = more expensive driver.")]
-        public float salaryDemandFactor;
+        [Tooltip("Sécurité 0-100. Plus haut = réparations moins coûteuses après accident.")]
+        public float safety;
 
-        [Tooltip("Concentration 0-100. Speeds up fatigue recovery and reduces fatal accident chance.")]
+        [Tooltip("Concentration 0-100. Plus haut = récupération de fatigue plus rapide et moins d'accidents mortels.")]
         public float concentration;
 
-        [Tooltip("Dodge (esquive) 0-100. Directly reduces accident probability.")]
+        [Tooltip("Esquive 0-100. Plus haut = réduit directement la probabilité d'accident.")]
         public float dodge;
 
-        [Tooltip("Endurance 0-100. Reduces fatigue gain per km. Low endurance = rapid fatigue on long trips.")]
+        [Tooltip("Endurance 0-100. Plus haut = la fatigue monte très peu pendant les contrats.")]
         public float endurance;
+
+        /// <summary>Note générale 0-100 : moyenne des 6 stats de performance.</summary>
+        public float General =>
+            (speed + fuelEfficiency + safety + concentration + dodge + endurance) / 6f;
+
+        /// <summary>Multiplicateur de vitesse : -10% (stat 0) → +25% (stat 100).</summary>
+        public float SpeedMultiplier => 1f + Mathf.Lerp(-0.10f, 0.25f, speed / 100f);
+
+        /// <summary>Multiplicateur de consommation : +5% (stat 0) → -20% (stat 100). Plus bas = mieux.</summary>
+        public float FuelConsumptionMultiplier => 1f - Mathf.Lerp(-0.05f, 0.20f, fuelEfficiency / 100f);
+
+        /// <summary>Facteur de coût de réparation : 1.0 (stat 0) → 0.5 (stat 100). Plus bas = mieux.</summary>
+        public float RepairCostFactor => Mathf.Lerp(1f, 0.5f, safety / 100f);
     }
 }

@@ -39,6 +39,8 @@ namespace TransportManager.Save
         public List<StatSnapshot> snapshots = new List<StatSnapshot>();
 
         public ShopState shop = new ShopState();
+
+        public SkillTreeState skillTree = new SkillTreeState();
     }
 
     [Serializable]

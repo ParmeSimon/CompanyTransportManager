@@ -25,7 +25,7 @@ namespace TransportManager.Systems.Fleet
             if (wallet == null || fleet == null || depot == null) { error = PurchaseError.MissingService; return false; }
 
             var xp = ServiceLocator.Get<XpSystem>();
-            if (xp != null && !xp.IsVehicleUnlocked(data.minCompanyLevelRequired))
+            if (xp != null && !xp.IsVehicleUnlocked(data.RequiredCompanyLevel))
             {
                 error = PurchaseError.Locked;
                 return false;

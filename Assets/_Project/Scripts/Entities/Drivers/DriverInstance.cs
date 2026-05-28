@@ -12,6 +12,11 @@ namespace TransportManager.Entities.Drivers
 
         public int xp;
         public int contractsCompleted;
+
+        // Graine de « talent » : détermine de façon déterministe les points forts/faibles
+        // du pilote. Les stats se recalculent à partir de (niveau + graine), donc elles
+        // montent quand le pilote gagne des niveaux, tout en gardant sa personnalité.
+        public int statSeed;
         public long hiredAtUtcTicks;
         public bool hired;
 

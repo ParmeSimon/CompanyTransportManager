@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using TransportManager.Enums;
 using TransportManager.Events;
+using TransportManager.UI.Tabs;
 
 namespace TransportManager.UI.Common
 {
@@ -14,10 +15,33 @@ namespace TransportManager.UI.Common
         [SerializeField] private GameObject hrTab;
         [SerializeField] private TabType defaultTab = TabType.Map;
 
+        private void Awake() => EnsureHrTab();
+
         private void OnEnable() => GameEvents.OnTabChanged += ShowTab;
         private void OnDisable() => GameEvents.OnTabChanged -= ShowTab;
 
         private void Start() => GameEvents.RaiseTabChanged(defaultTab);
+
+        // Crée le tab Pilote (HrTabView) s'il n'a pas été placé dans la scène,
+        // pour qu'il soit disponible derrière le bouton "Pilote" de la navbar.
+        private void EnsureHrTab()
+        {
+            if (hrTab != null) return;
+
+            Transform parent = vehiclesTab != null ? vehiclesTab.transform.parent : transform;
+
+            var go = new GameObject("HrTab", typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+
+            go.AddComponent<HrTabView>();
+            go.SetActive(false);
+            hrTab = go;
+        }
 
         private void ShowTab(TabType tab)
         {

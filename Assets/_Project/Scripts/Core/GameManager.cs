@@ -79,6 +79,7 @@ namespace TransportManager.Core
             ServiceLocator.Register(new FleetSystem(Save));
             ServiceLocator.Register(new HrSystem(Save));
             ServiceLocator.Register(new XpSystem(Save));
+            ServiceLocator.Register(new SkillTreeSystem(Save));
             var statTracker = new StatTrackerSystem(Save, ServiceLocator.Get<XpSystem>());
             if (seedFakeAnalytics) { statTracker.SeedFakeMonthData(); Debug.Log("[GameManager] Fake analytics data seeded."); }
             ServiceLocator.Register(statTracker);

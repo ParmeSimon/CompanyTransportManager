@@ -1,4 +1,5 @@
-﻿using TransportManager.Entities.Progression;
+﻿using TransportManager.Core;
+using TransportManager.Entities.Progression;
 using TransportManager.Events;
 using TransportManager.Save;
 
@@ -28,9 +29,19 @@ namespace TransportManager.Systems.Progression
 
         public void AddCompanyXpForContract(float distanceKm)
         {
+            int oldLevel = CompanyLevel;
             int gain = XpCurve.ContractXpReward(distanceKm);
             _save.companyXp += gain;
-            GameEvents.RaiseCompanyXpChanged(CompanyXp, CompanyLevel);
+            int newLevel = CompanyLevel;
+
+            GameEvents.RaiseCompanyXpChanged(CompanyXp, newLevel);
+
+            if (newLevel > oldLevel)
+            {
+                // Montée de niveau → points de compétence + notification.
+                ServiceLocator.Get<SkillTreeSystem>()?.OnCompanyLevelChanged(oldLevel, newLevel);
+                GameEvents.RaiseCompanyLevelUp(oldLevel, newLevel);
+            }
         }
 
         public void NotifyChanged()
