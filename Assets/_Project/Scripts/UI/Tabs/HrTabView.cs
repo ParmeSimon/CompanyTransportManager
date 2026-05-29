@@ -1,12 +1,15 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using TransportManager.Core;
+using TransportManager.Enums;
 using TransportManager.Entities.Drivers;
 using TransportManager.Entities.Progression;
 using TransportManager.Events;
+using TransportManager.Systems.Economy;
 using TransportManager.Systems.Hr;
 
 namespace TransportManager.UI.Tabs
@@ -70,14 +73,7 @@ namespace TransportManager.UI.Tabs
 
         private void Build()
         {
-            foreach (Transform child in transform)
-            {
-#if UNITY_EDITOR
-                DestroyImmediate(child.gameObject);
-#else
-                Destroy(child.gameObject);
-#endif
-            }
+            ClearChildren(transform);
             EnsureSprites();
 
             var rt = GetComponent<RectTransform>();
@@ -89,6 +85,9 @@ namespace TransportManager.UI.Tabs
             var bg = GetComponent<Image>() ?? gameObject.AddComponent<Image>();
             bg.color  = BgRoot;
             bg.sprite = null;
+
+            // Image de fond plein écran (derrière le panneau, visible dans les marges)
+            BuildPageBackground("UI/background/driver");
 
             // Panneau principal (sous le HUD)
             var panel   = MakeGO("Panel", transform);
@@ -194,9 +193,69 @@ namespace TransportManager.UI.Tabs
             BuildSectionHeader(content.transform, "CANDIDATS", out _poolCount);
             _poolGridTf = BuildGrid(content.transform, "PoolGrid", out _poolGrid);
 
-            // Bouton rafraîchir
-            var refreshBtn = MakeButton(content.transform, "Régénérer les candidats", new Color(0x3A / 255f, 0x41 / 255f, 0x50 / 255f, 1f), 46);
-            refreshBtn.onClick.AddListener(OnRefreshPool);
+            // Bloc rafraîchissement : 2 boutons 50/50 (gratuit verrouillé par cooldown + payant)
+            BuildRefreshBlock(content.transform);
+        }
+
+        // ── Bloc refresh ───────────────────────────────────────────────────────────
+        private static readonly Color ColPaid     = new Color(0xC8 / 255f, 0x9B / 255f, 0x2C / 255f, 1f); // ambre/or
+        private static readonly Color ColDisabled = new Color(0x3A / 255f, 0x41 / 255f, 0x50 / 255f, 1f);
+
+        private TMP_Text  _refreshTimerLbl;
+        private Button    _freeRefreshBtn;
+        private TMP_Text  _freeRefreshLbl;
+        private Image     _freeRefreshImg;
+        private Button    _paidRefreshBtn;
+        private TMP_Text  _paidRefreshLbl;
+        private Image     _paidRefreshImg;
+        private Coroutine _refreshTicker;
+
+        private void BuildRefreshBlock(Transform parent)
+        {
+            var block = MakeGO("RefreshBlock", parent);
+            var img = block.AddComponent<Image>();
+            img.sprite = _sprR12; img.type = Image.Type.Sliced; img.color = BgCard;
+            var vlg = block.AddComponent<VerticalLayoutGroup>();
+            vlg.padding = new RectOffset(16, 16, 12, 12);
+            vlg.spacing = 10;
+            vlg.childForceExpandWidth = true; vlg.childControlWidth = true;
+            vlg.childForceExpandHeight = false; vlg.childControlHeight = true;
+            block.AddComponent<LayoutElement>().preferredHeight = 92;
+
+            _refreshTimerLbl = MakeTMP("Timer", block.transform, "", 13, FontStyles.Normal, TextSec);
+            _refreshTimerLbl.alignment = TextAlignmentOptions.MidlineLeft;
+            _refreshTimerLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 18;
+
+            // Rangée de deux boutons à largeur égale (50 % / 50 %)
+            var row = MakeGO("BtnRow", block.transform);
+            var rhlg = row.AddComponent<HorizontalLayoutGroup>();
+            rhlg.spacing = 10;
+            rhlg.childForceExpandWidth = true; rhlg.childControlWidth = true;
+            rhlg.childForceExpandHeight = true; rhlg.childControlHeight = true;
+            row.AddComponent<LayoutElement>().preferredHeight = 44;
+
+            (_freeRefreshBtn, _freeRefreshImg, _freeRefreshLbl) = MakeHalfButton(row.transform, "Gratuit", Accent);
+            _freeRefreshBtn.onClick.AddListener(OnFreeRefresh);
+
+            (_paidRefreshBtn, _paidRefreshImg, _paidRefreshLbl) = MakeHalfButton(row.transform, "Payant", ColPaid);
+            _paidRefreshBtn.onClick.AddListener(OnPaidRefresh);
+
+            UpdateRefreshControls();
+        }
+
+        private (Button, Image, TMP_Text) MakeHalfButton(Transform parent, string label, Color color)
+        {
+            var go  = MakeGO("Btn", parent);
+            var img = go.AddComponent<Image>();
+            img.sprite = _sprR8; img.type = Image.Type.Sliced; img.color = color;
+            var btn = go.AddComponent<Button>();
+            btn.targetGraphic = img;
+            var le = go.AddComponent<LayoutElement>();
+            le.flexibleWidth = 1; le.preferredHeight = 42;
+            var lbl = MakeTMP("Lbl", go.transform, label, 12.5f, FontStyles.Bold, TextPri);
+            lbl.alignment = TextAlignmentOptions.Center;
+            FillParent(lbl.GetComponent<RectTransform>());
+            return (btn, img, lbl);
         }
 
         private void BuildSectionHeader(Transform parent, string title, out TMP_Text countLabel)
@@ -243,13 +302,34 @@ namespace TransportManager.UI.Tabs
 
         private void BuildProfileCard(Transform parent, DriverInstance d, bool hired)
         {
+            var card = BuildDriverCardBase(parent, d);
+
+            // ── Action ──
+            if (hired)
+            {
+                var fireBtn = MakeButton(card.transform, "Licencier", new Color(0x6B / 255f, 0x2A / 255f, 0x2A / 255f, 1f), 36);
+                string id = d.instanceId;
+                fireBtn.onClick.AddListener(() => OnFireClicked(id));
+            }
+            else
+            {
+                var hireBtn = MakeButton(card.transform, $"Embaucher  ·  ${d.desiredWagePerContract}/contrat",
+                                         new Color(0x2E / 255f, 0x7D / 255f, 0x52 / 255f, 1f), 36);
+                string id = d.instanceId; int wage = d.desiredWagePerContract;
+                hireBtn.onClick.AddListener(() => OnHireClicked(id, wage));
+            }
+        }
+
+        // Construit le corps d'une fiche driver (identité + note + barres de stats), sans action.
+        // Renvoie le GameObject de la carte pour y ajouter un bouton ou un overlay.
+        private GameObject BuildDriverCardBase(Transform parent, DriverInstance d)
+        {
             int level = XpCurve.DriverLevelFromXp(d.xp);
             float general = d.stats.General;
 
             var card = MakeGO("P_" + d.instanceId, parent);
             var cardImg = card.AddComponent<Image>();
             cardImg.sprite = _sprR12; cardImg.type = Image.Type.Sliced; cardImg.color = BgCard;
-            // Liseré coloré (effet contour terminal)
             var outline = card.AddComponent<Outline>();
             outline.effectColor = Border;
             outline.effectDistance = new Vector2(1.2f, -1.2f);
@@ -292,20 +372,74 @@ namespace TransportManager.UI.Tabs
             foreach (var def in StatDefs)
                 BuildStatBar(card.transform, def.label, def.get(d.stats));
 
-            // ── Action ──
-            if (hired)
-            {
-                var fireBtn = MakeButton(card.transform, "Licencier", new Color(0x6B / 255f, 0x2A / 255f, 0x2A / 255f, 1f), 36);
-                string id = d.instanceId;
-                fireBtn.onClick.AddListener(() => OnFireClicked(id));
-            }
-            else
-            {
-                var hireBtn = MakeButton(card.transform, $"Embaucher  ·  ${d.desiredWagePerContract}/contrat",
-                                         new Color(0x2E / 255f, 0x7D / 255f, 0x52 / 255f, 1f), 36);
-                string id = d.instanceId; int wage = d.desiredWagePerContract;
-                hireBtn.onClick.AddListener(() => OnHireClicked(id, wage));
-            }
+            return card;
+        }
+
+        // Fiche driver grisée (emplacement libéré) : visible avec ses stats mais inaccessible.
+        // Un overlay sombre translucide la grise et bloque le clic ; libellé en bas.
+        private void BuildGreyedDriverCard(Transform parent, DriverInstance d)
+        {
+            var card = BuildDriverCardBase(parent, d);
+
+            var overlay = MakeGO("Overlay", card.transform);
+            overlay.AddComponent<LayoutElement>().ignoreLayout = true;
+            FillParent(overlay.GetComponent<RectTransform>());
+            var oImg = overlay.AddComponent<Image>();
+            oImg.sprite = _sprR12; oImg.type = Image.Type.Sliced;
+            oImg.color = new Color(0.07f, 0.08f, 0.10f, 0.55f);   // sombre translucide → « grisée »
+            oImg.raycastTarget = true;                            // bloque le clic sur la fiche dessous
+
+            var ovlg = overlay.AddComponent<VerticalLayoutGroup>();
+            ovlg.padding = new RectOffset(14, 14, 14, 16);
+            ovlg.childAlignment = TextAnchor.LowerCenter;
+            ovlg.childForceExpandWidth = true; ovlg.childControlWidth = true;
+            ovlg.childForceExpandHeight = false; ovlg.childControlHeight = true;
+
+            var msg = MakeTMP("Msg", overlay.transform, "Emplacement libre", 14, FontStyles.Bold, TextDim);
+            msg.alignment = TextAlignmentOptions.Center;
+        }
+
+        // Carte verrouillée : fond sombre opaque + bordure violette + compétence à débloquer.
+        // Pas de stats affichées (l'emplacement est purement « à débloquer »).
+        private void BuildLockedCard(Transform parent, string skillTitle)
+        {
+            var accentHr = new Color(0xA9 / 255f, 0x70 / 255f, 0xF0 / 255f, 1f);
+
+            // Cadre violet (image extérieure) + intérieur sombre inséré de 2 px → vraie bordure.
+            var card = MakeGO("LockedSlot", parent);
+            var frame = card.AddComponent<Image>();
+            frame.sprite = _sprR12; frame.type = Image.Type.Sliced; frame.color = accentHr;
+
+            var inner = MakeGO("Inner", card.transform);
+            var innerRt = inner.GetComponent<RectTransform>();
+            FillParent(innerRt);
+            innerRt.offsetMin = new Vector2(2f, 2f);
+            innerRt.offsetMax = new Vector2(-2f, -2f);
+            var innerImg = inner.AddComponent<Image>();
+            innerImg.sprite = _sprR12; innerImg.type = Image.Type.Sliced; innerImg.color = BgInset; // sombre opaque
+
+            var vlg = inner.AddComponent<VerticalLayoutGroup>();
+            vlg.padding = new RectOffset(20, 20, 20, 20);
+            vlg.spacing = 12;
+            vlg.childAlignment = TextAnchor.MiddleCenter;
+            vlg.childForceExpandWidth = true; vlg.childControlWidth = true;
+            vlg.childForceExpandHeight = false; vlg.childControlHeight = true;
+
+            var iconGo = MakeGO("Icon", inner.transform);
+            var iconImg = iconGo.AddComponent<Image>();
+            iconImg.sprite = Resources.Load<Sprite>("UI/Icons/icons/research");
+            iconImg.color = accentHr;
+            iconImg.preserveAspect = true;
+            iconImg.raycastTarget = false;
+            var ile = iconGo.AddComponent<LayoutElement>(); ile.preferredWidth = 52; ile.minWidth = 52; ile.preferredHeight = 52;
+
+            var t = MakeTMP("T", inner.transform, "Emplacement verrouillé", 15, FontStyles.Bold, TextSec);
+            t.alignment = TextAlignmentOptions.Center;
+            var s = MakeTMP("S", inner.transform, $"Débloquer : {skillTitle}", 13, FontStyles.Bold, accentHr);
+            s.alignment = TextAlignmentOptions.Center;
+            s.textWrappingMode = TextWrappingModes.Normal;
+            var s2 = MakeTMP("S2", inner.transform, "Arbre de compétences · RH", 11, FontStyles.Normal, TextDim);
+            s2.alignment = TextAlignmentOptions.Center;
         }
 
         private void BuildMonogram(Transform parent, DriverInstance d, float general)
@@ -421,6 +555,7 @@ namespace TransportManager.UI.Tabs
             GameEvents.OnDriverAssigned += OnDriverChanged;
             GameEvents.OnDriverXpChanged += OnDriverChanged;
             Refresh();
+            _refreshTicker = StartCoroutine(RefreshTicker());
         }
 
         private void OnDisable()
@@ -430,6 +565,7 @@ namespace TransportManager.UI.Tabs
             GameEvents.OnDriverResigned -= OnDriverChanged;
             GameEvents.OnDriverAssigned -= OnDriverChanged;
             GameEvents.OnDriverXpChanged -= OnDriverChanged;
+            if (_refreshTicker != null) { StopCoroutine(_refreshTicker); _refreshTicker = null; }
         }
 
         private void OnDriverChanged(DriverInstance _) => Refresh();
@@ -437,10 +573,68 @@ namespace TransportManager.UI.Tabs
         private void OnHireClicked(string candidateId, int wage) => ServiceLocator.Get<HrSystem>()?.Hire(candidateId, wage);
         private void OnFireClicked(string driverId) => ServiceLocator.Get<HrSystem>()?.Fire(driverId);
 
-        private void OnRefreshPool()
+        // Tick 1 s : maj du compte à rebours du refresh gratuit + état des boutons.
+        private IEnumerator RefreshTicker()
         {
-            ServiceLocator.Get<HrSystem>()?.RefreshRecruitmentPool();
-            Refresh();
+            var wait = new WaitForSecondsRealtime(1f);
+            while (true)
+            {
+                UpdateRefreshControls();
+                yield return wait;
+            }
+        }
+
+        private void OnFreeRefresh()
+        {
+            var hr = ServiceLocator.Get<HrSystem>();
+            if (hr != null && hr.TryFreeRefresh()) { GameManager.Instance?.SaveNow(); Refresh(); }
+            UpdateRefreshControls();
+        }
+
+        private void OnPaidRefresh()
+        {
+            var hr = ServiceLocator.Get<HrSystem>();
+            if (hr != null && hr.TryPaidRefresh(out _)) { GameManager.Instance?.SaveNow(); Refresh(); }
+            UpdateRefreshControls();
+        }
+
+        private void UpdateRefreshControls()
+        {
+            var hr = ServiceLocator.Get<HrSystem>();
+            if (hr == null || _freeRefreshLbl == null) return;
+
+            // Bouton gratuit (verrouillé tant que le cooldown n'est pas écoulé)
+            double secs    = hr.SecondsUntilFreeRefresh();
+            bool freeReady = secs <= 0;
+            if (_refreshTimerLbl != null)
+                _refreshTimerLbl.text = freeReady
+                    ? "Rafraîchissement gratuit disponible"
+                    : $"Refresh gratuit dans {FormatDuration(secs)}";
+            _freeRefreshLbl.text       = freeReady ? "Gratuit" : FormatDuration(secs);
+            _freeRefreshBtn.interactable = freeReady;
+            _freeRefreshImg.color      = freeReady ? Accent : ColDisabled;
+
+            // Bouton payant (Gold, ou Dollars croissants si débloqué, ou gratuit via capstone)
+            var cost = hr.CurrentPaidRefreshCost();
+            string costStr = cost.free
+                ? "Gratuit"
+                : cost.currency == CurrencyType.Dollar
+                    ? $"${cost.amount:N0}"
+                    : $"{cost.amount} lingot{(cost.amount > 1 ? "s" : "")}";
+            _paidRefreshLbl.text = $"Refresh · {costStr}";
+            bool affordable = cost.free ||
+                (ServiceLocator.Get<WalletSystem>()?.CanAfford(cost.currency, cost.amount) ?? false);
+            _paidRefreshBtn.interactable = affordable;
+            _paidRefreshImg.color = affordable ? ColPaid : ColDisabled;
+        }
+
+        private static string FormatDuration(double seconds)
+        {
+            int s = Mathf.CeilToInt((float)seconds);
+            int h = s / 3600, m = (s % 3600) / 60, sec = s % 60;
+            if (h > 0) return $"{h}h {m:D2}m";
+            if (m > 0) return $"{m}m {sec:D2}s";
+            return $"{sec}s";
         }
 
         private void Refresh()
@@ -465,7 +659,27 @@ namespace TransportManager.UI.Tabs
 
             foreach (var d in pool) BuildProfileCard(_poolGridTf, d, hired: false);
 
+            // Emplacements libérés par les embauches : fiches driver grisées (inaccessibles)
+            // jusqu'au prochain refresh.
+            int emptySlots = Mathf.Max(0, hr.CurrentPoolSize - pool.Count);
+            for (int i = 0; i < emptySlots; i++)
+                BuildGreyedDriverCard(_poolGridTf, EmptyPreview(i));
+
+            // Un emplacement verrouillé par palier de taille de vivier non débloqué.
+            foreach (var node in hr.LockedPoolNodes())
+                BuildLockedCard(_poolGridTf, node.title);
+
             _lastWidth = -1f; // force recompute des colonnes au prochain Update
+        }
+
+        // Drivers « preview » mis en cache : stables entre deux Refresh (pas de clignotement
+        // quand on embauche/licencie). Purement décoratifs (non stockés dans la sauvegarde).
+        private readonly List<DriverInstance> _emptyPreviews = new List<DriverInstance>();
+
+        private DriverInstance EmptyPreview(int index)
+        {
+            while (_emptyPreviews.Count <= index) _emptyPreviews.Add(DriverGenerator.Generate());
+            return _emptyPreviews[index];
         }
 
         private void AddEmptyNote(Transform gridParent, string message)
@@ -508,13 +722,16 @@ namespace TransportManager.UI.Tabs
 
         private static void ClearChildren(Transform t)
         {
-            foreach (Transform c in t)
+            // Parcours arrière + détachement immédiat : DestroyImmediate dans un foreach
+            // décale les indices et saute un enfant sur deux (anciennes cartes fantômes).
+            for (int i = t.childCount - 1; i >= 0; i--)
             {
+                var go = t.GetChild(i).gameObject;
+                go.transform.SetParent(null, false);   // retire du parent tout de suite (Destroy est différé)
 #if UNITY_EDITOR
-                DestroyImmediate(c.gameObject);
-#else
-                Destroy(c.gameObject);
+                if (!Application.isPlaying) { DestroyImmediate(go); continue; }
 #endif
+                Destroy(go);
             }
         }
 
@@ -523,6 +740,19 @@ namespace TransportManager.UI.Tabs
             var go = new GameObject(name, typeof(RectTransform));
             go.transform.SetParent(parent, false);
             return go;
+        }
+
+        // Image de fond plein écran (RawImage : marche quel que soit le type d'import de la texture).
+        private void BuildPageBackground(string texturePath)
+        {
+            var tex = Resources.Load<Texture2D>(texturePath);
+            if (tex == null) return;
+            var go = MakeGO("PageBackground", transform);
+            go.transform.SetAsFirstSibling();
+            FillParent(go.GetComponent<RectTransform>());
+            var raw = go.AddComponent<RawImage>();
+            raw.texture       = tex;
+            raw.raycastTarget = false;
         }
 
         private static Image MakeImg(string name, Transform parent, Color color)

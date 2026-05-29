@@ -24,13 +24,21 @@ namespace TransportManager.Systems.Maintenance
 
         public void EvaluateAfterContract(VehicleInstance vehicle, int vehicleMaxKm)
         {
-            if (IsMandatory(vehicle, vehicleMaxKm))
+            if (!IsMandatory(vehicle, vehicleMaxKm)) return;
+
+            // Capstone Dépôt « Atelier robotisé » : révision automatique et gratuite,
+            // sans immobiliser le véhicule.
+            bool autoRepair = (ServiceLocator.Get<SkillTreeSystem>()?.Flat(SkillEffectType.AutoRepair) ?? 0) > 0;
+            if (autoRepair)
             {
-                vehicle.maintenanceDueAfterContract = true;
-                vehicle.status = VehicleStatus.Immobilized;
-                GameEvents.RaiseMaintenanceDue(vehicle);
-                GameEvents.RaiseVehicleStatusChanged(vehicle);
+                ApplyRepair(vehicle);
+                return;
             }
+
+            vehicle.maintenanceDueAfterContract = true;
+            vehicle.status = VehicleStatus.Immobilized;
+            GameEvents.RaiseMaintenanceDue(vehicle);
+            GameEvents.RaiseVehicleStatusChanged(vehicle);
         }
 
         public bool TryRepairWithDollars(VehicleInstance vehicle, int maintenanceCost)

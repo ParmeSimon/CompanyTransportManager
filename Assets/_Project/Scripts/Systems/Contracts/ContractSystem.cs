@@ -185,7 +185,7 @@ namespace TransportManager.Systems.Contracts
                 }
             }
 
-            ServiceLocator.Get<XpSystem>()?.AddCompanyXpForContract(contract.definition.distanceKm);
+            ServiceLocator.Get<XpSystem>()?.AddCompanyXpForContract(contract.definition);
             contract.status = ContractStatus.Completed;
             GameEvents.RaiseContractCompleted(contract);
         }

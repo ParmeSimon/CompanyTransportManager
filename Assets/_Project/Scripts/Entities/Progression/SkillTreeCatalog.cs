@@ -52,9 +52,37 @@ namespace TransportManager.Entities.Progression
         // Coût croissant par profondeur dans la branche.
         private static int CostForTier(int tier) => 1 + (tier - 1) / 2; // 1,1,2,2,3,3,4,4,5,5
 
+        // Forme du nœud déduite de son effet : les améliorations structurelles « flat »
+        // (+1 emplacement, +1 niveau de recrutement) prennent un carré ; les capstones
+        // (effets « flag » de fin de branche) un losange ; tout le reste un cercle.
+        private static NodeShape ShapeFor(SkillEffectType effect)
+        {
+            switch (effect)
+            {
+                case SkillEffectType.ExtraVehicleSlots:
+                case SkillEffectType.RecruitmentLevelBonus:
+                case SkillEffectType.ContractCountryReach:
+                case SkillEffectType.RecruitmentPoolSizeBonus:
+                    return NodeShape.Square;
+                case SkillEffectType.AutoRepair:
+                case SkillEffectType.PremiumContractsUnlocked:
+                case SkillEffectType.AutoStationRefill:
+                case SkillEffectType.HrRefreshInstant:
+                case SkillEffectType.HrRefreshFree:
+                    return NodeShape.Diamond;
+                default:
+                    return NodeShape.Circle;
+            }
+        }
+
         private static SkillNodeDefinition Node(string id, SkillBranch branch, string title, string desc,
             string prereq, SkillEffectType effect, float magnitude, int tier)
-            => new SkillNodeDefinition(id, branch, title, desc, CostForTier(tier), prereq, effect, magnitude, tier);
+            => new SkillNodeDefinition(id, branch, title, desc, CostForTier(tier), prereq, effect, magnitude, tier, ShapeFor(effect));
+
+        // Capstone : nœud terminal d'une branche (losange), effet « flag » au coût relevé.
+        private static SkillNodeDefinition Capstone(string id, SkillBranch branch, string title, string desc,
+            string prereq, SkillEffectType effect)
+            => new SkillNodeDefinition(id, branch, title, desc, 5, prereq, effect, 1f, 6, NodeShape.Diamond);
 
         // ── Branche DÉPÔT (logistique) ────────────────────────────────────────────
         // Arbre ramifié : racine → 2 → (2 / 3) → … Les augments les plus forts sont
@@ -66,12 +94,18 @@ namespace TransportManager.Entities.Progression
             var U = SkillEffectType.DepotUpgradeCostReduction;
             var R = SkillEffectType.RepairCostReduction;
             var W = SkillEffectType.ContractRewardBonus;
+            var G = SkillEffectType.ContractCountryReach;
             return new List<SkillNodeDefinition>
             {
                 Node("depot_root", B, "Quai supplémentaire", "+1 emplacement de véhicule au dépôt.",          null,        E, 1f,    1),
                 // split 2
                 Node("depot_a",    B, "Négociation BTP",     "-8 % sur le coût d'agrandissement du dépôt.",   "depot_root",U, 0.08f, 2),
                 Node("depot_b",    B, "Atelier interne",     "-8 % sur le coût de réparation des véhicules.", "depot_root",R, 0.08f, 2),
+                // ── Expansion géographique (carrés = portée des contrats) ──
+                Node("depot_geo1", B, "Tournées transfrontalières",
+                    "Débloque les contrats vers les pays limitrophes de ton pays d'attache.",                 "depot_root",G, 1f,    2),
+                Node("depot_geo2", B, "Réseau continental",
+                    "Débloque les contrats dans tout ton continent d'attache.",                               "depot_geo1",G, 1f,    3),
                 // depot_a split 2
                 Node("depot_a1",   B, "Centrale d'achat",    "-10 % supplémentaires sur l'agrandissement.",   "depot_a",   U, 0.10f, 3),
                 Node("depot_a2",   B, "Contrats premium",    "+4 % sur la récompense des contrats.",          "depot_a",   W, 0.04f, 3),
@@ -85,10 +119,20 @@ namespace TransportManager.Entities.Progression
                 Node("depot_b1a",  B, "Mécanos chevronnés",  "-12 % supplémentaires sur la réparation.",      "depot_b1",  R, 0.12f, 4),
                 Node("depot_b2a",  B, "Troisième quai",      "+1 emplacement de véhicule supplémentaire.",    "depot_b2",  E, 1f,    4),
                 Node("depot_b2b",  B, "Logistique fluide",   "+5 % sur la récompense des contrats.",          "depot_b2",  W, 0.05f, 4),
+                Node("depot_b3a",  B, "Service client",      "+5 % sur la récompense des contrats.",          "depot_b3",  W, 0.05f, 4),
                 // depth 5 (les plus forts)
                 Node("depot_a1a1", B, "Empire immobilier",   "-18 % supplémentaires sur l'agrandissement.",   "depot_a1a", U, 0.18f, 5),
                 Node("depot_a2a1", B, "Contrats en or",      "+12 % sur la récompense des contrats.",         "depot_a2a", W, 0.12f, 5),
+                Node("depot_b1a1", B, "Maintenance prédictive","-18 % supplémentaires sur la réparation.",    "depot_b1a", R, 0.18f, 5),
                 Node("depot_b2a1", B, "Hangar étendu",       "+2 emplacements de véhicule supplémentaires.",  "depot_b2a", E, 2f,    5),
+                // capstone (losange) : réparation automatique gratuite au retour de mission
+                Capstone("depot_cap", B, "Atelier robotisé",
+                    "Les véhicules arrivant à 80 % d'usure sont révisés automatiquement et gratuitement, sans immobilisation.",
+                    "depot_b1a1", SkillEffectType.AutoRepair),
+                // capstone (losange) : portée mondiale des contrats
+                Capstone("depot_geo3", B, "Réseau mondial",
+                    "Débloque les contrats vers le monde entier, tous continents confondus.",
+                    "depot_geo2", SkillEffectType.ContractCountryReach),
             };
         }
 
@@ -100,6 +144,9 @@ namespace TransportManager.Entities.Progression
             var Xp = SkillEffectType.DriverXpGainBonus;
             var Fa = SkillEffectType.FatigueReduction;
             var Rc = SkillEffectType.RecruitmentLevelBonus;
+            var Ps = SkillEffectType.RecruitmentPoolSizeBonus;
+            var Rh = SkillEffectType.HrRefreshHoursReduction;
+            var Rd = SkillEffectType.HrRefreshPayWithDollars;
             return new List<SkillNodeDefinition>
             {
                 Node("hr_root", B, "Contrats avantageux",   "-8 % sur les salaires des conducteurs.",        null,     Wg, 0.08f, 1),
@@ -115,6 +162,7 @@ namespace TransportManager.Entities.Progression
                 Node("hr_b2",   B, "Intéressement",         "-8 % supplémentaires sur les salaires.",        "hr_b",   Wg, 0.08f, 3),
                 // depth 4
                 Node("hr_a1a",  B, "Mentorat",              "+30 % supplémentaires d'XP conducteurs.",       "hr_a1",  Xp, 0.30f, 4),
+                Node("hr_a2a",  B, "Médiation sociale",     "-10 % supplémentaires sur les salaires.",       "hr_a2",  Wg, 0.10f, 4),
                 Node("hr_a3a",  B, "Chasseur de têtes",     "Candidats du vivier : niveau minimum +1.",      "hr_a3",  Rc, 1f,    4),
                 Node("hr_b1a",  B, "Cabines confort",       "-25 % supplémentaires de fatigue.",             "hr_b1",  Fa, 0.25f, 4),
                 Node("hr_b2a",  B, "Participation",         "-10 % supplémentaires sur les salaires.",       "hr_b2",  Wg, 0.10f, 4),
@@ -122,7 +170,34 @@ namespace TransportManager.Entities.Progression
                 // depth 5 (les plus forts)
                 Node("hr_a1a1", B, "Culture d'élite",       "+40 % supplémentaires d'XP conducteurs.",       "hr_a1a", Xp, 0.40f, 5),
                 Node("hr_a3a1", B, "Réseau d'élite",        "Candidats du vivier : niveau minimum +2.",      "hr_a3a", Rc, 2f,    5),
+                Node("hr_b1a1", B, "Bien-être total",       "-25 % supplémentaires de fatigue.",             "hr_b1a", Fa, 0.25f, 5),
                 Node("hr_b2a1", B, "Convention dorée",      "-12 % supplémentaires sur les salaires.",       "hr_b2a", Wg, 0.12f, 5),
+                // capstone (losange) : débloque l'apparition des contrats premium
+                Capstone("hr_cap", B, "Carnet d'adresses premium",
+                    "Donne accès aux grands comptes : des contrats premium, plus lucratifs, apparaissent dans la liste.",
+                    "hr_a3a1", SkillEffectType.PremiumContractsUnlocked),
+
+                // ── Sous-branche RECRUTEMENT (vivier de candidats) ──────────────────
+                Node("hr_pool1",   B, "Annonce d'embauche",
+                    "+1 candidat dans le vivier de recrutement.",                                "hr_root",          Ps, 1f,  2),
+                Node("hr_refresh1",B, "Vivier renouvelé",
+                    "Le vivier se régénère toutes les 12 h au lieu de 24 h.",                     "hr_pool1",         Rh, 12f, 3),
+                Node("hr_refresh_dollars", B, "Petites annonces",
+                    "Débloque le rafraîchissement payé en dollars (coût croissant, remis à zéro chaque jour).", "hr_refresh1", Rd, 1f, 3),
+                Node("hr_pool2",   B, "Réseau d'agences",
+                    "+1 candidat supplémentaire dans le vivier de recrutement.",                  "hr_refresh1",      Ps, 1f,  4),
+                Node("hr_refresh2",B, "Renouvellement express",
+                    "Réduit encore le délai de régénération du vivier de 6 h.",                   "hr_refresh_dollars",Rh, 6f, 4),
+                Node("hr_refresh3",B, "Vivier dynamique",
+                    "Réduit encore le délai de régénération du vivier de 3 h.",                   "hr_refresh2",      Rh, 3f,  5),
+                // capstone (losange) : aucun temps d'attente entre deux refresh
+                Capstone("hr_refresh_instant", B, "Vivier permanent",
+                    "Plus aucun temps d'attente : le vivier peut être rafraîchi à tout moment.",
+                    "hr_refresh3", SkillEffectType.HrRefreshInstant),
+                // capstone (losange) : le rafraîchissement manuel devient gratuit
+                Capstone("hr_refresh_free", B, "Recrutement interne",
+                    "Le rafraîchissement manuel du vivier ne coûte plus rien.",
+                    "hr_refresh3", SkillEffectType.HrRefreshFree),
             };
         }
 
@@ -153,11 +228,17 @@ namespace TransportManager.Entities.Progression
                 Node("fuel_a2a",  B, "Flotte sport",        "+8 % de vitesse sur les trajets.",              "fuel_a2", Sp, 0.08f, 4),
                 Node("fuel_a3a",  B, "Raffinerie partenaire","-10 % supplémentaires sur le prix.",           "fuel_a3", Pr, 0.10f, 4),
                 Node("fuel_b1a",  B, "Réservoir géant",     "+30 % supplémentaires de capacité.",            "fuel_b1", Ca, 0.30f, 4),
+                Node("fuel_b1b",  B, "Cuve enterrée",       "+20 % supplémentaires de capacité.",            "fuel_b1", Ca, 0.20f, 4),
                 Node("fuel_b2a",  B, "Livraison express",   "+25 % supplémentaires de remplissage.",         "fuel_b2", Re, 0.25f, 4),
                 // depth 5 (les plus forts)
                 Node("fuel_a1a1", B, "Hybridation",         "-12 % supplémentaires de consommation.",        "fuel_a1a",Co, 0.12f, 5),
                 Node("fuel_a2a1", B, "Pilotes pro",         "+10 % de vitesse sur les trajets.",             "fuel_a2a",Sp, 0.10f, 5),
+                Node("fuel_b1a1", B, "Réserve stratégique", "+35 % supplémentaires de capacité.",            "fuel_b1a",Ca, 0.35f, 5),
                 Node("fuel_b2a1", B, "Pipeline privé",      "+30 % supplémentaires de remplissage.",         "fuel_b2a",Re, 0.30f, 5),
+                // capstone (losange) : la station se remplit toute seule, gratuitement
+                Capstone("fuel_cap", B, "Citerne autonome",
+                    "La station se ravitaille automatiquement et gratuitement au fil du temps, sans camion ni dépense.",
+                    "fuel_b2a1", SkillEffectType.AutoStationRefill),
             };
         }
     }

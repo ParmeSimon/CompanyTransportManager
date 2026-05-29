@@ -11,5 +11,9 @@ namespace TransportManager.Entities.Fuel
         public bool refillInProgress;
         public long refillCompleteUtcTicks;
         public float pendingRefillLiters;
+
+        // Capstone Essence « Citerne autonome » : horodatage du dernier crédit de
+        // remplissage automatique (0 = comptabilité non démarrée / capstone inactif).
+        public long lastAutoRefillUtcTicks;
     }
 }

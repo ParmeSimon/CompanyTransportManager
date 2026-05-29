@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using TransportManager.Entities.Map;
 using TransportManager.Enums;
@@ -39,6 +40,54 @@ namespace TransportManager.Systems.Map
                 if (to != from) break;
             }
             return (from, to);
+        }
+
+        // ── Variantes filtrées par pays (déblocage géographique des contrats) ───────
+        // allowedCountries == null  → aucune restriction (monde entier).
+
+        public CityEntry GetNearestCity(double latitude, double longitude)
+        {
+            if (!HasCities) return null;
+            var target = new GeoPoint(latitude, longitude);
+            CityEntry best = null;
+            double bestKm = double.MaxValue;
+            foreach (var c in _catalog.cities)
+            {
+                double d = GeoPoint.HaversineKm(c.location, target);
+                if (d < bestKm) { bestKm = d; best = c; }
+            }
+            return best;
+        }
+
+        public (CityEntry from, CityEntry to) GetRandomCityPair(ICollection<string> allowedCountries)
+        {
+            if (allowedCountries == null) return GetRandomCityPair();
+
+            var pool = new List<CityEntry>();
+            foreach (var c in _catalog.cities)
+                if (allowedCountries.Contains(c.country)) pool.Add(c);
+
+            // Repli de sécurité : pas assez de villes dans la zone → on ne bloque pas.
+            if (pool.Count < 2) return GetRandomCityPair();
+
+            var from = pool[Random.Range(0, pool.Count)];
+            CityEntry to = null;
+            for (int i = 0; i < 8; i++)
+            {
+                to = pool[Random.Range(0, pool.Count)];
+                if (to != from) break;
+            }
+            return (from, to);
+        }
+
+        // Nombre de villes du catalogue situées dans l'un des pays autorisés.
+        public int CountCitiesIn(ICollection<string> allowedCountries)
+        {
+            if (allowedCountries == null) return HasCities ? _catalog.cities.Count : 0;
+            int n = 0;
+            foreach (var c in _catalog.cities)
+                if (allowedCountries.Contains(c.country)) n++;
+            return n;
         }
 
         public string GetRandomAddressLabel(CityEntry city)

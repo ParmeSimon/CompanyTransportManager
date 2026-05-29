@@ -17,9 +17,11 @@ namespace TransportManager.Entities.Progression
         public readonly SkillEffectType effect;
         public readonly float magnitude;      // fraction (pct) ou nombre (flat)
         public readonly int tier;             // profondeur dans la branche (1 = proche du tronc)
+        public readonly NodeShape shape;      // forme visuelle (cercle / carré / losange)
 
         public SkillNodeDefinition(string id, SkillBranch branch, string title, string description,
-            int cost, string prerequisiteId, SkillEffectType effect, float magnitude, int tier)
+            int cost, string prerequisiteId, SkillEffectType effect, float magnitude, int tier,
+            NodeShape shape = NodeShape.Circle)
         {
             this.id = id;
             this.branch = branch;
@@ -30,6 +32,7 @@ namespace TransportManager.Entities.Progression
             this.effect = effect;
             this.magnitude = magnitude;
             this.tier = tier;
+            this.shape = shape;
         }
 
         public bool IsBranchRoot => string.IsNullOrEmpty(prerequisiteId);

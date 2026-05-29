@@ -15,6 +15,7 @@ using TransportManager.Systems.Hr;
 using TransportManager.Systems.Map;
 using TransportManager.Systems.Map.Visualization;
 using TransportManager.UI.Common;
+using TransportManager.UI.Map;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -354,13 +355,15 @@ namespace TransportManager.UI.Fleet
             infoLbl.textWrappingMode = TextWrappingModes.NoWrap;
             infoLbl.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
 
-            BuildEyeButton(infoRow.transform, contract, mapSys);
+            BuildEyeButton(infoRow.transform, contract);
 
             _liveRefs.Add(new ContractCardRefs { infoLabel = infoLbl, contract = contract });
             UpdateContractCard(_liveRefs[_liveRefs.Count - 1]);
         }
 
-        private void BuildEyeButton(Transform parent, ContractInstance contract, MapSystem mapSys)
+        // L'œil bascule l'affichage du trajet (trait fin + icône camion) sur la carte.
+        // Œil ouvert = visible, œil barré = masqué. Visible par défaut.
+        private void BuildEyeButton(Transform parent, ContractInstance contract)
         {
             var btnGo  = MakeGO("EyeBtn", parent);
             var btnImg = btnGo.AddComponent<Image>();
@@ -374,8 +377,6 @@ namespace TransportManager.UI.Fleet
 
             var iconGo  = MakeGO("Icon", btnGo.transform);
             var iconImg = iconGo.AddComponent<Image>();
-            iconImg.sprite         = Resources.Load<Sprite>("UI/Icons/icons/eye");
-            iconImg.color          = new Color32(0x35, 0x8E, 0xF5, 220);
             iconImg.preserveAspect = true;
             iconImg.raycastTarget  = false;
             var iconRt = iconGo.GetComponent<RectTransform>();
@@ -385,7 +386,16 @@ namespace TransportManager.UI.Fleet
             iconRt.anchoredPosition = Vector2.zero;
             iconRt.sizeDelta        = new Vector2(20, 20);
 
-            btn.onClick.AddListener(() => LocateVehicle(contract, mapSys));
+            string id = contract.instanceId;
+            void ApplyIcon()
+            {
+                bool visible = FleetMapDisplayState.IsVisible(id);
+                iconImg.sprite = Resources.Load<Sprite>(visible ? "UI/Icons/icons/eye" : "UI/Icons/icons/eye-off");
+                iconImg.color  = visible ? new Color32(0x35, 0x8E, 0xF5, 220) : new Color32(0x5A, 0x65, 0x77, 220);
+            }
+            ApplyIcon();
+
+            btn.onClick.AddListener(() => { FleetMapDisplayState.Toggle(id); ApplyIcon(); });
         }
 
         private void BuildOutlineBadge(Transform parent, string label, Color32 col, int width)
@@ -474,32 +484,6 @@ namespace TransportManager.UI.Fleet
         }
 
         // ── Locate ────────────────────────────────────────────────────────────
-
-        private void LocateVehicle(ContractInstance contract, MapSystem mapSys)
-        {
-            var now = DateTime.UtcNow;
-            long totalTicks = contract.completionTimeUtcTicks - contract.startTimeUtcTicks;
-            float progress  = totalTicks > 0
-                ? Mathf.Clamp01((float)(now.Ticks - contract.startTimeUtcTicks) / totalTicks)
-                : 0f;
-
-            GameEvents.RaiseTabChanged(TabType.Map);
-
-            if (mapSys?.Catalog != null)
-            {
-                var orig = mapSys.Catalog.GetById(contract.definition.originCityId);
-                var dest = mapSys.Catalog.GetById(contract.definition.destinationCityId);
-                if (orig != null && dest != null)
-                {
-                    double lat = orig.location.latitude  + (dest.location.latitude  - orig.location.latitude)  * progress;
-                    double lon = orig.location.longitude + (dest.location.longitude - orig.location.longitude) * progress;
-                    var mapView = FindObjectOfType<SlippyMapView>(true);
-                    if (mapView != null) mapView.SetView(lat, lon, 12);
-                }
-            }
-
-            Destroy(gameObject);
-        }
 
         private void Close() => Destroy(gameObject);
 

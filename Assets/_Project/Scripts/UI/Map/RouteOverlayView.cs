@@ -11,14 +11,16 @@ namespace TransportManager.UI.Map
     [RequireComponent(typeof(RectTransform))]
     public class RouteOverlayView : MonoBehaviour
     {
-        // ── Couleurs ──────────────────────────────────────────────────────────────
-        private static readonly Color LineColor   = new Color(0.22f, 0.50f, 0.90f, 0.90f);
-        private static readonly Color ColorA      = new Color(0.20f, 0.72f, 0.38f, 1f); // vert
-        private static readonly Color ColorB      = new Color(0.95f, 0.35f, 0.25f, 1f); // rouge-orange
+        // ── Couleurs (style Google / Waze : liseré sombre + cœur bleu vif) ──────────
+        private static readonly Color CoreColor   = new Color(0.26f, 0.56f, 0.98f, 1f);   // bleu vif
+        private static readonly Color CasingColor = new Color(0.10f, 0.24f, 0.52f, 1f);   // liseré sombre
+        private static readonly Color ColorA      = new Color(0.20f, 0.72f, 0.38f, 1f);   // vert
+        private static readonly Color ColorB      = new Color(0.95f, 0.35f, 0.25f, 1f);   // rouge-orange
         private static readonly Color LabelBg     = new Color(0.08f, 0.10f, 0.15f, 0.88f);
 
-        private const float LineThickness = 5f;
-        private const int   MaxSegments   = 250;   // décimation si +de points
+        private const float CoreThickness   = 7f;   // épaisseur du tracé bleu
+        private const float CasingThickness = 11f;  // liseré sombre dessous
+        private const int   MaxSegments     = 250;  // décimation si +de points
         private const float CircleSize    = 38f;
         private const float LabelW        = 96f;
         private const float LabelH        = 18f;
@@ -36,6 +38,7 @@ namespace TransportManager.UI.Map
         private RouteResult    _route;
         private double         _latA, _lonA, _latB, _lonB;
         private readonly List<RectTransform> _segments = new List<RectTransform>();
+        private static Sprite  _capSprite;   // disque doux pour caps/joints arrondis
 
         // ── Init ──────────────────────────────────────────────────────────────────
         public void Init(SlippyMapView map)
@@ -118,53 +121,99 @@ namespace TransportManager.UI.Map
         private void RedrawPolyline()
         {
             ClearSegments();
-            if (_route == null || _route.polyline == null || _route.polyline.Count < 2)
+            if (_map == null) return;
+
+            // Liste de points écran : polyline réelle, sinon ligne droite A→B en repli.
+            var screen = new List<Vector2>();
+            if (_route != null && _route.polyline != null && _route.polyline.Count >= 2)
             {
-                // Fallback : ligne droite entre A et B
-                if (_map != null)
-                {
-                    DrawSegment(_map.LatLonToLocal(_latA, _lonA),
-                                _map.LatLonToLocal(_latB, _lonB));
-                }
-                return;
+                var pts = _route.polyline;
+                int step = Mathf.Max(1, pts.Count / MaxSegments);
+                for (int i = 0; i < pts.Count; i += step)
+                    screen.Add(_map.LatLonToLocal(pts[i].latitude, pts[i].longitude));
+                var last = pts[pts.Count - 1];
+                screen.Add(_map.LatLonToLocal(last.latitude, last.longitude));
+            }
+            else
+            {
+                screen.Add(_map.LatLonToLocal(_latA, _lonA));
+                screen.Add(_map.LatLonToLocal(_latB, _lonB));
             }
 
-            var pts = _route.polyline;
-            int step = Mathf.Max(1, pts.Count / MaxSegments);
-
-            var screen = new List<Vector2>(pts.Count / step + 2);
-            for (int i = 0; i < pts.Count; i += step)
-                screen.Add(_map.LatLonToLocal(pts[i].latitude, pts[i].longitude));
-
-            var last = pts[pts.Count - 1];
-            screen.Add(_map.LatLonToLocal(last.latitude, last.longitude));
-
-            for (int i = 0; i < screen.Count - 1; i++)
-                DrawSegment(screen[i], screen[i + 1]);
+            // Deux passes : d'abord le liseré sombre (plus épais), puis le cœur bleu
+            // par-dessus. Des disques aux sommets lissent les angles (style Waze).
+            DrawPolyPass(screen, CasingColor, CasingThickness);
+            DrawPolyPass(screen, CoreColor,   CoreThickness);
         }
 
-        private void DrawSegment(Vector2 a, Vector2 b)
+        private void DrawPolyPass(List<Vector2> pts, Color color, float thickness)
         {
+            for (int i = 0; i < pts.Count - 1; i++)
+            {
+                DrawSegment(pts[i], pts[i + 1], color, thickness);
+                if (i > 0) DrawDot(pts[i], color, thickness);   // joint arrondi
+            }
+        }
+
+        private void DrawSegment(Vector2 a, Vector2 b, Color color, float thickness)
+        {
+            Vector2 dir = b - a;
+            float   len = dir.magnitude;
+            if (len < 0.5f) return;
+
             var go  = new GameObject("S", typeof(RectTransform));
             go.transform.SetParent(_lineLayer, false);
-
             var img = go.AddComponent<Image>();
-            img.color         = LineColor;
+            img.color         = color;
             img.raycastTarget = false;
 
             var rt = go.GetComponent<RectTransform>();
             rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot      = new Vector2(0.5f, 0.5f);
-
-            Vector2 dir = b - a;
-            float   len = dir.magnitude;
-            if (len < 0.5f) return;
-
             rt.anchoredPosition = (a + b) * 0.5f;
-            rt.sizeDelta        = new Vector2(len, LineThickness);
+            rt.sizeDelta        = new Vector2(len, thickness);
             rt.localRotation    = Quaternion.Euler(0f, 0f, Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg);
 
             _segments.Add(rt);
+        }
+
+        private void DrawDot(Vector2 p, Color color, float diameter)
+        {
+            var go  = new GameObject("J", typeof(RectTransform));
+            go.transform.SetParent(_lineLayer, false);
+            var img = go.AddComponent<Image>();
+            img.sprite        = GetCapSprite();
+            img.color         = color;
+            img.raycastTarget = false;
+
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot      = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = p;
+            rt.sizeDelta        = new Vector2(diameter, diameter);
+
+            _segments.Add(rt);
+        }
+
+        private static Sprite GetCapSprite()
+        {
+            if (_capSprite != null) return _capSprite;
+            const int sz = 32;
+            var tex = new Texture2D(sz, sz, TextureFormat.RGBA32, false)
+            {
+                wrapMode   = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Bilinear
+            };
+            float c = (sz - 1) / 2f, r = sz / 2f - 0.5f;
+            for (int y = 0; y < sz; y++)
+                for (int x = 0; x < sz; x++)
+                {
+                    float d = Mathf.Sqrt((x - c) * (x - c) + (y - c) * (y - c));
+                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, Mathf.Clamp01(r - d + 0.5f)));
+                }
+            tex.Apply();
+            _capSprite = Sprite.Create(tex, new Rect(0, 0, sz, sz), new Vector2(0.5f, 0.5f));
+            return _capSprite;
         }
 
         private void ClearSegments()

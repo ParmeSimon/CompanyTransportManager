@@ -296,7 +296,17 @@ namespace TransportManager.UI.Tabs
         private void Update()
         {
             var fuel = ServiceLocator.Get<FuelSystem>();
-            if (fuel == null || !fuel.IsRefilling) return;
+            if (fuel == null) return;
+
+            // Capstone « Citerne autonome » : la station se remplit toute seule en continu.
+            if (fuel.HasAutoRefill)
+            {
+                fuel.TickAutoRefill();
+                Refresh();
+                return;
+            }
+
+            if (!fuel.IsRefilling) return;
             var remaining = fuel.RefillRemaining;
             if (_refillStatusLabel)
                 _refillStatusLabel.text = $"Livraison en cours... {(int)remaining.TotalMinutes:D2}:{remaining.Seconds:D2}";
@@ -344,11 +354,13 @@ namespace TransportManager.UI.Tabs
             if (_fuelSlider) _fuelSlider.value = fillRatio;
 
             // Refill button
+            bool autoRefill = fuel.HasAutoRefill;
             bool isRefilling = fuel.IsRefilling;
-            bool canRefill = !isRefilling && fuel.RemainingCapacity > 0;
+            bool canRefill = !autoRefill && !isRefilling && fuel.RemainingCapacity > 0;
             if (_refillButton) _refillButton.interactable = canRefill;
-            if (_refillButtonLabel) _refillButtonLabel.text = isRefilling ? "En cours..." : "Commander";
-            if (_refillStatusLabel && !isRefilling) _refillStatusLabel.text = isRefilling ? "" : "Cuve disponible";
+            if (_refillButtonLabel) _refillButtonLabel.text = autoRefill ? "Auto" : (isRefilling ? "En cours..." : "Commander");
+            if (_refillStatusLabel && autoRefill) _refillStatusLabel.text = "Citerne autonome — remplissage automatique";
+            else if (_refillStatusLabel && !isRefilling) _refillStatusLabel.text = "Cuve disponible";
 
             if (fuel.Config != null && tier != null)
             {

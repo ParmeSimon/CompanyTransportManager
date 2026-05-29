@@ -48,6 +48,8 @@ namespace TransportManager.UI.Map
 
         // ── State ─────────────────────────────────────────────────────────────────
         private Transform  _activeRows;
+        private TMP_Text   _activeCountLbl;
+        private Image      _activeCountPill;
         private GameObject _popup;
         private Coroutine  _tickCoroutine;
 
@@ -62,7 +64,7 @@ namespace TransportManager.UI.Map
         private GameObject            _genModal;
         private TMP_Text[]            _genRouteLabels  = new TMP_Text[3];
         private TMP_Text[]            _genCargoLabels  = new TMP_Text[3];
-        private TMP_Text[]            _genInfoLabels   = new TMP_Text[3];
+        private Transform[]          _genInfoHosts    = new Transform[3];
         private TMP_Text[]            _genRewardLabels = new TMP_Text[3];
         private Button[]              _genTakeBtns     = new Button[3];
         private TMP_Text[]            _genBtnLabels    = new TMP_Text[3];
@@ -192,13 +194,17 @@ namespace TransportManager.UI.Map
             newBtnImg.sprite = _sprR12;
             newBtnImg.type   = Image.Type.Sliced;
             newBtnImg.color  = AccentGreen;
-            Le(newBtnGo, h: 44f);
+            Le(newBtnGo, h: 46f);
+            // Ombre verte diffuse pour faire « flotter » le CTA
+            var newBtnSh = newBtnGo.AddComponent<Shadow>();
+            newBtnSh.effectColor    = new Color(AccentGreen.r, AccentGreen.g, AccentGreen.b, 0.45f);
+            newBtnSh.effectDistance = new Vector2(0f, -3f);
             var newBtnComp = newBtnGo.AddComponent<Button>();
             newBtnComp.targetGraphic = newBtnImg;
             newBtnComp.transition    = Selectable.Transition.None;
             newBtnComp.onClick.AddListener(OpenGenerationModal);
-            var newBtnLbl = MakeTMP("L", newBtnGo.transform, "+  Nouveau contrat", 13.5f, FontStyles.Bold, Color.white);
-            newBtnLbl.characterSpacing = 0.5f;
+            var newBtnLbl = MakeTMP("L", newBtnGo.transform, "+   Nouveau contrat", 13.5f, FontStyles.Bold, Color.white);
+            newBtnLbl.characterSpacing = 0.8f;
             newBtnLbl.alignment = TextAlignmentOptions.Center;
             Stretch(newBtnLbl.GetComponent<RectTransform>());
 
@@ -233,6 +239,19 @@ namespace TransportManager.UI.Map
             sLbl.characterSpacing = 2.5f;
             Le(sLbl.gameObject, flexW: true, h: 16f);
 
+            // Compteur (pill arrondi teinté de l'accent) — mis à jour dans Refresh()
+            var countPill = MakeGO("Count", hdrGo.transform);
+            _activeCountPill = countPill.AddComponent<Image>();
+            _activeCountPill.sprite        = _sprR8;
+            _activeCountPill.type          = Image.Type.Sliced;
+            _activeCountPill.color         = new Color(accent.r, accent.g, accent.b, 0.16f);
+            _activeCountPill.raycastTarget = false;
+            Le(countPill, w: 22f, h: 18f);
+            _activeCountLbl = MakeTMP("N", countPill.transform, "0", 10.5f, FontStyles.Bold, accent);
+            _activeCountLbl.alignment        = TextAlignmentOptions.Center;
+            _activeCountLbl.textWrappingMode = TextWrappingModes.NoWrap;
+            Stretch(_activeCountLbl.GetComponent<RectTransform>());
+
             // Cards container — hauteur fixée par les cartes enfants
             var cGo = MakeGO("Cards_" + title, parent);
             var cImg = cGo.AddComponent<Image>();
@@ -264,6 +283,9 @@ namespace TransportManager.UI.Map
                 if (inst.status == ContractStatus.InProgress)
                 { BuildActiveRow(inst); activeCount++; }
 
+            if (_activeCountLbl != null)  _activeCountLbl.text = activeCount.ToString();
+            if (_activeCountPill != null) _activeCountPill.gameObject.SetActive(activeCount > 0);
+
             if (activeCount == 0)
                 EmptyRow(_activeRows, "Aucun trajet en cours");
         }
@@ -282,6 +304,9 @@ namespace TransportManager.UI.Map
             var cardSh = cardGo.AddComponent<Shadow>();
             cardSh.effectColor    = new Color(0f, 0f, 0f, 0.40f);
             cardSh.effectDistance = new Vector2(0f, -3f);
+            var cardOl = cardGo.AddComponent<Outline>();
+            cardOl.effectColor    = BorderFaint;
+            cardOl.effectDistance = new Vector2(1f, -1f);
 
             var cardVlg = cardGo.AddComponent<VerticalLayoutGroup>();
             cardVlg.padding               = new RectOffset(14, 14, 13, 13);
@@ -366,15 +391,52 @@ namespace TransportManager.UI.Map
 
         private void EmptyRow(Transform parent, string msg)
         {
+            // Boîte subtile, en pointillé visuel (fond très léger arrondi), contenu centré.
             var go = MakeGO("Empty", parent);
-            go.AddComponent<Image>().color = new Color(0, 0, 0, 0);
-            Le(go, h: 38f);
-            var lbl = MakeTMP("Lbl", go.transform, msg, 12f, FontStyles.Italic, TextDim);
-            lbl.alignment = TextAlignmentOptions.MidlineLeft;
-            Stretch(lbl.GetComponent<RectTransform>(), new Vector2(16f, 0f), Vector2.zero);
+            var img = go.AddComponent<Image>();
+            img.sprite        = _sprR12;
+            img.type          = Image.Type.Sliced;
+            img.color         = BgSubtle;
+            img.raycastTarget = false;
+            Le(go, h: 72f);
+
+            var vlg = go.AddComponent<VerticalLayoutGroup>();
+            vlg.padding               = new RectOffset(12, 12, 14, 14);
+            vlg.spacing               = 4f;
+            vlg.childAlignment        = TextAnchor.MiddleCenter;
+            vlg.childForceExpandWidth  = true;
+            vlg.childForceExpandHeight = false;
+            vlg.childControlWidth      = true;
+            vlg.childControlHeight     = true;
+
+            var glyph = MakeTMP("Glyph", go.transform, "·  ·  ·", 18f, FontStyles.Bold, TextDim);
+            glyph.alignment        = TextAlignmentOptions.Center;
+            glyph.characterSpacing = 2f;
+            Le(glyph.gameObject, h: 22f);
+
+            var lbl = MakeTMP("Lbl", go.transform, msg, 11.5f, FontStyles.Normal, TextDim);
+            lbl.alignment        = TextAlignmentOptions.Center;
+            lbl.textWrappingMode = TextWrappingModes.NoWrap;
+            Le(lbl.gameObject, h: 16f);
         }
 
         // ── Popup ─────────────────────────────────────────────────────────────────
+
+        /// Rouvre le popup d'un contrat à partir de sa définition (utilisé par le
+        /// bouton « Rouvrir le contrat » de la carte, après prévisualisation de route).
+        /// Si le contrat est déjà en cours, on rouvre la fiche « trajet en cours » ;
+        /// sinon la fiche « contrat disponible » (avec sélection de camion / démarrage).
+        public void ShowContractByDefinition(ContractData def)
+        {
+            if (def == null) return;
+            var contracts = ServiceLocator.Get<ContractSystem>();
+            ContractInstance inst = null;
+            if (contracts != null)
+                foreach (var c in contracts.Active)
+                    if (c.status == ContractStatus.InProgress && c.definition == def) { inst = c; break; }
+            OpenPopup(inst == null ? def : null, inst);
+        }
+
         private void OpenPopup(ContractData def, ContractInstance inst)
         {
             ClosePopup();
@@ -385,6 +447,7 @@ namespace TransportManager.UI.Map
             _selectableVehicles.Clear();
 
             bool isActive = inst != null;
+            EnsureRoundedSprites();
 
             _popup = new GameObject("ContractPopup", typeof(RectTransform));
             _popup.transform.SetParent(transform.parent, false);
@@ -406,39 +469,45 @@ namespace TransportManager.UI.Map
             scrimBtn.transition = Selectable.Transition.None;
             scrimBtn.onClick.AddListener(ClosePopup);
 
-            // Card
+            var d = _popupDef;
+            var accentColor = isActive ? AccentBlue : DiffColors[(int)d.difficulty];
+
+            // ── Carte arrondie centrée, dimensionnée par son contenu ────────────────
             var cardGo  = MakeGO("Card", _popup.transform);
-            cardGo.AddComponent<Image>().color = BgDeep;
+            var cardImg = cardGo.AddComponent<Image>();
+            cardImg.sprite = _sprR16;
+            cardImg.type   = Image.Type.Sliced;
+            cardImg.color  = BgDeep;
+            var cardSh = cardGo.AddComponent<Shadow>();
+            cardSh.effectColor    = new Color(0f, 0f, 0f, 0.55f);
+            cardSh.effectDistance = new Vector2(0f, -8f);
+            var cardOl = cardGo.AddComponent<Outline>();
+            cardOl.effectColor    = BorderFaint;
+            cardOl.effectDistance = new Vector2(1f, -1f);
             var cardRt = cardGo.GetComponent<RectTransform>();
             cardRt.anchorMin = new Vector2(0.5f, 0.5f);
             cardRt.anchorMax = new Vector2(0.5f, 0.5f);
             cardRt.pivot     = new Vector2(0.5f, 0.5f);
-            cardRt.sizeDelta = new Vector2(420f, 0f);
+            cardRt.sizeDelta = new Vector2(440f, 0f);
 
             var cardVlg = cardGo.AddComponent<VerticalLayoutGroup>();
-            cardVlg.padding               = new RectOffset(0, 0, 0, 0);
+            cardVlg.padding               = new RectOffset(0, 0, 0, 18);
             cardVlg.spacing               = 0f;
             cardVlg.childAlignment        = TextAnchor.UpperCenter;
             cardVlg.childForceExpandWidth  = true;
             cardVlg.childForceExpandHeight = false;
             cardVlg.childControlWidth      = true;
-            cardVlg.childControlHeight     = false;
+            cardVlg.childControlHeight     = true;
             cardGo.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            var d = _popupDef;
-            var accentColor = isActive ? AccentBlue : DiffColors[(int)d.difficulty];
-
-            // Top accent strip
-            var strip = MakeGO("Strip", cardGo.transform);
-            strip.AddComponent<Image>().color = accentColor;
-            Le(strip, h: 3f);
-
-            // Card header row
+            // ── 1 — Header : eyebrow + statut, pastille difficulté, fermeture ───────
             var cHdrGo = MakeGO("CHdr", cardGo.transform);
-            cHdrGo.AddComponent<Image>().color = BgElevated;
-            Le(cHdrGo, h: 48f);
+            var cHdrImg = cHdrGo.AddComponent<Image>();
+            cHdrImg.color         = new Color(0, 0, 0, 0);
+            cHdrImg.raycastTarget = false;
+            Le(cHdrGo, h: 60f);
             var cHhlg = cHdrGo.AddComponent<HorizontalLayoutGroup>();
-            cHhlg.padding               = new RectOffset(20, 16, 0, 0);
+            cHhlg.padding               = new RectOffset(22, 14, 18, 8);
             cHhlg.spacing               = 10f;
             cHhlg.childAlignment        = TextAnchor.MiddleLeft;
             cHhlg.childForceExpandWidth  = false;
@@ -446,168 +515,154 @@ namespace TransportManager.UI.Map
             cHhlg.childControlWidth      = true;
             cHhlg.childControlHeight     = true;
 
-            var statusLbl = MakeTMP("Status", cHdrGo.transform,
-                isActive ? "CONTRAT EN COURS" : "CONTRAT DISPONIBLE",
-                8.5f, FontStyles.Bold, TextDim);
-            statusLbl.characterSpacing = 2f;
-            Le(statusLbl.gameObject, flexW: true, h: 48f);
+            var eyebrow = MakeTMP("Eye", cHdrGo.transform,
+                isActive ? "TRAJET EN COURS" : "CONTRAT DISPONIBLE",
+                9f, FontStyles.Bold, TextDim);
+            eyebrow.characterSpacing = 2.5f;
+            eyebrow.textWrappingMode = TextWrappingModes.NoWrap;
+            Le(eyebrow.gameObject, flexW: true, h: 34f);
 
-            if (!isActive)
-            {
-                var diffPill = MakeGO("DiffPill", cHdrGo.transform);
-                diffPill.AddComponent<Image>().color = new Color(accentColor.r, accentColor.g, accentColor.b, 0.15f);
-                Le(diffPill, w: 64f, h: 22f);
-                var dLbl = MakeTMP("D", diffPill.transform, DiffNames[(int)d.difficulty],
-                    8f, FontStyles.Bold, accentColor);
-                dLbl.characterSpacing = 0.5f;
-                dLbl.alignment = TextAlignmentOptions.Center;
-                Stretch(dLbl.GetComponent<RectTransform>());
-            }
+            if (isActive)
+                RoundedPill(cHdrGo.transform, FormatRemaining(_popupInst), AccentBlue, 64f);
+            else
+                RoundedPill(cHdrGo.transform, DiffNames[(int)d.difficulty], accentColor, 78f);
 
             var closeX = LinkBtn(cHdrGo.transform, "✕", TextSecond);
-            Le(closeX.gameObject, w: 28f, h: 48f);
+            Le(closeX.gameObject, w: 26f, h: 34f);
             closeX.onClick.AddListener(ClosePopup);
 
-            // Route hero block
+            // ── 2 — Hero trajet : origine → destination + marchandise ───────────────
             var routeBlock = MakeGO("RouteBlock", cardGo.transform);
-            routeBlock.AddComponent<Image>().color = BgDeep;
+            var rbImg = routeBlock.AddComponent<Image>();
+            rbImg.color         = new Color(0, 0, 0, 0);
+            rbImg.raycastTarget = false;
             var rbVlg = routeBlock.AddComponent<VerticalLayoutGroup>();
-            rbVlg.padding               = new RectOffset(20, 20, 18, 18);
-            rbVlg.spacing               = 4f;
+            rbVlg.padding               = new RectOffset(22, 22, 6, 16);
+            rbVlg.spacing               = 6f;
             rbVlg.childForceExpandWidth  = true;
             rbVlg.childForceExpandHeight = false;
             rbVlg.childControlWidth      = true;
-            rbVlg.childControlHeight     = false;
+            rbVlg.childControlHeight     = true;
             routeBlock.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
             var originLbl = MakeTMP("From", routeBlock.transform,
-                CityName(d.originCityId), 20f, FontStyles.Bold, TextPrime);
+                CityName(d.originCityId), 21f, FontStyles.Bold, TextPrime);
             originLbl.alignment = TextAlignmentOptions.Left;
             Le(originLbl.gameObject, h: 28f);
 
             var arrowRow = HRow(routeBlock.transform, 14f);
+            var arrowDot = MakeGO("ODot", arrowRow);
+            var aDotImg = arrowDot.AddComponent<Image>();
+            aDotImg.sprite = _sprR8; aDotImg.type = Image.Type.Sliced;
+            aDotImg.color  = accentColor;
+            Le(arrowDot, w: 7f, h: 7f);
             var arrowLine = MakeGO("Line", arrowRow);
-            arrowLine.AddComponent<Image>().color = new Color(accentColor.r, accentColor.g, accentColor.b, 0.4f);
-            Le(arrowLine, h: 1f, flexW: true);
-            var arrowLbl = MakeTMP("Arrow", arrowRow, " → ", 10f, FontStyles.Normal, accentColor);
+            arrowLine.AddComponent<Image>().color = new Color(accentColor.r, accentColor.g, accentColor.b, 0.45f);
+            Le(arrowLine, h: 2f, flexW: true);
+            var arrowLbl = MakeTMP("Arrow", arrowRow, "→", 13f, FontStyles.Bold, accentColor);
             arrowLbl.textWrappingMode = TextWrappingModes.NoWrap;
-            Le(arrowLbl.gameObject, h: 14f);
-            var arrowLine2 = MakeGO("Line2", arrowRow);
-            arrowLine2.AddComponent<Image>().color = new Color(accentColor.r, accentColor.g, accentColor.b, 0.4f);
-            Le(arrowLine2, h: 1f, flexW: true);
+            Le(arrowLbl.gameObject, w: 16f, h: 14f);
 
             var destLbl = MakeTMP("To", routeBlock.transform,
-                CityName(d.destinationCityId), 20f, FontStyles.Bold, TextPrime);
+                CityName(d.destinationCityId), 21f, FontStyles.Bold, TextPrime);
             destLbl.alignment = TextAlignmentOptions.Right;
             Le(destLbl.gameObject, h: 28f);
 
-            // Cargo line
-            var cargoLbl = MakeTMP("Cargo", routeBlock.transform,
-                $"Marchandise : {(string.IsNullOrEmpty(d.cargoLabel) ? "Marchandises diverses" : d.cargoLabel)}",
+            var cargoRow = HRow(routeBlock.transform, 18f);
+            var cargoTag = MakeTMP("CT", cargoRow, "MARCHANDISE", 8f, FontStyles.Bold, TextDim);
+            cargoTag.characterSpacing = 1.5f;
+            cargoTag.textWrappingMode = TextWrappingModes.NoWrap;
+            Le(cargoTag.gameObject, w: 86f, h: 16f);
+            var cargoLbl = MakeTMP("Cargo", cargoRow,
+                string.IsNullOrEmpty(d.cargoLabel) ? "Marchandises diverses" : d.cargoLabel,
                 12f, FontStyles.Normal, TextSecond);
-            cargoLbl.alignment        = TextAlignmentOptions.Left;
             cargoLbl.textWrappingMode = TextWrappingModes.NoWrap;
             cargoLbl.overflowMode     = TextOverflowModes.Ellipsis;
-            Le(cargoLbl.gameObject, h: 18f);
+            Le(cargoLbl.gameObject, flexW: true, h: 16f);
 
-            // Stats grid
-            var gridSep = MakeGO("GridSep", cardGo.transform);
-            gridSep.AddComponent<Image>().color = BorderFaint;
-            Le(gridSep, h: 1f);
+            // ── 3 — Cartouches statistiques (arrondis) ──────────────────────────────
+            var gridWrap = MakeGO("StatsWrap", cardGo.transform);
+            var gwImg = gridWrap.AddComponent<Image>();
+            gwImg.color         = new Color(0, 0, 0, 0);
+            gwImg.raycastTarget = false;
+            var gwVlg = gridWrap.AddComponent<VerticalLayoutGroup>();
+            gwVlg.padding               = new RectOffset(16, 16, 0, 0);
+            gwVlg.childForceExpandWidth  = true;
+            gwVlg.childControlWidth      = true;
+            gwVlg.childControlHeight     = true;
+            gridWrap.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            var gridGo = MakeGO("StatsGrid", cardGo.transform);
-            gridGo.AddComponent<Image>().color = new Color(0,0,0,0);
+            var gridGo = MakeGO("StatsGrid", gridWrap.transform);
+            var ggImg = gridGo.AddComponent<Image>();
+            ggImg.color         = new Color(0, 0, 0, 0);
+            ggImg.raycastTarget = false;
             var gridHlg = gridGo.AddComponent<HorizontalLayoutGroup>();
-            gridHlg.spacing               = 1f;
+            gridHlg.spacing               = 8f;
             gridHlg.childForceExpandWidth  = true;
             gridHlg.childForceExpandHeight = false;
             gridHlg.childControlWidth      = true;
-            gridHlg.childControlHeight     = false;
+            gridHlg.childControlHeight     = true;
             gridGo.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            StatCell(gridGo.transform, $"{d.distanceKm:F0} km", "DISTANCE");
-            StatCell(gridGo.transform, $"+{d.baseReward:N0} $", "RÉCOMPENSE", AccentGreen);
-            StatCell(gridGo.transform, $"{d.cargoTons} t", "CHARGEMENT");
+            RoundedStatCell(gridGo.transform, $"{d.distanceKm:F0} km", "DISTANCE");
+            RoundedStatCell(gridGo.transform, $"+{d.baseReward:N0} $", "RÉCOMPENSE", AccentGreen);
+            RoundedStatCell(gridGo.transform, $"{d.cargoTons} t", "CHARGEMENT");
             if (isActive)
-                StatCell(gridGo.transform, FormatRemaining(_popupInst), "TEMPS RESTANT", AccentBlue);
+                RoundedStatCell(gridGo.transform, FormatRemaining(_popupInst), "RESTANT", AccentBlue);
             else
-                StatCell(gridGo.transform, DiffNames[(int)d.difficulty], "DIFFICULTÉ", accentColor);
+                RoundedStatCell(gridGo.transform, DiffNames[(int)d.difficulty], "DIFFICULTÉ", accentColor);
 
-            // Vehicle picker
+            // ── 4 — Sélecteur de camion (contrats disponibles uniquement) ───────────
             if (!isActive)
             {
-                var vSep = MakeGO("VSep", cardGo.transform);
-                vSep.AddComponent<Image>().color = BorderFaint;
-                Le(vSep, h: 1f);
-
                 var pickBlock = MakeGO("Picker", cardGo.transform);
-                pickBlock.AddComponent<Image>().color = BgDeep;
+                var pickImg = pickBlock.AddComponent<Image>();
+                pickImg.color         = new Color(0, 0, 0, 0);
+                pickImg.raycastTarget = false;
                 var pbVlg = pickBlock.AddComponent<VerticalLayoutGroup>();
-                pbVlg.padding               = new RectOffset(20, 20, 12, 12);
-                pbVlg.spacing               = 6f;
+                pbVlg.padding               = new RectOffset(16, 16, 14, 0);
+                pbVlg.spacing               = 7f;
                 pbVlg.childForceExpandWidth  = true;
                 pbVlg.childForceExpandHeight = false;
                 pbVlg.childControlWidth      = true;
-                pbVlg.childControlHeight     = false;
+                pbVlg.childControlHeight     = true;
                 pickBlock.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
                 var pickLbl = MakeTMP("Lbl", pickBlock.transform, "AFFECTER UN CAMION",
-                    7.5f, FontStyles.Bold, TextDim);
+                    8f, FontStyles.Bold, TextDim);
                 pickLbl.characterSpacing = 2f;
                 Le(pickLbl.gameObject, h: 16f);
 
                 BuildVehiclePicker(pickBlock.transform, d);
             }
 
-            // Route button
-            var rSep = MakeGO("RSep", cardGo.transform);
-            rSep.AddComponent<Image>().color = BorderFaint;
-            Le(rSep, h: 1f);
-
-            var routeBtnRow = MakeGO("RouteBtnRow", cardGo.transform);
-            routeBtnRow.AddComponent<Image>().color = new Color(0, 0, 0, 0);
-            Le(routeBtnRow, h: 44f);
-            var rHlg = routeBtnRow.AddComponent<HorizontalLayoutGroup>();
-            rHlg.padding               = new RectOffset(16, 16, 8, 8);
-            rHlg.childAlignment        = TextAnchor.MiddleCenter;
-            rHlg.childForceExpandWidth  = false;
-            rHlg.childForceExpandHeight = false;
-            rHlg.childControlWidth      = true;
-            rHlg.childControlHeight     = true;
-
-            var routeMapBtn = SolidBtn(routeBtnRow.transform, "Voir la route sur la carte", AccentBlue);
-            Le(routeMapBtn.gameObject, flexW: true, h: 28f);
-            var captureDef = _popupDef;
-            routeMapBtn.onClick.AddListener(() => { ClosePopup(); GameEvents.RaiseShowContractRoute(captureDef); });
-
-            // Bottom actions
-            var btnSep = MakeGO("BtnSep", cardGo.transform);
-            btnSep.AddComponent<Image>().color = BorderFaint;
-            Le(btnSep, h: 1f);
-
-            var btnRow = MakeGO("BtnRow", cardGo.transform);
-            btnRow.AddComponent<Image>().color = BgElevated;
-            Le(btnRow, h: 54f);
-            var bHlg = btnRow.AddComponent<HorizontalLayoutGroup>();
-            bHlg.padding               = new RectOffset(16, 16, 10, 10);
-            bHlg.spacing               = 8f;
-            bHlg.childAlignment        = TextAnchor.MiddleCenter;
-            bHlg.childForceExpandWidth  = false;
-            bHlg.childForceExpandHeight = false;
-            bHlg.childControlWidth      = true;
-            bHlg.childControlHeight     = true;
-
-            var closeBtn = SolidBtn(btnRow.transform, "Fermer", BgElevated);
-            Le(closeBtn.gameObject, flexW: true, h: 34f);
-            closeBtn.onClick.AddListener(ClosePopup);
+            // ── 5 — Actions (pied de carte) ─────────────────────────────────────────
+            var footer = MakeGO("Footer", cardGo.transform);
+            var footImg = footer.AddComponent<Image>();
+            footImg.color         = new Color(0, 0, 0, 0);
+            footImg.raycastTarget = false;
+            var footVlg = footer.AddComponent<VerticalLayoutGroup>();
+            footVlg.padding               = new RectOffset(16, 16, 14, 0);
+            footVlg.spacing               = 9f;
+            footVlg.childForceExpandWidth  = true;
+            footVlg.childForceExpandHeight = false;
+            footVlg.childControlWidth      = true;
+            footVlg.childControlHeight     = true;
+            footer.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
             if (!isActive)
             {
-                _startBtn = SolidBtn(btnRow.transform, "Démarrer  →", AccentBlue);
-                Le(_startBtn.gameObject, flexW: true, h: 34f);
+                _startBtn = RoundedSolidBtn(footer.transform, "Démarrer le trajet  →", AccentGreen);
+                Le(_startBtn.gameObject, flexW: true, h: 48f);
                 _startBtn.onClick.AddListener(OnStartContract);
                 _startBtn.interactable = false;
+                SetBtnEnabled(_startBtn, false);
             }
+
+            var captureDef = _popupDef;
+            var routeMapBtn = RoundedGhostBtn(footer.transform, "Voir la route sur la carte", AccentBlue);
+            Le(routeMapBtn.gameObject, flexW: true, h: 42f);
+            routeMapBtn.onClick.AddListener(() => { ClosePopup(); GameEvents.RaiseShowContractRoute(captureDef); });
         }
 
         private void BuildVehiclePicker(Transform parent, ContractData def)
@@ -627,11 +682,50 @@ namespace TransportManager.UI.Map
 
             if (_selectableVehicles.Count == 0)
             {
-                var noLbl = MakeTMP("No", parent,
-                    "Aucun camion disponible avec conducteur et capacité suffisante.",
-                    9.5f, FontStyles.Italic, DangerRed);
-                noLbl.textWrappingMode = TextWrappingModes.Normal;
-                Le(noLbl.gameObject, h: 36f);
+                var box = MakeGO("NoVeh", parent);
+                var boxImg = box.AddComponent<Image>();
+                boxImg.sprite        = _sprR8;
+                boxImg.type          = Image.Type.Sliced;
+                boxImg.color         = new Color(AccentAmber.r, AccentAmber.g, AccentAmber.b, 0.12f);
+                boxImg.raycastTarget = false;
+                var boxVlg = box.AddComponent<VerticalLayoutGroup>();
+                boxVlg.padding               = new RectOffset(13, 13, 11, 11);
+                boxVlg.spacing               = 3f;
+                boxVlg.childForceExpandWidth  = true;
+                boxVlg.childControlWidth      = true;
+                boxVlg.childControlHeight     = true;
+                box.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+                var t = MakeTMP("T", box.transform, "Aucun camion prêt", 11.5f, FontStyles.Bold, AccentAmber);
+                t.textWrappingMode = TextWrappingModes.NoWrap;
+                Le(t.gameObject, h: 16f);
+
+                if (gm.Save.vehicles.Count == 0)
+                {
+                    var m = MakeTMP("M", box.transform,
+                        "Tu n'as aucun camion. Achète-en un au Magasin, puis affecte-lui un conducteur (onglet Véhicules).",
+                        10f, FontStyles.Normal, TextSecond);
+                    m.textWrappingMode = TextWrappingModes.Normal;
+                    Le(m.gameObject, flexW: true, h: 30f);
+                }
+                else
+                {
+                    var m = MakeTMP("M", box.transform, "Pourquoi tes camions ne conviennent pas :",
+                        10f, FontStyles.Normal, TextSecond);
+                    m.textWrappingMode = TextWrappingModes.Normal;
+                    Le(m.gameObject, flexW: true, h: 14f);
+
+                    foreach (var v in gm.Save.vehicles)
+                    {
+                        var data   = catalog?.GetById(v.vehicleDataId);
+                        string why = VehicleIneligibleReason(v, data, def);
+                        if (why == null) continue;
+                        string name = data?.displayName ?? v.vehicleDataId;
+                        var line = MakeTMP("R", box.transform, $"• {name} — {why}", 10f, FontStyles.Normal, TextDim);
+                        line.textWrappingMode = TextWrappingModes.Normal;
+                        Le(line.gameObject, flexW: true, h: 14f);
+                    }
+                }
                 return;
             }
 
@@ -643,9 +737,11 @@ namespace TransportManager.UI.Map
 
                 var rowGo  = MakeGO("VRow", parent);
                 var rowImg = rowGo.AddComponent<Image>();
-                rowImg.color = BgElevated;
+                rowImg.sprite = _sprR8;
+                rowImg.type   = Image.Type.Sliced;
+                rowImg.color  = BgElevated;
                 _vehicleRowBgs.Add(rowImg);
-                Le(rowGo, h: 38f);
+                Le(rowGo, h: 40f);
 
                 var rowBtn = rowGo.AddComponent<Button>();
                 rowBtn.targetGraphic = rowImg;
@@ -678,14 +774,30 @@ namespace TransportManager.UI.Map
             }
         }
 
+        // Raison pour laquelle un camion n'est pas éligible à ce contrat (null = éligible).
+        private static string VehicleIneligibleReason(VehicleInstance v, VehicleData data, ContractData def)
+        {
+            if (data == null) return "modèle inconnu";
+            if (string.IsNullOrEmpty(v.assignedDriverInstanceId)) return "sans conducteur (affecte-en un dans Véhicules)";
+            switch (v.status)
+            {
+                case VehicleStatus.OnContract:    return "déjà en mission";
+                case VehicleStatus.InMaintenance: return "en maintenance";
+                case VehicleStatus.Immobilized:   return "immobilisé";
+            }
+            if (data.capacity < def.requiredCapacity)
+                return $"capacité {data.capacity} t < {def.requiredCapacity} t requis";
+            return null;
+        }
+
         private void SelectVehicle(int idx)
         {
             _selectedVehicleIdx = idx;
             for (int i = 0; i < _vehicleRowBgs.Count; i++)
                 _vehicleRowBgs[i].color = i == idx
-                    ? new Color(AccentBlue.r, AccentBlue.g, AccentBlue.b, 0.18f)
+                    ? new Color(AccentGreen.r, AccentGreen.g, AccentGreen.b, 0.20f)
                     : BgElevated;
-            if (_startBtn != null) _startBtn.interactable = true;
+            if (_startBtn != null) { _startBtn.interactable = true; SetBtnEnabled(_startBtn, true); }
         }
 
         private void OnStartContract()
@@ -729,7 +841,7 @@ namespace TransportManager.UI.Map
             _genResults      = new ContractData[3];
             _genRouteLabels  = new TMP_Text[3];
             _genCargoLabels  = new TMP_Text[3];
-            _genInfoLabels   = new TMP_Text[3];
+            _genInfoHosts    = new Transform[3];
             _genRewardLabels = new TMP_Text[3];
             _genTakeBtns     = new Button[3];
             _genBtnLabels    = new TMP_Text[3];
@@ -862,6 +974,10 @@ namespace TransportManager.UI.Map
             var shadow = card.AddComponent<Shadow>();
             shadow.effectColor    = new Color(0f, 0f, 0f, 0.55f);
             shadow.effectDistance = new Vector2(0f, -5f);
+            // Liseré teinté de la difficulté pour distinguer les cartes au premier coup d'œil
+            var cardOl = card.AddComponent<Outline>();
+            cardOl.effectColor    = new Color(accent.r, accent.g, accent.b, 0.30f);
+            cardOl.effectDistance = new Vector2(1.4f, -1.4f);
 
             var cardVlg = card.AddComponent<VerticalLayoutGroup>();
             cardVlg.padding               = new RectOffset(28, 28, 26, 26);
@@ -915,11 +1031,20 @@ namespace TransportManager.UI.Map
             Le(cargoLbl.gameObject, h: 22f);
             _genCargoLabels[slotIdx] = cargoLbl;
 
-            // Row 4 — stats
-            var infoLbl = MakeTMP("I", card.transform, "", 15f, FontStyles.Normal, TextDim);
-            infoLbl.textWrappingMode = TextWrappingModes.NoWrap;
-            Le(infoLbl.gameObject, h: 20f);
-            _genInfoLabels[slotIdx] = infoLbl;
+            // Row 4 — puces d'infos (distance · tonnage · durée), remplies à la réception
+            var infoHost = MakeGO("Info", card.transform);
+            var ihImg = infoHost.AddComponent<Image>();
+            ihImg.color         = new Color(0, 0, 0, 0);
+            ihImg.raycastTarget = false;
+            var ihHlg = infoHost.AddComponent<HorizontalLayoutGroup>();
+            ihHlg.spacing               = 8f;
+            ihHlg.childAlignment        = TextAnchor.MiddleLeft;
+            ihHlg.childForceExpandWidth  = false;
+            ihHlg.childForceExpandHeight = false;
+            ihHlg.childControlWidth      = true;
+            ihHlg.childControlHeight     = true;
+            Le(infoHost, h: 30f);
+            _genInfoHosts[slotIdx] = infoHost.transform;
 
             // Row 5 — full-width action button (loading → take / retry)
             var btnGo  = MakeGO("Btn", card.transform);
@@ -975,8 +1100,7 @@ namespace TransportManager.UI.Map
                 _genCargoLabels[slotIdx].color = TextSecond;
             }
 
-            _genInfoLabels[slotIdx].text  = $"{def.distanceKm:F0} km     ·     {def.cargoTons} t";
-            _genInfoLabels[slotIdx].color = TextDim;
+            FillGenInfoChips(slotIdx, def);
 
             if (_genRewardLabels[slotIdx] != null)
             {
@@ -1005,10 +1129,13 @@ namespace TransportManager.UI.Map
                 _genRouteLabels[slotIdx].fontStyle = FontStyles.Italic;
             }
             if (_genCargoLabels[slotIdx] != null) _genCargoLabels[slotIdx].text = "";
-            if (_genInfoLabels[slotIdx] != null)
+            if (_genInfoHosts[slotIdx] != null)
             {
-                _genInfoLabels[slotIdx].text  = "Vérifie ta connexion, puis réessaie.";
-                _genInfoLabels[slotIdx].color = TextDim;
+                ClearChildren(_genInfoHosts[slotIdx]);
+                var hint = MakeTMP("Hint", _genInfoHosts[slotIdx],
+                    "Vérifie ta connexion, puis réessaie.", 13f, FontStyles.Italic, TextDim);
+                hint.textWrappingMode = TextWrappingModes.NoWrap;
+                Le(hint.gameObject, flexW: true, h: 20f);
             }
             if (_genRewardLabels[slotIdx] != null) _genRewardLabels[slotIdx].text = "";
 
@@ -1034,7 +1161,7 @@ namespace TransportManager.UI.Map
             _genRouteLabels[slotIdx].color     = TextSecond;
             _genRouteLabels[slotIdx].fontStyle = FontStyles.Italic;
             if (_genCargoLabels[slotIdx]  != null) _genCargoLabels[slotIdx].text = "";
-            if (_genInfoLabels[slotIdx]   != null) _genInfoLabels[slotIdx].text = "";
+            if (_genInfoHosts[slotIdx]    != null) ClearChildren(_genInfoHosts[slotIdx]);
             if (_genRewardLabels[slotIdx] != null) _genRewardLabels[slotIdx].text = "";
 
             var btn = _genTakeBtns[slotIdx];
@@ -1067,6 +1194,8 @@ namespace TransportManager.UI.Map
         }
 
         // ── Fleet analysis ────────────────────────────────────────────────────────
+        // Collecte TOUT le parc (quel que soit le statut / conducteur) pour dimensionner
+        // les contrats à générer. Le check Idle + conducteur n'a lieu qu'au démarrage.
         private static List<VehicleData> CollectAvailableFleet(out VehicleRoutingProfile profile)
         {
             var result = new List<VehicleData>();
@@ -1079,8 +1208,6 @@ namespace TransportManager.UI.Map
             bool anyHgv = false;
             foreach (var v in gm.Save.vehicles)
             {
-                if (v.status != VehicleStatus.Idle) continue;
-                if (string.IsNullOrEmpty(v.assignedDriverInstanceId)) continue;
                 var data = catalog.GetById(v.vehicleDataId);
                 if (data == null) continue;
                 result.Add(data);
@@ -1097,9 +1224,13 @@ namespace TransportManager.UI.Map
             foreach (var data in fleet)
                 if (data.capacity > maxCap) maxCap = data.capacity;
 
+            // Les contrats premium ne sont proposés qu'avec le capstone RH débloqué.
+            bool premiumUnlocked = (ServiceLocator.Get<Systems.Progression.SkillTreeSystem>()?
+                                        .Flat(SkillEffectType.PremiumContractsUnlocked) ?? 0) > 0;
+
             var d0 = ContractDifficulty.Easy;
             var d1 = maxCap >= 5  ? ContractDifficulty.Medium : ContractDifficulty.Easy;
-            var d2 = maxCap >= 30 ? ContractDifficulty.Premium :
+            var d2 = (maxCap >= 30 && premiumUnlocked) ? ContractDifficulty.Premium :
                      maxCap >= 15 ? ContractDifficulty.Hard    :
                      maxCap >=  5 ? ContractDifficulty.Medium  : ContractDifficulty.Easy;
 
@@ -1122,7 +1253,7 @@ namespace TransportManager.UI.Map
             return maxRange;
         }
 
-        // Affiché dans la modale quand aucun camion n'est disponible.
+        // Affiché dans la modale uniquement quand le joueur n'a encore aucun camion.
         private void BuildNoFleetMessage(Transform parent)
         {
             var box = MakeGO("NoFleet", parent);
@@ -1137,16 +1268,16 @@ namespace TransportManager.UI.Map
             vlg.childControlHeight     = false;
             vlg.spacing = 12f;
 
-            var title = MakeTMP("T", box.transform, "Aucun camion disponible", 22f, FontStyles.Bold, TextPrime);
+            var title = MakeTMP("T", box.transform, "Aucun camion dans la flotte", 22f, FontStyles.Bold, TextPrime);
             title.alignment = TextAlignmentOptions.Center;
             Le(title.gameObject, h: 32f);
 
             var msg = MakeTMP("M", box.transform,
-                "Achète un camion pour pouvoir générer et accepter des contrats.",
+                "Achète ton premier camion dans le Magasin pour pouvoir générer et accepter des contrats.",
                 16f, FontStyles.Normal, TextDim);
             msg.alignment        = TextAlignmentOptions.Center;
             msg.textWrappingMode = TextWrappingModes.Normal;
-            Le(msg.gameObject, flexW: true, h: 48f);
+            Le(msg.gameObject, flexW: true, h: 56f);
         }
 
         private IEnumerator TickEvery10s()
@@ -1227,6 +1358,54 @@ namespace TransportManager.UI.Map
             return btn;
         }
 
+        // Petite puce arrondie dimensionnée à son contenu (fond léger + texte coloré).
+        private void Chip(Transform parent, string text, Color color)
+        {
+            var go  = MakeGO("Chip", parent);
+            var img = go.AddComponent<Image>();
+            img.sprite        = _sprR8;
+            img.type          = Image.Type.Sliced;
+            img.color         = new Color(1f, 1f, 1f, 0.07f);
+            img.raycastTarget = false;
+
+            var hlg = go.AddComponent<HorizontalLayoutGroup>();
+            hlg.padding               = new RectOffset(11, 11, 5, 5);
+            hlg.childAlignment        = TextAnchor.MiddleCenter;
+            hlg.childForceExpandWidth  = false;
+            hlg.childForceExpandHeight = false;
+            hlg.childControlWidth      = true;
+            hlg.childControlHeight     = true;
+
+            var csf = go.AddComponent<ContentSizeFitter>();
+            csf.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            csf.verticalFit   = ContentSizeFitter.FitMode.PreferredSize;
+            go.AddComponent<LayoutElement>().minHeight = 28f;
+
+            var lbl = MakeTMP("L", go.transform, text, 13.5f, FontStyles.Bold, color);
+            lbl.textWrappingMode = TextWrappingModes.NoWrap;
+            lbl.alignment        = TextAlignmentOptions.Center;
+        }
+
+        // Remplit l'hôte d'infos d'un slot de génération avec des puces.
+        private void FillGenInfoChips(int slotIdx, ContractData def)
+        {
+            var host = _genInfoHosts[slotIdx];
+            if (host == null) return;
+            ClearChildren(host);
+            Chip(host, $"{def.distanceKm:F0} km", TextSecond);
+            Chip(host, $"{def.cargoTons} t", TextSecond);
+            if (def.baseDurationSeconds > 0f)
+                Chip(host, FormatDuration(def.baseDurationSeconds), TextSecond);
+        }
+
+        private static string FormatDuration(float seconds)
+        {
+            int total = Mathf.Max(0, Mathf.RoundToInt(seconds));
+            int h = total / 3600;
+            int m = (total % 3600) / 60;
+            return h >= 1 ? $"{h}h {m:D2}" : $"{Mathf.Max(1, m)} min";
+        }
+
         // Link-style button: transparent bg, colored text
         private static Button LinkBtn(Transform parent, string label, Color color)
         {
@@ -1241,46 +1420,89 @@ namespace TransportManager.UI.Map
             return btn;
         }
 
-        // Solid filled button
-        private static Button SolidBtn(Transform parent, string label, Color color)
+        // Cartouche stat arrondi (valeur + libellé), prend une part égale de la largeur.
+        private void RoundedStatCell(Transform parent, string value, string key, Color? valueColor = null)
         {
-            var go  = MakeGO("SBtn", parent);
-            var img = go.AddComponent<Image>();
-            img.color = color;
-            var btn = go.AddComponent<Button>();
-            btn.targetGraphic = img;
-            btn.transition    = Selectable.Transition.None;
-            var lbl = MakeTMP("L", go.transform, label, 13f, FontStyles.Bold, Color.white);
-            lbl.alignment = TextAlignmentOptions.Center;
-            Stretch(lbl.GetComponent<RectTransform>());
-            return btn;
-        }
-
-        private static void StatCell(Transform parent, string value, string key, Color? valueColor = null)
-        {
-            var cell = MakeGO("Cell", parent);
-            cell.AddComponent<Image>().color = BgElevated;
+            var cell    = MakeGO("Cell", parent);
+            var cellImg = cell.AddComponent<Image>();
+            cellImg.sprite        = _sprR12;
+            cellImg.type          = Image.Type.Sliced;
+            cellImg.color         = BgElevated;
+            cellImg.raycastTarget = false;
             var cvlg = cell.AddComponent<VerticalLayoutGroup>();
-            cvlg.padding               = new RectOffset(14, 14, 12, 12);
+            cvlg.padding               = new RectOffset(11, 10, 11, 10);
             cvlg.spacing               = 3f;
+            cvlg.childAlignment        = TextAnchor.MiddleCenter;
             cvlg.childForceExpandWidth  = true;
             cvlg.childForceExpandHeight = false;
             cvlg.childControlWidth      = true;
-            cvlg.childControlHeight     = false;
+            cvlg.childControlHeight     = true;
             cell.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             Le(cell, flexW: true);
 
-            var valLbl = MakeTMP("V", cell.transform, value, 14f, FontStyles.Bold,
-                valueColor ?? TextPrime);
+            var valLbl = MakeTMP("V", cell.transform, value, 14.5f, FontStyles.Bold, valueColor ?? TextPrime);
+            valLbl.alignment        = TextAlignmentOptions.Center;
             valLbl.textWrappingMode = TextWrappingModes.NoWrap;
             valLbl.overflowMode     = TextOverflowModes.Ellipsis;
             Le(valLbl.gameObject, h: 20f);
 
             var keyLbl = MakeTMP("K", cell.transform, key, 7.5f, FontStyles.Bold, TextDim);
-            keyLbl.characterSpacing = 1.5f;
-            Le(keyLbl.gameObject, h: 12f);
+            keyLbl.characterSpacing = 1.2f;
+            keyLbl.alignment        = TextAlignmentOptions.Center;
+            keyLbl.textWrappingMode = TextWrappingModes.NoWrap;
+            Le(keyLbl.gameObject, h: 11f);
         }
 
+        // Bouton plein arrondi (CTA principal).
+        private Button RoundedSolidBtn(Transform parent, string label, Color color)
+        {
+            var go  = MakeGO("RSBtn", parent);
+            var img = go.AddComponent<Image>();
+            img.sprite = _sprR12;
+            img.type   = Image.Type.Sliced;
+            img.color  = color;
+            var sh = go.AddComponent<Shadow>();
+            sh.effectColor    = new Color(color.r, color.g, color.b, 0.40f);
+            sh.effectDistance = new Vector2(0f, -3f);
+            var btn = go.AddComponent<Button>();
+            btn.targetGraphic = img;
+            btn.transition    = Selectable.Transition.None;
+            var lbl = MakeTMP("L", go.transform, label, 14.5f, FontStyles.Bold, Color.white);
+            lbl.alignment        = TextAlignmentOptions.Center;
+            lbl.textWrappingMode = TextWrappingModes.NoWrap;
+            Stretch(lbl.GetComponent<RectTransform>());
+            return btn;
+        }
+
+        // Bouton « fantôme » arrondi : fond discret, contour + texte teintés.
+        private Button RoundedGhostBtn(Transform parent, string label, Color color)
+        {
+            var go  = MakeGO("RGBtn", parent);
+            var img = go.AddComponent<Image>();
+            img.sprite = _sprR12;
+            img.type   = Image.Type.Sliced;
+            img.color  = new Color(color.r, color.g, color.b, 0.14f);
+            var btn = go.AddComponent<Button>();
+            btn.targetGraphic = img;
+            btn.transition    = Selectable.Transition.None;
+            var lbl = MakeTMP("L", go.transform, label, 12.5f, FontStyles.Bold, color);
+            lbl.alignment        = TextAlignmentOptions.Center;
+            lbl.textWrappingMode = TextWrappingModes.NoWrap;
+            Stretch(lbl.GetComponent<RectTransform>());
+            return btn;
+        }
+
+        // Active/désactive visuellement le CTA principal (utilisé pour « Démarrer »).
+        private static void SetBtnEnabled(Button btn, bool on)
+        {
+            if (btn == null) return;
+            if (btn.targetGraphic is Image img)
+                img.color = on ? AccentGreen : new Color(0.28f, 0.32f, 0.38f, 1f);
+            var lbl = btn.GetComponentInChildren<TMP_Text>();
+            if (lbl != null) lbl.color = on ? Color.white : new Color(1f, 1f, 1f, 0.40f);
+        }
+
+        // Solid filled button
         private static Transform HRow(Transform parent, float h)
         {
             var go  = MakeGO("HR", parent);

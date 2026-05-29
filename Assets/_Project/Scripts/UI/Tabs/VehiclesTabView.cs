@@ -1,13 +1,16 @@
-﻿using TMPro;
+﻿using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using TransportManager.Core;
+using TransportManager.Entities.Drivers;
 using TransportManager.Entities.Vehicles;
 using TransportManager.Enums;
 using TransportManager.Events;
 using TransportManager.Systems.Depot;
 using TransportManager.Systems.Economy;
 using TransportManager.Systems.Fleet;
+using TransportManager.Systems.Hr;
 using TransportManager.Systems.Progression;
 
 namespace TransportManager.UI.Tabs
@@ -40,6 +43,8 @@ namespace TransportManager.UI.Tabs
         private TMP_Text _detailImagePlaceholder;
         private TMP_Text _detailSpecs;       // top-left: technical description
         private TMP_Text _detailCareerStats; // bottom: career statistics
+        private RectTransform _assignHost;   // top-right (zone Hero) : affectation des conducteurs
+        private GameObject _driverPicker;    // popup de sélection de conducteur
 
         private VehicleData _selectedVehicle;
 
@@ -404,6 +409,54 @@ namespace TransportManager.UI.Tabs
             _detailImagePlaceholder.color = new Color(0.30f, 0.45f, 0.70f, 0.45f);
             _detailImagePlaceholder.raycastTarget = false;
 
+            // -- Right card réutilisé : affectation des conducteurs (par camion possédé) --
+            var assignWrap = new GameObject("AssignWrap", typeof(RectTransform));
+            assignWrap.transform.SetParent(heroGo.transform, false);
+            var awRt = assignWrap.GetComponent<RectTransform>();
+            StretchFull(awRt);
+            awRt.offsetMin = new Vector2(16, 16);
+            awRt.offsetMax = new Vector2(-16, -16);
+            var awVlg = assignWrap.AddComponent<VerticalLayoutGroup>();
+            awVlg.spacing = 8;
+            awVlg.childForceExpandWidth = true; awVlg.childControlWidth = true;
+            awVlg.childForceExpandHeight = false; awVlg.childControlHeight = true;
+
+            var assignTitle = new GameObject("Title", typeof(RectTransform));
+            assignTitle.transform.SetParent(assignWrap.transform, false);
+            var atTmp = assignTitle.AddComponent<TextMeshProUGUI>();
+            atTmp.text = "<color=#5fa8ff><size=12><b>AFFECTATION CONDUCTEUR</b></size></color>";
+            atTmp.alignment = TextAlignmentOptions.TopLeft;
+            atTmp.raycastTarget = false;
+            assignTitle.AddComponent<LayoutElement>().preferredHeight = 20;
+
+            // Liste défilante des camions possédés de ce modèle
+            var scrollGo = new GameObject("AssignScroll", typeof(RectTransform));
+            scrollGo.transform.SetParent(assignWrap.transform, false);
+            scrollGo.AddComponent<LayoutElement>().flexibleHeight = 1f;
+            var scroll = scrollGo.AddComponent<ScrollRect>();
+            scroll.horizontal = false; scroll.vertical = true; scroll.scrollSensitivity = 30;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+
+            var vp = new GameObject("Viewport", typeof(RectTransform));
+            vp.transform.SetParent(scrollGo.transform, false);
+            StretchFull(vp.GetComponent<RectTransform>());
+            vp.AddComponent<RectMask2D>();
+            var vpImg = vp.AddComponent<Image>(); vpImg.color = new Color(0, 0, 0, 0);
+            scroll.viewport = vp.GetComponent<RectTransform>();
+
+            var listGo = new GameObject("List", typeof(RectTransform));
+            listGo.transform.SetParent(vp.transform, false);
+            var listRt = listGo.GetComponent<RectTransform>();
+            listRt.anchorMin = new Vector2(0, 1); listRt.anchorMax = new Vector2(1, 1); listRt.pivot = new Vector2(0.5f, 1f);
+            listRt.sizeDelta = Vector2.zero;
+            scroll.content = listRt;
+            var listVlg = listGo.AddComponent<VerticalLayoutGroup>();
+            listVlg.spacing = 8;
+            listVlg.childForceExpandWidth = true; listVlg.childControlWidth = true;
+            listVlg.childForceExpandHeight = false; listVlg.childControlHeight = true;
+            listGo.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            _assignHost = listRt;
+
             // ---- Bottom row: career statistics (full width) ----
             var careerCard = new GameObject("CareerCard", typeof(RectTransform));
             careerCard.transform.SetParent(_detailContent.transform, false);
@@ -711,20 +764,10 @@ namespace TransportManager.UI.Tabs
             _detailName.text = data.displayName;
             _detailCategory.text = $"<b>{data.category}</b>   <color=#3a4458>•</color>   Niveau min: <b>{data.RequiredCompanyLevel}</b>   <color=#3a4458>•</color>   Profil: <b>{data.routingProfile}</b>";
 
-            // Hero image: use sprite if available, else show category letter as placeholder
-            if (data.icon != null)
-            {
-                _detailImage.sprite = data.icon;
-                _detailImage.color = Color.white;
-                _detailImage.enabled = true;
-                _detailImagePlaceholder.text = "";
-            }
-            else
-            {
-                _detailImage.sprite = null;
-                _detailImage.enabled = false;
-                _detailImagePlaceholder.text = data.category.ToString().Substring(0, 1).ToUpper();
-            }
+            // Zone Hero réutilisée pour l'affectation des conducteurs (pas d'image).
+            if (_detailImage != null) _detailImage.enabled = false;
+            if (_detailImagePlaceholder != null) _detailImagePlaceholder.text = "";
+            PopulateAssignment(data);
 
             // Format helpers
             string lbl(string s) => $"<color=#7d8aa3>{s}</color>";
@@ -845,6 +888,211 @@ namespace TransportManager.UI.Tabs
             ShowDetailPlaceholder();
         }
 
+        // ── Affectation des conducteurs (zone Hero) ────────────────────────────────
+
+        private void PopulateAssignment(VehicleData data)
+        {
+            if (_assignHost == null) return;
+            ClearChildren(_assignHost);
+
+            var fleet = ServiceLocator.Get<FleetSystem>();
+            var owned = new List<VehicleInstance>();
+            if (fleet != null)
+                foreach (var v in fleet.Vehicles)
+                    if (v.vehicleDataId == data.id) owned.Add(v);
+
+            if (owned.Count == 0)
+            {
+                AddAssignNote("Achète ce modèle pour pouvoir y affecter un conducteur.");
+                return;
+            }
+
+            for (int i = 0; i < owned.Count; i++)
+                BuildAssignRow(owned[i], owned.Count > 1 ? i + 1 : 0);
+        }
+
+        private void AddAssignNote(string message)
+        {
+            var note = new GameObject("Note", typeof(RectTransform));
+            note.transform.SetParent(_assignHost, false);
+            var img = note.AddComponent<Image>();
+            img.sprite = _sprR8; img.type = Image.Type.Sliced; img.color = BgInset; img.raycastTarget = false;
+            note.AddComponent<LayoutElement>().preferredHeight = 60;
+            var t = new GameObject("T", typeof(RectTransform));
+            t.transform.SetParent(note.transform, false);
+            var trt = t.GetComponent<RectTransform>(); trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
+            trt.offsetMin = new Vector2(12, 8); trt.offsetMax = new Vector2(-12, -8);
+            var tmp = t.AddComponent<TextMeshProUGUI>();
+            tmp.text = message; tmp.fontSize = 12; tmp.color = TextDim;
+            tmp.alignment = TextAlignmentOptions.Center; tmp.raycastTarget = false;
+        }
+
+        private void BuildAssignRow(VehicleInstance vehicle, int number)
+        {
+            var hr = ServiceLocator.Get<HrSystem>();
+            var driver = (hr != null && !string.IsNullOrEmpty(vehicle.assignedDriverInstanceId))
+                ? hr.GetHired(vehicle.assignedDriverInstanceId) : null;
+
+            var card = new GameObject("Assign_" + vehicle.instanceId, typeof(RectTransform));
+            card.transform.SetParent(_assignHost, false);
+            var cardImg = card.AddComponent<Image>();
+            cardImg.sprite = _sprR8; cardImg.type = Image.Type.Sliced; cardImg.color = BgPill; cardImg.raycastTarget = false;
+            var cvlg = card.AddComponent<VerticalLayoutGroup>();
+            cvlg.padding = new RectOffset(12, 12, 10, 10);
+            cvlg.spacing = 6;
+            cvlg.childForceExpandWidth = true; cvlg.childControlWidth = true;
+            cvlg.childForceExpandHeight = false; cvlg.childControlHeight = true;
+
+            string title = number > 0 ? $"Camion {number}" : "Ton camion";
+            var top = new GameObject("Top", typeof(RectTransform));
+            top.transform.SetParent(card.transform, false);
+            var topTmp = top.AddComponent<TextMeshProUGUI>();
+            topTmp.text = $"<b>{title}</b>   <color=#5a6577>{vehicle.totalKilometers:N0} km</color>";
+            topTmp.fontSize = 12.5f; topTmp.color = TextPrime; topTmp.raycastTarget = false;
+            top.AddComponent<LayoutElement>().preferredHeight = 17;
+
+            var drvLine = new GameObject("Driver", typeof(RectTransform));
+            drvLine.transform.SetParent(card.transform, false);
+            var drvTmp = drvLine.AddComponent<TextMeshProUGUI>();
+            drvTmp.text = driver != null
+                ? $"<color=#7d8aa3>Conducteur :</color> <b>{driver.FullName}</b>"
+                : "<color=#e0655b>Aucun conducteur</color>";
+            drvTmp.fontSize = 12; drvTmp.color = TextSecond; drvTmp.raycastTarget = false;
+            drvTmp.textWrappingMode = TextWrappingModes.NoWrap; drvTmp.overflowMode = TextOverflowModes.Ellipsis;
+            drvLine.AddComponent<LayoutElement>().preferredHeight = 16;
+
+            var btn = MakeButton(card.transform,
+                driver != null ? "Changer / retirer" : "Affecter un conducteur",
+                driver != null ? new Color(0.30f, 0.34f, 0.42f) : AccentGreen, 0f, 32f);
+            string vid = vehicle.instanceId;
+            btn.onClick.AddListener(() => OpenDriverPicker(vid));
+        }
+
+        // ── Popup de sélection de conducteur ───────────────────────────────────────
+
+        private void OpenDriverPicker(string vehicleInstanceId)
+        {
+            CloseDriverPicker();
+            var hr    = ServiceLocator.Get<HrSystem>();
+            var fleet = ServiceLocator.Get<FleetSystem>();
+            if (hr == null || fleet == null) return;
+            var vehicle = fleet.GetById(vehicleInstanceId);
+            if (vehicle == null) return;
+
+            _driverPicker = new GameObject("DriverPicker", typeof(RectTransform));
+            _driverPicker.transform.SetParent(transform.parent, false);
+            var canvas = _driverPicker.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 600;
+            var scaler = _driverPicker.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080);
+            scaler.matchWidthOrHeight = 0.5f;
+            _driverPicker.AddComponent<GraphicRaycaster>();
+            StretchFull(_driverPicker.GetComponent<RectTransform>());
+
+            var scrim = new GameObject("Scrim", typeof(RectTransform));
+            scrim.transform.SetParent(_driverPicker.transform, false);
+            StretchFull(scrim.GetComponent<RectTransform>());
+            scrim.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.82f);
+            var scrimBtn = scrim.AddComponent<Button>();
+            scrimBtn.transition = Selectable.Transition.None;
+            scrimBtn.onClick.AddListener(CloseDriverPicker);
+
+            // Panneau centré
+            var panel = new GameObject("Panel", typeof(RectTransform));
+            panel.transform.SetParent(_driverPicker.transform, false);
+            var pRt = panel.GetComponent<RectTransform>();
+            pRt.anchorMin = pRt.anchorMax = pRt.pivot = new Vector2(0.5f, 0.5f);
+            pRt.sizeDelta = new Vector2(440, 520);
+            var pImg = panel.AddComponent<Image>();
+            pImg.sprite = _sprR16; pImg.type = Image.Type.Sliced; pImg.color = BgPanel;
+            var pVlg = panel.AddComponent<VerticalLayoutGroup>();
+            pVlg.padding = new RectOffset(18, 18, 16, 16);
+            pVlg.spacing = 10;
+            pVlg.childForceExpandWidth = true; pVlg.childControlWidth = true;
+            pVlg.childForceExpandHeight = false; pVlg.childControlHeight = true;
+
+            var titleGo = new GameObject("Title", typeof(RectTransform));
+            titleGo.transform.SetParent(panel.transform, false);
+            var titleTmp = titleGo.AddComponent<TextMeshProUGUI>();
+            titleTmp.text = "Choisir un conducteur";
+            titleTmp.fontSize = 18; titleTmp.fontStyle = FontStyles.Bold; titleTmp.color = TextPrime;
+            titleGo.AddComponent<LayoutElement>().preferredHeight = 28;
+
+            // Option « retirer » si un conducteur est déjà affecté
+            if (!string.IsNullOrEmpty(vehicle.assignedDriverInstanceId))
+            {
+                var cur = hr.GetHired(vehicle.assignedDriverInstanceId);
+                var unassignBtn = MakeButton(panel.transform, $"Retirer {cur?.FullName ?? "le conducteur"}",
+                    new Color(0x6B / 255f, 0x2A / 255f, 0x2A / 255f, 1f), 0f, 38f);
+                unassignBtn.onClick.AddListener(() =>
+                {
+                    hr.UnassignFromVehicle(vehicle.assignedDriverInstanceId);
+                    AfterAssignmentChanged();
+                });
+            }
+
+            // Liste des conducteurs libres (+ l'actuel)
+            var free = new List<DriverInstance>();
+            foreach (var d in hr.HiredDrivers)
+                if (string.IsNullOrEmpty(d.assignedVehicleInstanceId) || d.instanceId == vehicle.assignedDriverInstanceId)
+                    free.Add(d);
+
+            if (free.Count == 0)
+            {
+                var none = new GameObject("None", typeof(RectTransform));
+                none.transform.SetParent(panel.transform, false);
+                var nTmp = none.AddComponent<TextMeshProUGUI>();
+                nTmp.text = "Aucun conducteur libre. Embauche un pilote ou libère-en un.";
+                nTmp.fontSize = 13; nTmp.color = TextDim; nTmp.alignment = TextAlignmentOptions.Center;
+                nTmp.textWrappingMode = TextWrappingModes.Normal;
+                none.AddComponent<LayoutElement>().preferredHeight = 60;
+            }
+            else
+            {
+                foreach (var d in free)
+                {
+                    bool isCurrent = d.instanceId == vehicle.assignedDriverInstanceId;
+                    var row = MakeButton(panel.transform,
+                        $"{d.FullName}   ·   Général {Mathf.RoundToInt(d.stats.General)}" + (isCurrent ? "   (actuel)" : ""),
+                        isCurrent ? new Color(0.20f, 0.40f, 0.28f) : BgElevated, 0f, 42f);
+                    string did = d.instanceId, vid = vehicle.instanceId;
+                    row.onClick.AddListener(() =>
+                    {
+                        hr.AssignToVehicle(did, vid);
+                        AfterAssignmentChanged();
+                    });
+                }
+            }
+
+            var closeBtn = MakeButton(panel.transform, "Fermer", new Color(0.24f, 0.26f, 0.30f), 0f, 36f);
+            closeBtn.onClick.AddListener(CloseDriverPicker);
+        }
+
+        private void AfterAssignmentChanged()
+        {
+            GameManager.Instance?.SaveNow();
+            CloseDriverPicker();
+            if (_selectedVehicle != null) PopulateAssignment(_selectedVehicle);
+        }
+
+        private void CloseDriverPicker()
+        {
+            if (_driverPicker != null) { Destroy(_driverPicker); _driverPicker = null; }
+        }
+
+        // Vide un parent de tous ses enfants (parcours arrière + détachement immédiat).
+        private static void ClearChildren(Transform t)
+        {
+            for (int i = t.childCount - 1; i >= 0; i--)
+            {
+                var go = t.GetChild(i).gameObject;
+                go.transform.SetParent(null, false);
+                Destroy(go);
+            }
+        }
+
         // ---- Buy actions ----
 
         private void OnBuyWithDollars()
@@ -912,6 +1160,7 @@ namespace TransportManager.UI.Tabs
             GameEvents.OnGoldIngotsChanged -= OnIntEvent;
             GameEvents.OnDockUnlocked -= OnIntEvent;
             GameEvents.OnCompanyXpChanged -= OnCompanyXp;
+            CloseDriverPicker();
         }
 
         private void OnVehicleEvent(Entities.Vehicles.VehicleInstance _) => Refresh();

@@ -32,6 +32,15 @@ namespace TransportManager.Systems.Map.Routing
                 return false;
             }
 
+            // Ignore les entrées « vol d'oiseau » (≤2 points, repli euclidien) : on force
+            // un nouveau fetch ORS pour récupérer le vrai tracé routier. Les itinéraires
+            // ORS réels comptent de nombreux points et restent donc en cache.
+            if (stored.polyline == null || stored.polyline.Count <= 2)
+            {
+                result = null;
+                return false;
+            }
+
             if (stored.fromCityId == fromCityId)
             {
                 result = stored;

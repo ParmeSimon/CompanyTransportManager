@@ -13,9 +13,10 @@ namespace TransportManager.UI.Skills
 {
     /// <summary>
     /// Arbre de compétences radial : un cercle central (le tronc + les points) d'où
-    /// rayonnent 3 branches (Dépôt / RH / Essence) de 10 augments chacune, reliées par
-    /// des liens. On sélectionne un nœud pour voir ses détails et le débloquer.
-    /// Palette alignée sur le header / la sidebar.
+    /// rayonnent 3 branches reliées par des liens — Dépôt (bleu), RH (violet),
+    /// Essence (vert). Chaque nœud prend une forme selon son type : cercle (bonus %),
+    /// carré (amélioration structurelle, ex. +1 emplacement), losange (capstone de fin
+    /// de branche). On sélectionne un nœud pour voir ses détails et le débloquer.
     /// </summary>
     public class SkillTreePopupView : MonoBehaviour
     {
@@ -32,9 +33,9 @@ namespace TransportManager.UI.Skills
         private static readonly Color32 Gold      = new Color32(0xFA, 0xC0, 0x24, 255);
         private static readonly Color32 InkDark   = new Color32(0x10, 0x14, 0x1A, 255);
 
-        private static readonly Color32 AccDepot = new Color32(0x35, 0x8E, 0xF5, 255);
-        private static readonly Color32 AccHr    = new Color32(0x3D, 0xC9, 0x6E, 255);
-        private static readonly Color32 AccFuel  = new Color32(0xFA, 0xC0, 0x24, 255);
+        private static readonly Color32 AccDepot = new Color32(0x35, 0x8E, 0xF5, 255); // bleu  — Dépôt
+        private static readonly Color32 AccHr    = new Color32(0xA9, 0x70, 0xF0, 255); // violet — RH
+        private static readonly Color32 AccFuel  = new Color32(0x3D, 0xC9, 0x6E, 255); // vert  — Essence
 
         private const int   TitleBarH  = 56;
         private const float HubSize    = 92f;
@@ -72,7 +73,7 @@ namespace TransportManager.UI.Skills
         private readonly Dictionary<string, Vector2> _pos   = new Dictionary<string, Vector2>();
         private readonly Dictionary<string, int>     _depth = new Dictionary<string, int>();
 
-        private Sprite _sprR12, _sprR8, _sprCircle;
+        private Sprite _sprR12, _sprR8, _sprCircle, _sprSquare;
 
         // ── Entry point ───────────────────────────────────────────────────────────
 
@@ -88,6 +89,7 @@ namespace TransportManager.UI.Skills
             _sprR12    = MakeRoundedSprite(12);
             _sprR8     = MakeRoundedSprite(8);
             _sprCircle = MakeRoundedSprite(32); // rayon = moitié → cercle plein
+            _sprSquare = MakeRoundedSprite(10); // carré aux coins légèrement arrondis
             BuildShell();
         }
 
@@ -220,7 +222,12 @@ namespace TransportManager.UI.Skills
                     Vector2 parent = node.IsBranchRoot || !_pos.ContainsKey(node.prerequisiteId)
                         ? Vector2.zero : _pos[node.prerequisiteId];
                     bool reached = _skills != null && _skills.IsUnlocked(node.id);
-                    BuildLink(parent, _pos[node.id], reached ? (Color32)b.accent : DivColor);
+                    // Chemin toujours teinté de la couleur de sa branche : vif une fois
+                    // débloqué, atténué (plus transparent) tant qu'il ne l'est pas.
+                    Color32 linkColor = reached
+                        ? b.accent
+                        : new Color32(b.accent.r, b.accent.g, b.accent.b, 70);
+                    BuildLink(parent, _pos[node.id], linkColor);
                 }
             }
 
@@ -345,9 +352,13 @@ namespace TransportManager.UI.Skills
             bool unlocked  = _skills != null && _skills.IsUnlocked(node.id);
             bool canUnlock = _skills != null && _skills.CanUnlock(node.id, out _);
 
+            bool diamond = node.shape == NodeShape.Diamond;
+            float size   = diamond ? NodeSize * 1.12f : NodeSize;
+
             var go = MakeGO("N_" + node.id, _graph);
             var img = go.AddComponent<Image>();
-            img.sprite = _sprCircle; img.type = Image.Type.Simple;
+            img.sprite = node.shape == NodeShape.Circle ? _sprCircle : _sprSquare;
+            img.type = Image.Type.Simple;
             img.color = unlocked ? (Color)accent : (canUnlock ? (Color32)BgCard : BgPill);
 
             var ol = go.AddComponent<Outline>();
@@ -359,12 +370,14 @@ namespace TransportManager.UI.Skills
             rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot = new Vector2(0.5f, 0.5f);
             rt.anchoredPosition = pos;
-            rt.sizeDelta = new Vector2(NodeSize, NodeSize);
+            rt.sizeDelta = new Vector2(size, size);
+            if (diamond) rt.localRotation = Quaternion.Euler(0, 0, 45f); // carré pivoté → losange
 
             Color32 numColor = unlocked ? InkDark : (canUnlock ? accent : TextMuted);
             var num = AddTMP("T", go.transform, depth.ToString(), 16, FontStyles.Bold, numColor);
             num.alignment = TextAlignmentOptions.Center;
             FillParent(num.GetComponent<RectTransform>());
+            if (diamond) num.rectTransform.localRotation = Quaternion.Euler(0, 0, -45f); // garde le texte droit
 
             var btn = go.AddComponent<Button>();
             btn.targetGraphic = img;

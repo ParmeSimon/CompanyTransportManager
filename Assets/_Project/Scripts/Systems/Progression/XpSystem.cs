@@ -1,4 +1,5 @@
 ﻿using TransportManager.Core;
+using TransportManager.Entities.Contracts;
 using TransportManager.Entities.Progression;
 using TransportManager.Events;
 using TransportManager.Save;
@@ -27,10 +28,11 @@ namespace TransportManager.Systems.Progression
 
         public bool IsVehicleUnlocked(int minLevelRequired) => CompanyLevel >= minLevelRequired;
 
-        public void AddCompanyXpForContract(float distanceKm)
+        public void AddCompanyXpForContract(ContractData def)
         {
+            if (def == null) return;
             int oldLevel = CompanyLevel;
-            int gain = XpCurve.ContractXpReward(distanceKm);
+            int gain = XpCurve.CompanyXpReward(def.distanceKm, def.difficulty);
             _save.companyXp += gain;
             int newLevel = CompanyLevel;
 

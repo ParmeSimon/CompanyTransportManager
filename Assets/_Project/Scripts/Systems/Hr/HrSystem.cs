@@ -15,7 +15,11 @@ namespace TransportManager.Systems.Hr
 {
     public class HrSystem
     {
-        public const int RecruitmentPoolSize = 5;
+        // ── Constantes d'équilibrage (réglage facile) ──────────────────────────────
+        public const int BasePoolSize             = 3;    // candidats au départ
+        public const int BaseRefreshCooldownHours = 24;   // délai d'auto-régénération de base
+        public const int GoldRefreshCost          = 2;    // skip payé en lingots (forfait)
+        public const int BaseDollarRefreshCost    = 500;  // skip payé en dollars (× (n+1) dans la journée)
 
         private readonly GameSaveData _save;
 
@@ -27,20 +31,142 @@ namespace TransportManager.Systems.Hr
         public DriverInstance GetHired(string id) => _save.hiredDrivers.Find(d => d.instanceId == id);
         public DriverInstance GetCandidate(string id) => _save.recruitmentPool.Find(d => d.instanceId == id);
 
-        public void EnsureRecruitmentPool()
+        // ── Modificateurs issus de l'arbre de compétences ──────────────────────────
+        private SkillTreeSystem Skills => ServiceLocator.Get<SkillTreeSystem>();
+
+        public int CurrentPoolSize => BasePoolSize + (Skills?.Flat(SkillEffectType.RecruitmentPoolSizeBonus) ?? 0);
+
+        public bool RefreshIsFree         => (Skills?.Flat(SkillEffectType.HrRefreshFree) ?? 0) > 0;
+        public bool DollarRefreshUnlocked => (Skills?.Flat(SkillEffectType.HrRefreshPayWithDollars) ?? 0) > 0;
+
+        public TimeSpan RefreshCooldown
         {
-            while (_save.recruitmentPool.Count < RecruitmentPoolSize)
+            get
             {
-                _save.recruitmentPool.Add(DriverGenerator.Generate());
+                if ((Skills?.Flat(SkillEffectType.HrRefreshInstant) ?? 0) > 0) return TimeSpan.Zero;
+                int reduction = Skills?.Flat(SkillEffectType.HrRefreshHoursReduction) ?? 0;
+                return TimeSpan.FromHours(Mathf.Max(0, BaseRefreshCooldownHours - reduction));
             }
-            if (_save.lastHrRefreshUtcTicks == 0) _save.lastHrRefreshUtcTicks = DateTime.UtcNow.Ticks;
         }
 
+        // ── Vivier ─────────────────────────────────────────────────────────────────
+        public void EnsureRecruitmentPool()
+        {
+            // Réduit le vivier s'il dépasse la taille courante (ancienne sauvegarde à 8,
+            // ou plafond abaissé). On retire les candidats en trop par la fin.
+            if (_save.recruitmentPool.Count > CurrentPoolSize)
+                _save.recruitmentPool.RemoveRange(CurrentPoolSize, _save.recruitmentPool.Count - CurrentPoolSize);
+
+            // Amorçage initial UNIQUEMENT : ensuite le vivier ne se recomplète que via un
+            // refresh. Les embauches laissent donc des emplacements vides jusqu'au prochain refresh.
+            if (_save.lastHrRefreshUtcTicks == 0)
+            {
+                while (_save.recruitmentPool.Count < CurrentPoolSize)
+                    _save.recruitmentPool.Add(DriverGenerator.Generate());
+                _save.lastHrRefreshUtcTicks = DateTime.UtcNow.Ticks;
+            }
+        }
+
+        /// Régénère intégralement le vivier jusqu'à la taille courante (refresh gratuit ou payant).
         public void RefreshRecruitmentPool()
         {
             _save.recruitmentPool.Clear();
-            EnsureRecruitmentPool();
+            while (_save.recruitmentPool.Count < CurrentPoolSize)
+                _save.recruitmentPool.Add(DriverGenerator.Generate());
             _save.lastHrRefreshUtcTicks = DateTime.UtcNow.Ticks;
+        }
+
+        // ── Refresh GRATUIT (verrouillé par le cooldown) ────────────────────────────
+
+        /// Secondes restantes avant que le refresh gratuit soit dispo (0 = dispo / instantané).
+        public double SecondsUntilFreeRefresh()
+        {
+            var cd = RefreshCooldown;
+            if (cd <= TimeSpan.Zero) return 0;
+            double elapsedSec = (DateTime.UtcNow.Ticks - _save.lastHrRefreshUtcTicks) / (double)TimeSpan.TicksPerSecond;
+            double remaining = cd.TotalSeconds - elapsedSec;
+            return remaining > 0 ? remaining : 0;
+        }
+
+        public bool FreeRefreshReady => SecondsUntilFreeRefresh() <= 0.0;
+
+        /// Refresh gratuit : autorisé seulement quand le cooldown est écoulé.
+        public bool TryFreeRefresh()
+        {
+            if (!FreeRefreshReady) return false;
+            RefreshRecruitmentPool();
+            return true;
+        }
+
+        /// Tous les paliers « +1 candidat » non encore débloqués (un emplacement verrouillé chacun),
+        /// triés par profondeur dans l'arbre.
+        public List<SkillNodeDefinition> LockedPoolNodes()
+        {
+            var skills = Skills;
+            var list = new List<SkillNodeDefinition>();
+            foreach (var n in SkillTreeCatalog.All)
+            {
+                if (n.effect != SkillEffectType.RecruitmentPoolSizeBonus) continue;
+                if (skills != null && skills.IsUnlocked(n.id)) continue;
+                list.Add(n);
+            }
+            list.Sort((a, b) => a.tier.CompareTo(b.tier));
+            return list;
+        }
+
+        // ── Refresh PAYANT (skip immédiat du cooldown) ──────────────────────────────
+        public struct RefreshCost
+        {
+            public bool free;
+            public CurrencyType currency;
+            public int amount;
+        }
+
+        /// Coût du refresh payant (gratuit si capstone > dollars croissants si débloqué > lingots).
+        public RefreshCost CurrentPaidRefreshCost()
+        {
+            if (RefreshIsFree)
+                return new RefreshCost { free = true, currency = CurrencyType.Dollar, amount = 0 };
+            if (DollarRefreshUnlocked)
+                return new RefreshCost { free = false, currency = CurrencyType.Dollar,
+                                         amount = BaseDollarRefreshCost * (PaidRefreshesTodaySynced() + 1) };
+            return new RefreshCost { free = false, currency = CurrencyType.GoldIngot, amount = GoldRefreshCost };
+        }
+
+        /// Refresh payant immédiat. Renvoie false (avec raison) si fonds insuffisants.
+        public bool TryPaidRefresh(out string reason)
+        {
+            reason = null;
+            var cost = CurrentPaidRefreshCost();
+            if (!cost.free)
+            {
+                var wallet = ServiceLocator.Get<WalletSystem>();
+                if (wallet == null) { reason = "Portefeuille indisponible."; return false; }
+                if (!wallet.TrySpend(cost.currency, cost.amount))
+                {
+                    reason = cost.currency == CurrencyType.Dollar ? "Dollars insuffisants." : "Lingots insuffisants.";
+                    return false;
+                }
+                if (cost.currency == CurrencyType.Dollar)
+                {
+                    PaidRefreshesTodaySynced();   // garantit que le compteur correspond au jour courant
+                    _save.hrPaidRefreshesToday++; // escalade le coût du prochain refresh du jour
+                }
+            }
+            RefreshRecruitmentPool();
+            return true;
+        }
+
+        // Compteur de refresh payants du jour, remis à zéro au changement de jour (UTC).
+        private int PaidRefreshesTodaySynced()
+        {
+            long today = DateTime.UtcNow.Date.Ticks;
+            if (_save.hrRefreshCounterDayUtcTicks != today)
+            {
+                _save.hrRefreshCounterDayUtcTicks = today;
+                _save.hrPaidRefreshesToday = 0;
+            }
+            return _save.hrPaidRefreshesToday;
         }
 
         public bool Hire(string candidateId, int wagePerContract)

@@ -47,8 +47,8 @@ MonoBehaviour:
   vehicleCatalog: {fileID: 11400000, guid: 86c0eb2b6bf82fc42b0f81eb82864f60, type: 2}
   cityCatalog: {fileID: 11400000, guid: 688349a6e0cbf054dbeb195a987099dd, type: 2}
   fuelStationConfig: {fileID: 11400000, guid: 092906c824e8af4428afd818b99292dd, type: 2}
-  orsConfig: {fileID: 0}
-  forceFallbackRouting: 1
+  orsConfig: {fileID: 11400000, guid: 7e2a9c4b13d6f84e9a5c0b1d2e3f4a5b, type: 2}
+  forceFallbackRouting: 0
   resetSaveOnStart: 0
   seedFakeAnalytics: 1
   seedFakeFleet: 1

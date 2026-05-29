@@ -123,9 +123,53 @@ namespace TransportManager.Systems.Fuel
 
         public void TickOfflineProgress()
         {
+            TickAutoRefill();
             if (!IsRefilling) return;
             if (DateTime.UtcNow.Ticks < _save.fuelStation.refillCompleteUtcTicks) return;
             CompleteTruckRefill();
+        }
+
+        // ---- Auto-refill (capstone Essence « Citerne autonome ») ----
+
+        public bool HasAutoRefill =>
+            (ServiceLocator.Get<SkillTreeSystem>()?.Flat(SkillEffectType.AutoStationRefill) ?? 0) > 0;
+
+        /// <summary>
+        /// Ravitaille passivement et gratuitement la station au prorata du temps réel
+        /// écoulé, au rythme d'un remplissage de camion (bonifié par la vitesse de
+        /// remplissage). Sans effet tant que le capstone n'est pas débloqué.
+        /// À appeler à la reprise (offline) et pendant l'affichage de l'onglet Essence.
+        /// </summary>
+        public void TickAutoRefill()
+        {
+            var tier = CurrentTier;
+            if (!HasAutoRefill || tier == null
+                || tier.storageCapacityLiters <= 0f || tier.fullRefillDurationSeconds <= 0f)
+            {
+                _save.fuelStation.lastAutoRefillUtcTicks = 0; // suspend la comptabilité
+                return;
+            }
+
+            long nowTicks = DateTime.UtcNow.Ticks;
+            long last = _save.fuelStation.lastAutoRefillUtcTicks;
+
+            // Premier tick, ou pendant un remplissage camion : on (re)cale l'horloge
+            // sans créditer, pour éviter un afflux instantané.
+            if (last == 0 || _save.fuelStation.refillInProgress)
+            {
+                _save.fuelStation.lastAutoRefillUtcTicks = nowTicks;
+                return;
+            }
+
+            double elapsedSec = (nowTicks - last) / (double)TimeSpan.TicksPerSecond;
+            _save.fuelStation.lastAutoRefillUtcTicks = nowTicks;
+            if (elapsedSec <= 0d) return;
+
+            float speedBonus = ServiceLocator.Get<SkillTreeSystem>()?.Pct(SkillEffectType.RefillSpeedBonus) ?? 0f;
+            float fullDuration = tier.fullRefillDurationSeconds * Mathf.Max(0.1f, 1f - speedBonus);
+            float liters = (float)(elapsedSec / fullDuration) * tier.storageCapacityLiters;
+            liters = Mathf.Min(liters, RemainingCapacity);
+            if (liters > 0f) DeliverLiters(liters);
         }
 
         private void CompleteTruckRefill()

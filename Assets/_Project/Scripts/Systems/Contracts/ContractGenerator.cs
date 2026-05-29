@@ -6,6 +6,7 @@ using TransportManager.Core;
 using TransportManager.Entities.Contracts;
 using TransportManager.Entities.Map;
 using TransportManager.Enums;
+using TransportManager.Systems.Progression;
 
 namespace TransportManager.Systems.Contracts
 {
@@ -33,6 +34,9 @@ namespace TransportManager.Systems.Contracts
             var map = ServiceLocator.Get<Systems.Map.MapSystem>();
             if (map == null || !map.HasCities) return null;
 
+            // Portée géographique débloquée (arbre Dépôt) : restreint les pays éligibles.
+            var allowedCountries = AllowedCountriesForContracts(map);
+
             CityEntry from = null, to = null;
             float distance = 0f, duration = 0f;
             bool found = false;
@@ -40,7 +44,7 @@ namespace TransportManager.Systems.Contracts
             int attempts = maxDistanceKm >= float.MaxValue ? 1 : MaxPairAttempts;
             for (int i = 0; i < attempts; i++)
             {
-                (from, to) = map.GetRandomCityPair();
+                (from, to) = map.GetRandomCityPair(allowedCountries);
                 if (from == null || to == null) continue;
 
                 // Cheap pre-filter: a straight-line estimate already over the cap can
@@ -116,12 +120,42 @@ namespace TransportManager.Systems.Contracts
             }
         }
 
+        // Pays éligibles aux contrats selon le pays d'attache (ville la plus proche du
+        // siège) et la portée débloquée dans l'arbre Dépôt. Renvoie null = monde entier.
+        private static HashSet<string> AllowedCountriesForContracts(Systems.Map.MapSystem map)
+        {
+            const int MinCities = 4;   // garantit un vivier jouable, même pour un petit pays
+
+            var company = GameManager.Instance?.Save?.company;
+            if (company == null || !company.hasLocationCoordinates) return null;
+
+            var home = map.GetNearestCity(company.locationLatitude, company.locationLongitude);
+            if (home == null) return null;
+
+            int reach = ServiceLocator.Get<SkillTreeSystem>()?.Flat(SkillEffectType.ContractCountryReach) ?? 0;
+
+            // Élargit d'un cran tant que la zone compte trop peu de villes : évite tout
+            // blocage si le joueur s'installe dans un pays minuscule (Luxembourg, Malte…).
+            var set = Entities.Map.GeoRegions.AllowedCountries(home.country, reach);
+            while (set != null && map.CountCitiesIn(set) < MinCities && reach < 3)
+            {
+                reach++;
+                set = Entities.Map.GeoRegions.AllowedCountries(home.country, reach);
+            }
+            return set;
+        }
+
         private static ContractDifficulty RandomDifficulty()
         {
             float r = UnityEngine.Random.value;
             if (r < 0.55f) return ContractDifficulty.Easy;
             if (r < 0.85f) return ContractDifficulty.Medium;
-            if (r < 0.97f) return ContractDifficulty.Hard;
+
+            // Les contrats premium n'apparaissent qu'avec le capstone RH
+            // « Carnet d'adresses premium ». Sinon, repli sur Hard.
+            bool premiumUnlocked = (ServiceLocator.Get<SkillTreeSystem>()?
+                                        .Flat(SkillEffectType.PremiumContractsUnlocked) ?? 0) > 0;
+            if (r < 0.97f || !premiumUnlocked) return ContractDifficulty.Hard;
             return ContractDifficulty.Premium;
         }
 

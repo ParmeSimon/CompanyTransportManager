@@ -32,6 +32,9 @@ namespace TransportManager.Save
         public List<DriverInstance> hiredDrivers = new List<DriverInstance>();
         public List<DriverInstance> recruitmentPool = new List<DriverInstance>();
         public long lastHrRefreshUtcTicks;
+        // Refresh payant : nb de skips payés aujourd'hui (escalade du coût Dollars) + jour de référence (minuit UTC).
+        public int  hrPaidRefreshesToday;
+        public long hrRefreshCounterDayUtcTicks;
 
         public TutorialState tutorial = new TutorialState();
         public BuildingLevels buildingLevels = new BuildingLevels();

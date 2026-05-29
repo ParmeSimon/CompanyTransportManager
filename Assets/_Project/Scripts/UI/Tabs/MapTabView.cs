@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 using TransportManager.Core;
 using TransportManager.Entities.Contracts;
 using TransportManager.Enums;
@@ -23,27 +25,54 @@ namespace TransportManager.UI.Tabs
         [SerializeField] private RectTransform markersContainer;
 
         private int _tileSize;
-        private HomeMarker       _homeMarker;
-        private ContractsPanelView _contractsPanel;
-        private RouteOverlayView  _routeOverlay;
+        private HomeMarker          _homeMarker;
+        private ContractsPanelView  _contractsPanel;
+        private RouteOverlayView     _routeOverlay;
+        private FleetMapOverlayView _fleetOverlay;
+
+        // Prévisualisation de route (bouton « Rouvrir le contrat »)
+        private GameObject   _reopenBar;
+        private ContractData _previewedContract;
+        private Sprite       _sprR12;
 
         private void OnEnable()
         {
             GameEvents.OnShowContractRoute += HandleShowContractRoute;
+            GameEvents.OnContractStarted   += HandleContractStarted;
         }
 
         private void OnDisable()
         {
             GameEvents.OnShowContractRoute -= HandleShowContractRoute;
+            GameEvents.OnContractStarted   -= HandleContractStarted;
         }
 
         private void Start()
         {
             _tileSize = (mapView != null && mapView.Config != null) ? mapView.Config.tilePixelSize : 256;
             EnsureRouteOverlay();   // en premier → rendu derrière le HomeMarker
+            EnsureFleetOverlay();   // trajets actifs (trait fin + camions)
             EnsureHomeMarker();
             EnsureContractsPanel();
             FocusOnHomeIfAvailable();
+        }
+
+        private void EnsureFleetOverlay()
+        {
+            if (_fleetOverlay != null) return;
+            var container = markersContainer != null ? markersContainer : (mapView != null ? (RectTransform)mapView.transform : null);
+            if (container == null) return;
+
+            var go = new GameObject("FleetMapOverlay", typeof(RectTransform));
+            go.transform.SetParent(container, false);
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+
+            _fleetOverlay = go.AddComponent<FleetMapOverlayView>();
+            _fleetOverlay.Init(mapView);
         }
 
         private void EnsureRouteOverlay()
@@ -54,7 +83,10 @@ namespace TransportManager.UI.Tabs
 
             var go = new GameObject("RouteOverlay", typeof(RectTransform));
             go.transform.SetParent(container, false);
-            go.transform.SetAsFirstSibling(); // sous le HomeMarker
+            // NOTE : ne PAS faire SetAsFirstSibling — le conteneur partage souvent son
+            // parent avec les tuiles de carte ; placé en premier, le tracé passait
+            // DERRIÈRE les tuiles et restait invisible. Ajouté en dernier, il se rend
+            // au-dessus des tuiles ; le HomeMarker (créé juste après) reste au-dessus.
             var rt = go.GetComponent<RectTransform>();
             rt.anchorMin = Vector2.zero;
             rt.anchorMax = Vector2.one;
@@ -68,7 +100,142 @@ namespace TransportManager.UI.Tabs
 
         private void HandleShowContractRoute(ContractData def)
         {
+            _previewedContract = def;
+            ShowReopenBar();
             _ = ShowContractRouteAsync(def);
+        }
+
+        // Un contrat vient de démarrer : la prévisualisation épaisse n'a plus lieu
+        // d'être (le trajet actif apparaît désormais en trait fin via l'overlay flotte).
+        private void HandleContractStarted(ContractInstance _)
+        {
+            ClearPreview();
+        }
+
+        // ── Barre flottante « Rouvrir le contrat » ──────────────────────────────────
+        private void ShowReopenBar()
+        {
+            if (_reopenBar == null) BuildReopenBar();
+            if (_reopenBar != null) _reopenBar.SetActive(true);
+        }
+
+        private void ClearPreview()
+        {
+            _previewedContract = null;
+            if (_reopenBar != null) _reopenBar.SetActive(false);
+            if (_routeOverlay != null) _routeOverlay.Hide();
+        }
+
+        private void ReopenPreviewedContract()
+        {
+            if (_contractsPanel != null && _previewedContract != null)
+                _contractsPanel.ShowContractByDefinition(_previewedContract);
+        }
+
+        private void BuildReopenBar()
+        {
+            EnsureRoundedSprites();
+
+            _reopenBar = new GameObject("ReopenContractBar", typeof(RectTransform));
+            _reopenBar.transform.SetParent(transform, false);
+            var rt = _reopenBar.GetComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 0f);
+            rt.anchorMax = new Vector2(0.5f, 0f);
+            rt.pivot     = new Vector2(0.5f, 0f);
+            rt.anchoredPosition = new Vector2(0f, 24f);
+            rt.sizeDelta        = new Vector2(304f, 52f);
+
+            var hlg = _reopenBar.AddComponent<HorizontalLayoutGroup>();
+            hlg.spacing               = 8f;
+            hlg.childAlignment        = TextAnchor.MiddleCenter;
+            hlg.childForceExpandWidth  = false;
+            hlg.childForceExpandHeight = true;
+            hlg.childControlWidth      = true;
+            hlg.childControlHeight     = true;
+
+            // Bouton principal
+            var reopenBtn = MakeBarButton("Reopen", "Rouvrir le contrat",
+                new Color(0.22f, 0.52f, 1f, 1f), 240f);
+            reopenBtn.onClick.AddListener(ReopenPreviewedContract);
+
+            // Bouton fermeture (masque la prévisualisation)
+            var closeBtn = MakeBarButton("Close", "✕",
+                new Color(0.17f, 0.18f, 0.22f, 1f), 52f);
+            closeBtn.onClick.AddListener(ClearPreview);
+        }
+
+        private Button MakeBarButton(string name, string label, Color color, float width)
+        {
+            var go  = new GameObject(name, typeof(RectTransform));
+            go.transform.SetParent(_reopenBar.transform, false);
+            var img = go.AddComponent<Image>();
+            img.sprite = _sprR12;
+            img.type   = Image.Type.Sliced;
+            img.color  = color;
+            var sh = go.AddComponent<Shadow>();
+            sh.effectColor    = new Color(0f, 0f, 0f, 0.5f);
+            sh.effectDistance = new Vector2(0f, -3f);
+
+            var btn = go.AddComponent<Button>();
+            btn.targetGraphic = img;
+            btn.transition    = Selectable.Transition.None;
+
+            var le = go.AddComponent<LayoutElement>();
+            le.preferredWidth  = width;
+            le.preferredHeight = 52f;
+
+            var txtGo = new GameObject("L", typeof(RectTransform));
+            txtGo.transform.SetParent(go.transform, false);
+            var txtRt = txtGo.GetComponent<RectTransform>();
+            txtRt.anchorMin = Vector2.zero;
+            txtRt.anchorMax = Vector2.one;
+            txtRt.offsetMin = txtRt.offsetMax = Vector2.zero;
+            var tmp = txtGo.AddComponent<TextMeshProUGUI>();
+            tmp.text          = label;
+            tmp.fontSize      = 15f;
+            tmp.fontStyle     = FontStyles.Bold;
+            tmp.color         = Color.white;
+            tmp.alignment     = TextAlignmentOptions.Center;
+            tmp.raycastTarget = false;
+
+            return btn;
+        }
+
+        private void EnsureRoundedSprites()
+        {
+            if (_sprR12 != null) return;
+            _sprR12 = MakeRoundedSprite(12);
+        }
+
+        private static Sprite MakeRoundedSprite(int radius)
+        {
+            const int size = 64;
+            int r = Mathf.Clamp(radius, 1, size / 2);
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                wrapMode   = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Bilinear
+            };
+            var pixels = new Color[size * size];
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                    pixels[y * size + x] = new Color(1f, 1f, 1f, RoundedAlpha(x, y, size, r));
+            tex.SetPixels(pixels);
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0,
+                                 SpriteMeshType.FullRect, new Vector4(r, r, r, r));
+        }
+
+        private static float RoundedAlpha(int x, int y, int size, int r)
+        {
+            int cx = -1, cy = -1;
+            if      (x < r         && y < r)         { cx = r;        cy = r;        }
+            else if (x >= size - r && y < r)         { cx = size - r; cy = r;        }
+            else if (x < r         && y >= size - r) { cx = r;        cy = size - r; }
+            else if (x >= size - r && y >= size - r) { cx = size - r; cy = size - r; }
+            if (cx < 0) return 1f;
+            float d = Mathf.Sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
+            return Mathf.Clamp01(r - d + 0.5f);
         }
 
         private async Task ShowContractRouteAsync(ContractData def)
@@ -92,6 +259,11 @@ namespace TransportManager.UI.Tabs
 
             // 3. Récupérer la route (cache ORS ou appel réseau)
             var route = await mapSys.GetRouteAsync(from, to, VehicleRoutingProfile.HeavyGoodsVehicle);
+
+            // Diagnostic : un tracé à 2 points = repli en ligne droite (ORS non utilisé
+            // ou échec). Un vrai itinéraire routier compte des dizaines de points.
+            Debug.Log($"[Route] {from.id}->{to.id} found={(route != null && route.found)} " +
+                      $"points={(route?.polyline?.Count ?? 0)} dist={(route?.distanceKm ?? 0f):F0}km");
 
             // Vérifier que l'objet est toujours valide après l'await
             if (_routeOverlay == null || mapView == null) return;

@@ -153,14 +153,45 @@ namespace TransportManager.UI.Tabs
             rt.offsetMin = new Vector2(safeLeft,   safeBottom);
             rt.offsetMax = new Vector2(-safeRight, -safeTop);
 
-            // Background panneau arrondi
+            // Racine transparente : le visuel est porté par le fond d'écran + le panneau d'offres.
             var bg = GetComponent<Image>() ?? gameObject.AddComponent<Image>();
-            bg.sprite        = _sprRound24;
-            bg.type          = Image.Type.Sliced;
-            bg.color         = BgPanel;
+            bg.sprite        = null;
+            bg.color         = new Color(0f, 0f, 0f, 0f);
             bg.raycastTarget = true;
 
+            // 1. Image en fond d'écran (plein écran, derrière le HUD flottant)
+            BuildPageBackground("UI/background/shop");
+
+            // 2. Panneau des offres (inséré, arrondi) — la « popup » par-dessus le fond
+            var panelGo  = MakeGO("OffersPanel", transform);
+            FillParent(panelGo.GetComponent<RectTransform>());
+            var panelImg = panelGo.AddComponent<Image>();
+            panelImg.sprite        = _sprRound24;
+            panelImg.type          = Image.Type.Sliced;
+            panelImg.color         = BgPanel;
+            panelImg.raycastTarget = true;
+
+            // 3. Contenu défilant (par-dessus le panneau)
             BuildScroll();
+        }
+
+        // Image en fond d'écran (RawImage : marche quel que soit le type d'import de la texture).
+        // On annule les marges d'insertion (safe*) pour couvrir tout le conteneur d'onglets,
+        // lui-même rendu DERRIÈRE la navbar et le header.
+        private void BuildPageBackground(string texturePath)
+        {
+            var tex = Resources.Load<Texture2D>(texturePath);
+            if (tex == null) return;
+            var go = MakeGO("PageBackground", transform);
+            go.transform.SetAsFirstSibling();
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = new Vector2(-safeLeft,  -safeBottom);
+            rt.offsetMax = new Vector2( safeRight,  safeTop);
+            var raw = go.AddComponent<RawImage>();
+            raw.texture       = tex;
+            raw.raycastTarget = false;
         }
 
         private void BuildScroll()
