@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using TransportManager.Enums;
 
 namespace TransportManager.Entities.Contracts
@@ -26,5 +27,15 @@ namespace TransportManager.Entities.Contracts
 
         public int cargoTons;               // quantity of goods to haul
         public string cargoLabel;           // short description of the goods
+
+        // ── Tournées à escales (multi-arrêts) ──
+        // origine = dépôt, destination = dernier arrêt. viaCityIds = escales intermédiaires
+        // dans l'ordre (entre l'origine et la destination). Vide pour un contrat direct.
+        public bool isMultiStop;
+        public List<string> viaCityIds = new List<string>();
+        public List<string> viaAddressLabels = new List<string>();
+
+        // Nombre total de livraisons (escales + destination finale). 1 = contrat direct.
+        public int StopCount => 1 + (viaCityIds?.Count ?? 0);
     }
 }

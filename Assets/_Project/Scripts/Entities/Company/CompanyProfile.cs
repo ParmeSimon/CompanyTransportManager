@@ -12,5 +12,10 @@ namespace TransportManager.Entities.Company
         public bool hasLocationCoordinates;
         public long createdAtUtcTicks;
         public bool onboardingCompleted;
+
+        // Logo personnalisable affiché dans le header.
+        public bool   logoIsCustom; // true = photo importée (cf. CompanyLogoStore), sinon logo par défaut
+        public string logoIconId;   // (déprécié — conservé pour compatibilité des sauvegardes)
+        public string logoColorHex; // (déprécié — conservé pour compatibilité des sauvegardes)
     }
 }

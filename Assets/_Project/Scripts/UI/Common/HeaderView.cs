@@ -18,6 +18,15 @@ namespace TransportManager.UI.Common
         [SerializeField] private TMP_Text _xpLabel;
         [SerializeField] private TMP_Text _dollarsLabel;
         [SerializeField] private TMP_Text _goldIngotsLabel;
+        [SerializeField] private Image    _logoBg;
+        [SerializeField] private Image    _logoIcon;
+        [SerializeField] private TMP_Text _reputationLabel;
+        private Image[] _starFills;   // étoiles à remplissage partiel (null si PNG absent → repli texte)
+
+        // Dépose un PNG d'étoile ici (importé en Sprite) pour des étoiles graphiques remplissables.
+        private const string StarSpritePath = "UI/Icons/icons/star";
+        private static readonly Color32 StarEmpty = new Color32(0x4A, 0x52, 0x60, 255);
+        private static readonly Color32 StarGold  = new Color32(0xF2, 0xD9, 0x66, 255);
 
         private Sprite _sprR8, _sprR16;
 
@@ -99,13 +108,27 @@ namespace TransportManager.UI.Common
             leftFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
             leftFitter.verticalFit   = ContentSizeFitter.FitMode.Unconstrained;
 
-            // Logo
+            // Logo d'entreprise (cadre arrondi masqué : photo importée OU symbole+couleur)
             var logoGo  = MakeGO("Logo", left.transform);
-            var logoImg = logoGo.AddComponent<Image>();
-            logoImg.sprite         = Resources.Load<Sprite>("UI/Logo/LogoFull") ?? Resources.Load<Sprite>("UI/Logo/Logo");
-            logoImg.preserveAspect = true;
-            logoImg.raycastTarget  = false;
+            _logoBg = logoGo.AddComponent<Image>();
+            _logoBg.sprite        = _sprR16;
+            _logoBg.type          = Image.Type.Sliced;
+            _logoBg.color         = new Color32(0x1A, 0x1D, 0x24, 255);
+            _logoBg.raycastTarget = false;
+            var logoMask = logoGo.AddComponent<Mask>();   // coins arrondis pour la photo
+            logoMask.showMaskGraphic = true;
             SetLayout(logoGo, 48, 48);
+
+            var logoIconGo  = MakeGO("Icon", logoGo.transform);
+            _logoIcon = logoIconGo.AddComponent<Image>();
+            _logoIcon.color          = Color.white;
+            _logoIcon.preserveAspect = true;
+            _logoIcon.raycastTarget  = false;
+            var logoIconRt = logoIconGo.GetComponent<RectTransform>();
+            logoIconRt.pivot = new Vector2(0.5f, 0.5f);
+
+            // État initial (sera rafraîchi par UpdateCompany)
+            CompanyLogo.ApplyTo(_logoBg, _logoIcon, GameManager.Instance?.Save?.company);
 
             // Colonne droite du logo : Name / PillsRow / Location
             var col    = MakeGO("InfoCol", left.transform);
@@ -127,6 +150,9 @@ namespace TransportManager.UI.Common
             _companyNameLabel.overflowMode       = TextOverflowModes.Ellipsis;
             _companyNameLabel.alignment          = TextAlignmentOptions.Center;
             SetLayout(_companyNameLabel.gameObject, 160, 16);
+
+            // Ligne 1bis : Réputation (étoiles à remplissage partiel, ou texte en repli)
+            BuildReputationStars(col.transform);
 
             // Ligne 2 : Pills ($, G, XP) en ligne
             var pillsRow    = MakeGO("PillsRow", col.transform);
@@ -191,12 +217,15 @@ namespace TransportManager.UI.Common
             MakeDivider(right.transform);
             var skillsBtn    = MakeIconButton(right.transform, "BtnSkills",   "research");
             MakeDivider(right.transform);
+            var dailyBtn     = MakeIconButtonSprite(right.transform, "BtnDaily", MakeTargetSprite());
+            MakeDivider(right.transform);
             var settingsBtn  = MakeIconButton(right.transform, "BtnSettings",  "settings");
 
             analyticsBtn.onClick.AddListener(AnalyticsPopupView.Show);
             listBtn.onClick.AddListener(FleetListPopupView.Show);
             friendsBtn.onClick.AddListener(FriendsPopupView.Show);
             skillsBtn.onClick.AddListener(SkillTreePopupView.Show);
+            dailyBtn.onClick.AddListener(UI.Daily.DailyHubPopupView.Show);
             settingsBtn.onClick.AddListener(SettingsPopupView.Show);
         }
 
@@ -257,7 +286,7 @@ namespace TransportManager.UI.Common
             // Icon
             var iconGo  = MakeGO("Image", pill.transform);
             var iconImg = iconGo.AddComponent<Image>();
-            iconImg.sprite         = Resources.Load<Sprite>($"UI/Icons/Infos/{iconSpriteName}");
+            UiIcons.Apply(iconImg, $"UI/Icons/Infos/{iconSpriteName}");
             iconImg.color          = iconColor;
             iconImg.preserveAspect = true;
             iconImg.raycastTarget  = false;
@@ -293,7 +322,7 @@ namespace TransportManager.UI.Common
 
             var iconGo  = MakeGO("Icon", go.transform);
             var iconImg = iconGo.AddComponent<Image>();
-            iconImg.sprite         = Resources.Load<Sprite>($"UI/Icons/icons/{iconName}");
+            UiIcons.Apply(iconImg, $"UI/Icons/icons/{iconName}");
             iconImg.color          = new Color32(0xC8, 0xD0, 0xE0, 255);
             iconImg.preserveAspect = true;
             iconImg.raycastTarget  = false;
@@ -304,6 +333,55 @@ namespace TransportManager.UI.Common
             iconRt.anchoredPosition = Vector2.zero;
 
             return btn;
+        }
+
+        // Variante de MakeIconButton avec un sprite fourni (icône procédurale, sans asset).
+        private Button MakeIconButtonSprite(Transform parent, string name, Sprite sprite)
+        {
+            var go  = MakeGO(name, parent);
+            var img = go.AddComponent<Image>();
+            img.sprite        = _sprR8;
+            img.type          = Image.Type.Sliced;
+            img.color         = new Color(1f, 1f, 1f, 0.05f);
+            img.raycastTarget = true;
+            var btn = go.AddComponent<Button>();
+            btn.targetGraphic = img;
+            SetLayout(go, 44, 44);
+            go.GetComponent<RectTransform>().sizeDelta = new Vector2(44, 44);
+
+            var iconGo  = MakeGO("Icon", go.transform);
+            var iconImg = iconGo.AddComponent<Image>();
+            iconImg.sprite         = sprite;
+            iconImg.color          = new Color32(0xC8, 0xD0, 0xE0, 255);
+            iconImg.preserveAspect = true;
+            iconImg.raycastTarget  = false;
+            var iconRt = iconGo.GetComponent<RectTransform>();
+            iconRt.anchorMin = iconRt.anchorMax = new Vector2(0.5f, 0.5f);
+            iconRt.sizeDelta        = new Vector2(24, 24);
+            iconRt.anchoredPosition = Vector2.zero;
+            return btn;
+        }
+
+        // Icône « cible » procédurale (objectifs/missions) — bandes concentriques.
+        private static Sprite _targetSprite;
+        private static Sprite MakeTargetSprite()
+        {
+            if (_targetSprite != null) return _targetSprite;
+            const int sz = 64;
+            var tex = new Texture2D(sz, sz, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            float c = (sz - 1) / 2f, rmax = sz / 2f - 1f;
+            for (int y = 0; y < sz; y++)
+                for (int x = 0; x < sz; x++)
+                {
+                    float d = Mathf.Sqrt((x - c) * (x - c) + (y - c) * (y - c)) / rmax; // 0 centre → 1 bord
+                    bool ink = (d <= 0.22f) || (d >= 0.45f && d <= 0.62f) || (d >= 0.82f && d <= 1.0f);
+                    // anti-alias léger sur les bords des bandes
+                    float a = ink ? 1f : 0f;
+                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+                }
+            tex.Apply();
+            _targetSprite = Sprite.Create(tex, new Rect(0, 0, sz, sz), new Vector2(0.5f, 0.5f));
+            return _targetSprite;
         }
 
         private static void MakeDivider(Transform parent)
@@ -326,6 +404,7 @@ namespace TransportManager.UI.Common
             GameEvents.OnGoldIngotsChanged    += UpdateGoldIngots;
             GameEvents.OnCompanyXpChanged     += UpdateXp;
             GameEvents.OnCompanyProfileChanged += UpdateCompany;
+            GameEvents.OnReputationChanged    += UpdateReputation;
         }
 
         private void OnDisable()
@@ -334,6 +413,61 @@ namespace TransportManager.UI.Common
             GameEvents.OnGoldIngotsChanged    -= UpdateGoldIngots;
             GameEvents.OnCompanyXpChanged     -= UpdateXp;
             GameEvents.OnCompanyProfileChanged -= UpdateCompany;
+            GameEvents.OnReputationChanged    -= UpdateReputation;
+        }
+
+        private void UpdateReputation(int reputation, int tier)
+        {
+            var r = ServiceLocator.Get<TransportManager.Systems.Progression.ReputationSystem>();
+            if (r == null) return;
+            if (_starFills != null)
+            {
+                float s = r.Stars;
+                for (int i = 0; i < _starFills.Length; i++)
+                    if (_starFills[i] != null) _starFills[i].fillAmount = Mathf.Clamp01(s - i);
+            }
+            else if (_reputationLabel != null)
+            {
+                _reputationLabel.text = r.StarString();
+            }
+        }
+
+        // Construit 5 étoiles **pleines** (générées en code) remplissables horizontalement.
+        private void BuildReputationStars(Transform parent)
+        {
+            // Étoile pleine procédurale : le remplissage gauche→droite colore une vraie surface
+            // (un PNG en contour ne colorerait que le bord).
+            var star = MakeStarSprite();
+
+            var row = MakeGO("Reputation", parent);
+            var hlg = row.AddComponent<HorizontalLayoutGroup>();
+            hlg.childAlignment = TextAnchor.MiddleCenter; hlg.spacing = 2;
+            // Marge basse → les étoiles se centrent un peu plus haut (remontent vers le titre)
+            // sans déplacer le nom de l'entreprise.
+            hlg.padding = new RectOffset(0, 0, 0, 6);
+            hlg.childForceExpandWidth = false; hlg.childForceExpandHeight = false;
+            hlg.childControlWidth = false; hlg.childControlHeight = false;
+            var fitter = row.AddComponent<ContentSizeFitter>();
+            fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            fitter.verticalFit   = ContentSizeFitter.FitMode.PreferredSize;
+
+            _starFills = new Image[5];
+            for (int i = 0; i < 5; i++)
+            {
+                var slot = MakeGO("Star" + i, row.transform);
+                slot.GetComponent<RectTransform>().sizeDelta = new Vector2(13, 13);
+                var bg = slot.AddComponent<Image>();
+                bg.sprite = star; bg.color = StarEmpty; bg.raycastTarget = false;
+
+                var fillGo = MakeGO("Fill", slot.transform);
+                var fRt = fillGo.GetComponent<RectTransform>();
+                fRt.anchorMin = Vector2.zero; fRt.anchorMax = Vector2.one; fRt.offsetMin = Vector2.zero; fRt.offsetMax = Vector2.zero;
+                var fill = fillGo.AddComponent<Image>();
+                fill.sprite = star; fill.color = StarGold; fill.raycastTarget = false;
+                fill.type = Image.Type.Filled; fill.fillMethod = Image.FillMethod.Horizontal;
+                fill.fillOrigin = (int)Image.OriginHorizontal.Left; fill.fillAmount = 0f;
+                _starFills[i] = fill;
+            }
         }
 
         private void Start()
@@ -346,7 +480,18 @@ namespace TransportManager.UI.Common
             UpdateGoldIngots(gm.Save.goldIngots);
             var xp = ServiceLocator.Get<TransportManager.Systems.Progression.XpSystem>();
             if (xp != null) UpdateXp(xp.CompanyXp, xp.CompanyLevel);
+            UpdateReputation(0, 0);
+
+            // Auto-ouverture du hub quotidien au lancement (une fois, après l'onboarding)
+            // s'il y a une récompense de connexion ou une mission à réclamer.
+            if (!_dailyAutoShown && (gm.Save.tutorial?.completed ?? false))
+            {
+                _dailyAutoShown = true;
+                UI.Daily.DailyHubPopupView.ShowIfPending();
+            }
         }
+
+        private static bool _dailyAutoShown;
 
         private void UpdateCompany()
         {
@@ -355,6 +500,7 @@ namespace TransportManager.UI.Common
             var c = gm.Save.company;
             if (_companyNameLabel) _companyNameLabel.text = string.IsNullOrWhiteSpace(c.companyName) ? "Mon Entreprise" : c.companyName;
             if (_locationLabel)    _locationLabel.text    = ExtractCity(c.location);
+            CompanyLogo.ApplyTo(_logoBg, _logoIcon, c);
         }
 
         // Nominatim returns "2 bis, Impasse Vège, ..., Bordeaux, ..."
@@ -373,6 +519,54 @@ namespace TransportManager.UI.Common
         private void UpdateDollars(int value)     { if (_dollarsLabel)    _dollarsLabel.text    = $"{value:N0}"; }
         private void UpdateGoldIngots(int value)  { if (_goldIngotsLabel) _goldIngotsLabel.text = $"{value:N0}"; }
         private void UpdateXp(int xp, int level)  { if (_xpLabel)         _xpLabel.text         = $"{xp:N0}"; }
+
+        // ── Étoile pleine procédurale (pour la réputation) ─────────────────────
+        private static Sprite _starSprite;
+        private static Sprite MakeStarSprite()
+        {
+            if (_starSprite != null) return _starSprite;
+            const int size = 64;
+            float cx = size / 2f, cy = size / 2f;
+            float rOut = size * 0.46f, rIn = size * 0.20f;
+
+            // 10 sommets de l'étoile (outer/inner alternés), pointe en haut.
+            var pts = new Vector2[10];
+            for (int i = 0; i < 10; i++)
+            {
+                float ang = -Mathf.PI / 2f + i * Mathf.PI / 5f;   // pas de 36°
+                float rad = (i % 2 == 0) ? rOut : rIn;
+                pts[i] = new Vector2(cx + Mathf.Cos(ang) * rad, cy + Mathf.Sin(ang) * rad);
+            }
+
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            var px = new Color[size * size];
+            const int SS = 3;   // anti-aliasing par sur-échantillonnage 3×3
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    int inside = 0;
+                    for (int sy = 0; sy < SS; sy++)
+                        for (int sx = 0; sx < SS; sx++)
+                            if (PointInPoly(x + (sx + 0.5f) / SS, y + (sy + 0.5f) / SS, pts)) inside++;
+                    px[y * size + x] = new Color(1f, 1f, 1f, inside / (float)(SS * SS));
+                }
+            tex.SetPixels(px); tex.Apply();
+            _starSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f));
+            return _starSprite;
+        }
+
+        private static bool PointInPoly(float x, float y, Vector2[] p)
+        {
+            bool inside = false;
+            for (int i = 0, j = p.Length - 1; i < p.Length; j = i++)
+            {
+                if (((p[i].y > y) != (p[j].y > y)) &&
+                    (x < (p[j].x - p[i].x) * (y - p[i].y) / (p[j].y - p[i].y) + p[i].x))
+                    inside = !inside;
+            }
+            return inside;
+        }
 
         // ── Rounded sprite factory (9-slice) ───────────────────────────────────
         private void EnsureRoundedSprites()

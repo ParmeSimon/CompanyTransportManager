@@ -644,9 +644,11 @@ namespace TransportManager.UI.Tabs
             drinkImg.raycastTarget  = false;
             if (drinkImg.sprite == null)
             {
-                drinkImg.sprite = Resources.Load<Sprite>("UI/Icons/Infos/energy");
-                drinkImg.color  = new Color(0.3f, 0.6f, 1f, 0.22f);
+                // L'icône "energy" n'existe pas ; on retombe sur l'image de canette.
+                drinkImg.sprite = Resources.Load<Sprite>("UI/energized_drink/1_can");
+                drinkImg.color  = Color.white;
             }
+            drinkImg.enabled = drinkImg.sprite != null;
 
             // Contenu
             var infoGo  = MakeGO("Info", card.transform);
@@ -1004,6 +1006,7 @@ namespace TransportManager.UI.Tabs
             var go  = MakeGO("Icon", parent);
             var img = go.AddComponent<Image>();
             img.sprite         = Resources.Load<Sprite>(spritePath);
+            img.enabled        = img.sprite != null;  // pas de carré blanc si l'icône manque
             img.color          = color;
             img.preserveAspect = true;
             img.raycastTarget  = false;

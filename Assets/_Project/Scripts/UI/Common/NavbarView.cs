@@ -164,7 +164,7 @@ namespace TransportManager.UI.Common
             var iconGo  = new GameObject("Icon", typeof(RectTransform));
             iconGo.transform.SetParent(go.transform, false);
             var iconImg = iconGo.AddComponent<Image>();
-            iconImg.sprite         = Resources.Load<Sprite>(iconPath);
+            UiIcons.Apply(iconImg, iconPath);
             iconImg.color          = new Color(0.55f, 0.55f, 0.60f);
             iconImg.preserveAspect = true;
             iconImg.raycastTarget  = false;

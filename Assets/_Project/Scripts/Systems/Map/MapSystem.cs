@@ -80,6 +80,20 @@ namespace TransportManager.Systems.Map
             return (from, to);
         }
 
+        // Une ville aléatoire parmi les pays autorisés (null = monde entier), en excluant
+        // éventuellement une ville (ex. le dépôt). Repli sur le monde entier si le vivier est vide.
+        public CityEntry GetRandomCityIn(ICollection<string> allowedCountries, CityEntry exclude = null)
+        {
+            var pool = new List<CityEntry>();
+            foreach (var c in _catalog.cities)
+            {
+                if (c == exclude) continue;
+                if (allowedCountries == null || allowedCountries.Contains(c.country)) pool.Add(c);
+            }
+            if (pool.Count == 0) return GetRandomCity();
+            return pool[Random.Range(0, pool.Count)];
+        }
+
         // Nombre de villes du catalogue situées dans l'un des pays autorisés.
         public int CountCitiesIn(ICollection<string> allowedCountries)
         {

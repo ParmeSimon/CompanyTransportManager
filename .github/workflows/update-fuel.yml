@@ -1,0 +1,57 @@
+# Récupère le cours du Brent 1×/jour (Alpha Vantage) et publie fuel.json sur la branche
+# dédiée `fuel-data` (pour ne PAS polluer `main`). La clé vit dans les Secrets du repo.
+name: Update fuel price
+
+on:
+  schedule:
+    - cron: "0 6 * * *"      # tous les jours à 06:00 UTC
+  workflow_dispatch:          # + bouton "Run workflow" pour tester à la main
+
+permissions:
+  contents: write             # autorise le push de la branche fuel-data
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch Brent & build fuel.json
+        env:
+          AV_KEY: ${{ secrets.ALPHAVANTAGE_KEY }}
+        run: |
+          curl -s "https://www.alphavantage.co/query?function=BRENT&interval=daily&apikey=$AV_KEY" > raw.json
+          python3 - <<'PY'
+          import json
+          raw  = json.load(open("raw.json"))
+          data = raw.get("data", [])
+          if not data:
+              raise SystemExit(f"Réponse Alpha Vantage inattendue : {json.dumps(raw)[:200]}")
+          vals, date = [], None
+          for d in data:
+              try:
+                  v = float(d["value"])
+              except (KeyError, ValueError):
+                  continue          # ignore les "." (week-ends/fériés)
+              if v <= 0:
+                  continue
+              if date is None:
+                  date = d["date"]
+              vals.append(round(v, 2))
+              if len(vals) >= 90:   # ~3 mois suffisent
+                  break
+          json.dump({"date": date, "brent": vals}, open("fuel.json", "w"))
+          print("fuel.json :", date, "→", len(vals), "valeurs, dernier =", vals[0])
+          PY
+
+      - name: Publish to fuel-data branch
+        run: |
+          cp fuel.json /tmp/fuel.json
+          git config user.name  "fuel-bot"
+          git config user.email "fuel-bot@users.noreply.github.com"
+          git checkout --orphan fuel-data
+          git rm -rf . >/dev/null 2>&1 || true
+          cp /tmp/fuel.json fuel.json
+          git add fuel.json
+          git commit -m "fuel: $(date -u +%F)"
+          git push --force origin fuel-data

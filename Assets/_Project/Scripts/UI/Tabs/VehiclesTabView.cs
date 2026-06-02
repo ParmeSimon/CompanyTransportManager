@@ -502,6 +502,7 @@ namespace TransportManager.UI.Tabs
             statusIconGo.transform.SetParent(statusRow.transform, false);
             _detailStatusIcon = statusIconGo.AddComponent<Image>();
             _detailStatusIcon.sprite = Resources.Load<Sprite>("UI/Icons/icons/warehouse");
+            _detailStatusIcon.enabled = _detailStatusIcon.sprite != null;
             _detailStatusIcon.color = new Color(1f, 0.75f, 0.3f);
             _detailStatusIcon.preserveAspect = true;
             _detailStatusIcon.raycastTarget = false;
@@ -555,6 +556,68 @@ namespace TransportManager.UI.Tabs
         {
             if (_detailPlaceholder != null) _detailPlaceholder.SetActive(false);
             if (_detailContent != null) _detailContent.SetActive(true);
+        }
+
+        // ---- Category header ----
+
+        private void SpawnCategoryHeader(VehicleCategory category)
+        {
+            var header = new GameObject($"CatHeader_{category}", typeof(RectTransform));
+            header.transform.SetParent(_catalogContent, false);
+            var headerLe = header.AddComponent<LayoutElement>();
+            headerLe.preferredHeight = 30;
+            headerLe.minHeight = 30;
+
+            var hlg = header.AddComponent<HorizontalLayoutGroup>();
+            hlg.padding = new RectOffset(4, 4, 0, 0);
+            hlg.spacing = 10;
+            hlg.childAlignment = TextAnchor.MiddleLeft;
+            hlg.childForceExpandWidth = false;
+            hlg.childForceExpandHeight = false;
+            hlg.childControlWidth = true;
+            hlg.childControlHeight = true;
+
+            // Petit repère coloré de la catégorie
+            var dot = new GameObject("Dot", typeof(RectTransform));
+            dot.transform.SetParent(header.transform, false);
+            var dotImg = dot.AddComponent<Image>();
+            dotImg.sprite        = _sprR8;
+            dotImg.type          = Image.Type.Sliced;
+            dotImg.color         = CategoryAccent(category);
+            dotImg.raycastTarget = false;
+            var dotLe = dot.AddComponent<LayoutElement>();
+            dotLe.preferredWidth = 4;
+            dotLe.preferredHeight = 18;
+
+            var labelGo = new GameObject("Label", typeof(RectTransform));
+            labelGo.transform.SetParent(header.transform, false);
+            var labelTmp = labelGo.AddComponent<TextMeshProUGUI>();
+            labelTmp.text = $"<b>{CategoryDisplayName(category).ToUpper()}</b>";
+            labelTmp.fontSize = 13;
+            labelTmp.characterSpacing = 4;
+            labelTmp.color = TextSecond;
+            labelTmp.alignment = TextAlignmentOptions.MidlineLeft;
+            labelTmp.raycastTarget = false;
+            labelGo.AddComponent<LayoutElement>().flexibleWidth = 1;
+        }
+
+        private static string CategoryDisplayName(VehicleCategory cat)
+        {
+            switch (cat)
+            {
+                case VehicleCategory.Fourgonnette:       return "Fourgonnettes";
+                case VehicleCategory.Camion:             return "Camions";
+                case VehicleCategory.PoidsLourd:         return "Poids lourds";
+                case VehicleCategory.SemiRemorque:       return "Semi-remorques";
+                case VehicleCategory.ConvoiExceptionnel: return "Convois exceptionnels";
+                case VehicleCategory.Frigorifique:       return "Frigorifiques";
+                case VehicleCategory.Benne:              return "Bennes";
+                case VehicleCategory.Citerne:            return "Citernes";
+                case VehicleCategory.PorteConteneur:     return "Porte-conteneurs";
+                case VehicleCategory.TrainRoutier:       return "Trains routiers";
+                case VehicleCategory.MegaConvoi:         return "Méga-convois";
+                default:                                 return cat.ToString();
+            }
         }
 
         // ---- Catalog card ----
@@ -734,6 +797,12 @@ namespace TransportManager.UI.Tabs
                 case VehicleCategory.PoidsLourd:         return new Color(0.95f, 0.55f, 0.35f, 1f); // orange
                 case VehicleCategory.SemiRemorque:       return new Color(0.85f, 0.45f, 0.55f, 1f); // rose
                 case VehicleCategory.ConvoiExceptionnel: return new Color(0.75f, 0.55f, 1.00f, 1f); // purple
+                case VehicleCategory.Frigorifique:       return new Color(0.55f, 0.85f, 0.95f, 1f); // cyan glacé
+                case VehicleCategory.Benne:              return new Color(0.85f, 0.62f, 0.30f, 1f); // ocre chantier
+                case VehicleCategory.Citerne:            return new Color(0.92f, 0.42f, 0.38f, 1f); // rouge
+                case VehicleCategory.PorteConteneur:     return new Color(0.35f, 0.78f, 0.70f, 1f); // teal
+                case VehicleCategory.TrainRoutier:       return new Color(0.58f, 0.48f, 0.88f, 1f); // violet profond
+                case VehicleCategory.MegaConvoi:         return new Color(0.97f, 0.78f, 0.28f, 1f); // or
                 default:                                 return new Color(0.55f, 0.78f, 0.95f, 1f);
             }
         }
@@ -1197,16 +1266,37 @@ namespace TransportManager.UI.Tabs
 
             bool depotFull = depot != null && !depot.HasRoomForOneMore();
 
-            foreach (var data in catalog.vehicles)
+            // Groupe les véhicules par catégorie, ordonnées par niveau de déblocage (début → late game).
+            var categories = new List<VehicleCategory>();
+            foreach (VehicleCategory c in System.Enum.GetValues(typeof(VehicleCategory))) categories.Add(c);
+            categories.Sort((a, b) =>
             {
-                bool unlocked = xp == null || xp.IsVehicleUnlocked(data.RequiredCompanyLevel);
-                bool canAfford = wallet != null && wallet.CanAfford(CurrencyType.Dollar, data.purchasePrice);
-                int ownedCount = 0;
-                if (fleet != null)
-                    foreach (var v in fleet.Vehicles)
-                        if (v.vehicleDataId == data.id) ownedCount++;
+                int la = VehicleClassUnlock.ForCategory(a), lb = VehicleClassUnlock.ForCategory(b);
+                return la != lb ? la.CompareTo(lb) : ((int)a).CompareTo((int)b);
+            });
 
-                SpawnCatalogCard(data, ownedCount > 0, ownedCount, unlocked, canAfford, depotFull);
+            foreach (VehicleCategory category in categories)
+            {
+                bool headerSpawned = false;
+                foreach (var data in catalog.vehicles)
+                {
+                    if (data.category != category) continue;
+
+                    if (!headerSpawned)
+                    {
+                        SpawnCategoryHeader(category);
+                        headerSpawned = true;
+                    }
+
+                    bool unlocked = xp == null || xp.IsVehicleUnlocked(data.RequiredCompanyLevel);
+                    bool canAfford = wallet != null && wallet.CanAfford(CurrencyType.Dollar, data.purchasePrice);
+                    int ownedCount = 0;
+                    if (fleet != null)
+                        foreach (var v in fleet.Vehicles)
+                            if (v.vehicleDataId == data.id) ownedCount++;
+
+                    SpawnCatalogCard(data, ownedCount > 0, ownedCount, unlocked, canAfford, depotFull);
+                }
             }
 
             // Keep the right pane in sync if a vehicle is currently selected

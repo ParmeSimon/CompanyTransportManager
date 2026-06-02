@@ -1483,3 +1483,5085 @@ MonoBehaviour:
     - Port de Limassol
     - Zakaki ZI
     - Polemidia ZI
+  - id: reims
+    displayName: Reims
+    country: France
+    location:
+      latitude: 49.2583
+      longitude: 4.0317
+    deliveryPointLabels: []
+  - id: breme
+    displayName: Brême
+    country: Allemagne
+    location:
+      latitude: 53.0793
+      longitude: 8.8017
+    deliveryPointLabels: []
+  - id: hanovre
+    displayName: Hanovre
+    country: Allemagne
+    location:
+      latitude: 52.3759
+      longitude: 9.732
+    deliveryPointLabels: []
+  - id: dresde
+    displayName: Dresde
+    country: Allemagne
+    location:
+      latitude: 51.0504
+      longitude: 13.7373
+    deliveryPointLabels: []
+  - id: malaga
+    displayName: Malaga
+    country: Espagne
+    location:
+      latitude: 36.7213
+      longitude: -4.4214
+    deliveryPointLabels: []
+  - id: murcie
+    displayName: Murcie
+    country: Espagne
+    location:
+      latitude: 37.9922
+      longitude: -1.1307
+    deliveryPointLabels: []
+  - id: palma
+    displayName: Palma
+    country: Espagne
+    location:
+      latitude: 39.5696
+      longitude: 2.6502
+    deliveryPointLabels: []
+  - id: bari
+    displayName: Bari
+    country: Italie
+    location:
+      latitude: 41.1171
+      longitude: 16.8719
+    deliveryPointLabels: []
+  - id: catane
+    displayName: Catane
+    country: Italie
+    location:
+      latitude: 37.5079
+      longitude: 15.083
+    deliveryPointLabels: []
+  - id: verone
+    displayName: Vérone
+    country: Italie
+    location:
+      latitude: 45.4384
+      longitude: 10.9916
+    deliveryPointLabels: []
+  - id: edimbourg
+    displayName: Édimbourg
+    country: Royaume-Uni
+    location:
+      latitude: 55.9533
+      longitude: -3.1883
+    deliveryPointLabels: []
+  - id: cardiff
+    displayName: Cardiff
+    country: Royaume-Uni
+    location:
+      latitude: 51.4816
+      longitude: -3.1791
+    deliveryPointLabels: []
+  - id: belfast
+    displayName: Belfast
+    country: Royaume-Uni
+    location:
+      latitude: 54.5973
+      longitude: -5.9301
+    deliveryPointLabels: []
+  - id: newcastle
+    displayName: Newcastle
+    country: Royaume-Uni
+    location:
+      latitude: 54.9783
+      longitude: -1.6178
+    deliveryPointLabels: []
+  - id: szczecin
+    displayName: Szczecin
+    country: Pologne
+    location:
+      latitude: 53.4285
+      longitude: 14.5528
+    deliveryPointLabels: []
+  - id: bydgoszcz
+    displayName: Bydgoszcz
+    country: Pologne
+    location:
+      latitude: 53.1235
+      longitude: 18.0084
+    deliveryPointLabels: []
+  - id: braga
+    displayName: Braga
+    country: Portugal
+    location:
+      latitude: 41.5454
+      longitude: -8.4265
+    deliveryPointLabels: []
+  - id: funchal
+    displayName: Funchal
+    country: Portugal
+    location:
+      latitude: 32.6669
+      longitude: -16.9241
+    deliveryPointLabels: []
+  - id: groningue
+    displayName: Groningue
+    country: Pays-Bas
+    location:
+      latitude: 53.2194
+      longitude: 6.5665
+    deliveryPointLabels: []
+  - id: tilburg
+    displayName: Tilburg
+    country: Pays-Bas
+    location:
+      latitude: 51.5555
+      longitude: 5.0913
+    deliveryPointLabels: []
+  - id: bruges
+    displayName: Bruges
+    country: Belgique
+    location:
+      latitude: 51.2093
+      longitude: 3.2247
+    deliveryPointLabels: []
+  - id: namur
+    displayName: Namur
+    country: Belgique
+    location:
+      latitude: 50.4674
+      longitude: 4.872
+    deliveryPointLabels: []
+  - id: lausanne
+    displayName: Lausanne
+    country: Suisse
+    location:
+      latitude: 46.5197
+      longitude: 6.6323
+    deliveryPointLabels: []
+  - id: lugano
+    displayName: Lugano
+    country: Suisse
+    location:
+      latitude: 46.0037
+      longitude: 8.9511
+    deliveryPointLabels: []
+  - id: lucerne
+    displayName: Lucerne
+    country: Suisse
+    location:
+      latitude: 47.0502
+      longitude: 8.3093
+    deliveryPointLabels: []
+  - id: klagenfurt
+    displayName: Klagenfurt
+    country: Autriche
+    location:
+      latitude: 46.6247
+      longitude: 14.3079
+    deliveryPointLabels: []
+  - id: brasov
+    displayName: Brasov
+    country: Roumanie
+    location:
+      latitude: 45.658
+      longitude: 25.6012
+    deliveryPointLabels: []
+  - id: sibiu
+    displayName: Sibiu
+    country: Roumanie
+    location:
+      latitude: 45.7983
+      longitude: 24.1256
+    deliveryPointLabels: []
+  - id: donetsk
+    displayName: Donetsk
+    country: Ukraine
+    location:
+      latitude: 48.0159
+      longitude: 37.8028
+    deliveryPointLabels: []
+  - id: zaporijjia
+    displayName: Zaporijjia
+    country: Ukraine
+    location:
+      latitude: 47.8388
+      longitude: 35.1396
+    deliveryPointLabels: []
+  - id: linkoping
+    displayName: Linköping
+    country: Suède
+    location:
+      latitude: 58.4108
+      longitude: 15.6214
+    deliveryPointLabels: []
+  - id: orebro
+    displayName: Örebro
+    country: Suède
+    location:
+      latitude: 59.2741
+      longitude: 15.2066
+    deliveryPointLabels: []
+  - id: drammen
+    displayName: Drammen
+    country: Norvège
+    location:
+      latitude: 59.744
+      longitude: 10.2045
+    deliveryPointLabels: []
+  - id: kristiansand
+    displayName: Kristiansand
+    country: Norvège
+    location:
+      latitude: 58.1599
+      longitude: 8.0182
+    deliveryPointLabels: []
+  - id: troms
+    displayName: Tromsø
+    country: Norvège
+    location:
+      latitude: 69.6492
+      longitude: 18.9553
+    deliveryPointLabels: []
+  - id: jyvaskyla
+    displayName: Jyväskylä
+    country: Finlande
+    location:
+      latitude: 62.2426
+      longitude: 25.7473
+    deliveryPointLabels: []
+  - id: esbjerg
+    displayName: Esbjerg
+    country: Danemark
+    location:
+      latitude: 55.4765
+      longitude: 8.4594
+    deliveryPointLabels: []
+  - id: randers
+    displayName: Randers
+    country: Danemark
+    location:
+      latitude: 56.4607
+      longitude: 10.0364
+    deliveryPointLabels: []
+  - id: pilsen
+    displayName: Pilsen
+    country: République Tchèque
+    location:
+      latitude: 49.7384
+      longitude: 13.3736
+    deliveryPointLabels: []
+  - id: liberec
+    displayName: Liberec
+    country: République Tchèque
+    location:
+      latitude: 50.7663
+      longitude: 15.0543
+    deliveryPointLabels: []
+  - id: pecs
+    displayName: Pécs
+    country: Hongrie
+    location:
+      latitude: 46.0727
+      longitude: 18.2323
+    deliveryPointLabels: []
+  - id: miskolc
+    displayName: Miskolc
+    country: Hongrie
+    location:
+      latitude: 48.1035
+      longitude: 20.7784
+    deliveryPointLabels: []
+  - id: bourgas
+    displayName: Bourgas
+    country: Bulgarie
+    location:
+      latitude: 42.5048
+      longitude: 27.4626
+    deliveryPointLabels: []
+  - id: rousse
+    displayName: Roussé
+    country: Bulgarie
+    location:
+      latitude: 43.8356
+      longitude: 25.9657
+    deliveryPointLabels: []
+  - id: stara-zagora
+    displayName: Stara Zagora
+    country: Bulgarie
+    location:
+      latitude: 42.4258
+      longitude: 25.6345
+    deliveryPointLabels: []
+  - id: heraklion
+    displayName: Héraklion
+    country: Grèce
+    location:
+      latitude: 35.3387
+      longitude: 25.1442
+    deliveryPointLabels: []
+  - id: larissa
+    displayName: Larissa
+    country: Grèce
+    location:
+      latitude: 39.639
+      longitude: 22.4191
+    deliveryPointLabels: []
+  - id: osijek
+    displayName: Osijek
+    country: Croatie
+    location:
+      latitude: 45.555
+      longitude: 18.6955
+    deliveryPointLabels: []
+  - id: zadar
+    displayName: Zadar
+    country: Croatie
+    location:
+      latitude: 44.1194
+      longitude: 15.2314
+    deliveryPointLabels: []
+  - id: pula
+    displayName: Pula
+    country: Croatie
+    location:
+      latitude: 44.8666
+      longitude: 13.8496
+    deliveryPointLabels: []
+  - id: subotica
+    displayName: Subotica
+    country: Serbie
+    location:
+      latitude: 46.1003
+      longitude: 19.6651
+    deliveryPointLabels: []
+  - id: kragujevac
+    displayName: Kragujevac
+    country: Serbie
+    location:
+      latitude: 44.0142
+      longitude: 20.9111
+    deliveryPointLabels: []
+  - id: novi-sad
+    displayName: Novi Sad
+    country: Serbie
+    location:
+      latitude: 45.2671
+      longitude: 19.8335
+    deliveryPointLabels: []
+  - id: zrenjanin
+    displayName: Zrenjanin
+    country: Serbie
+    location:
+      latitude: 45.3836
+      longitude: 20.3819
+    deliveryPointLabels: []
+  - id: siauliai
+    displayName: Siauliai
+    country: Lituanie
+    location:
+      latitude: 55.9333
+      longitude: 23.3167
+    deliveryPointLabels: []
+  - id: panevezys
+    displayName: Panevėžys
+    country: Lituanie
+    location:
+      latitude: 55.7333
+      longitude: 24.35
+    deliveryPointLabels: []
+  - id: alytus
+    displayName: Alytus
+    country: Lituanie
+    location:
+      latitude: 54.3964
+      longitude: 24.0458
+    deliveryPointLabels: []
+  - id: marijampole
+    displayName: Marijampolė
+    country: Lituanie
+    location:
+      latitude: 54.5572
+      longitude: 23.3542
+    deliveryPointLabels: []
+  - id: galway
+    displayName: Galway
+    country: Irlande
+    location:
+      latitude: 53.2707
+      longitude: -9.0568
+    deliveryPointLabels: []
+  - id: limerick
+    displayName: Limerick
+    country: Irlande
+    location:
+      latitude: 52.668
+      longitude: -8.6305
+    deliveryPointLabels: []
+  - id: waterford
+    displayName: Waterford
+    country: Irlande
+    location:
+      latitude: 52.2593
+      longitude: -7.1101
+    deliveryPointLabels: []
+  - id: drogheda
+    displayName: Drogheda
+    country: Irlande
+    location:
+      latitude: 53.7189
+      longitude: -6.3478
+    deliveryPointLabels: []
+  - id: dundalk
+    displayName: Dundalk
+    country: Irlande
+    location:
+      latitude: 54.0019
+      longitude: -6.4058
+    deliveryPointLabels: []
+  - id: zilina
+    displayName: Žilina
+    country: Slovaquie
+    location:
+      latitude: 49.2231
+      longitude: 18.7398
+    deliveryPointLabels: []
+  - id: nitra
+    displayName: Nitra
+    country: Slovaquie
+    location:
+      latitude: 48.3061
+      longitude: 18.0764
+    deliveryPointLabels: []
+  - id: banska-bystrica
+    displayName: Banská Bystrica
+    country: Slovaquie
+    location:
+      latitude: 48.7395
+      longitude: 19.153
+    deliveryPointLabels: []
+  - id: presov
+    displayName: Prešov
+    country: Slovaquie
+    location:
+      latitude: 48.9984
+      longitude: 21.2339
+    deliveryPointLabels: []
+  - id: trnava
+    displayName: Trnava
+    country: Slovaquie
+    location:
+      latitude: 48.3774
+      longitude: 17.5877
+    deliveryPointLabels: []
+  - id: celje
+    displayName: Celje
+    country: Slovénie
+    location:
+      latitude: 46.2309
+      longitude: 15.2604
+    deliveryPointLabels: []
+  - id: kranj
+    displayName: Kranj
+    country: Slovénie
+    location:
+      latitude: 46.2389
+      longitude: 14.3556
+    deliveryPointLabels: []
+  - id: koper
+    displayName: Koper
+    country: Slovénie
+    location:
+      latitude: 45.5481
+      longitude: 13.7302
+    deliveryPointLabels: []
+  - id: novo-mesto
+    displayName: Novo Mesto
+    country: Slovénie
+    location:
+      latitude: 45.801
+      longitude: 15.171
+    deliveryPointLabels: []
+  - id: banja-luka
+    displayName: Banja Luka
+    country: Bosnie-H.
+    location:
+      latitude: 44.7722
+      longitude: 17.191
+    deliveryPointLabels: []
+  - id: mostar
+    displayName: Mostar
+    country: Bosnie-H.
+    location:
+      latitude: 43.3438
+      longitude: 17.8078
+    deliveryPointLabels: []
+  - id: tuzla
+    displayName: Tuzla
+    country: Bosnie-H.
+    location:
+      latitude: 44.5384
+      longitude: 18.6671
+    deliveryPointLabels: []
+  - id: vlore
+    displayName: Vlorë
+    country: Albanie
+    location:
+      latitude: 40.4686
+      longitude: 19.4894
+    deliveryPointLabels: []
+  - id: shkoder
+    displayName: Shkodër
+    country: Albanie
+    location:
+      latitude: 42.0683
+      longitude: 19.5126
+    deliveryPointLabels: []
+  - id: elbasan
+    displayName: Elbasan
+    country: Albanie
+    location:
+      latitude: 41.1125
+      longitude: 20.0822
+    deliveryPointLabels: []
+  - id: korce
+    displayName: Korçë
+    country: Albanie
+    location:
+      latitude: 40.6186
+      longitude: 20.7808
+    deliveryPointLabels: []
+  - id: fier
+    displayName: Fier
+    country: Albanie
+    location:
+      latitude: 40.7239
+      longitude: 19.5567
+    deliveryPointLabels: []
+  - id: tiraspol
+    displayName: Tiraspol
+    country: Moldavie
+    location:
+      latitude: 46.8403
+      longitude: 29.6433
+    deliveryPointLabels: []
+  - id: cahul
+    displayName: Cahul
+    country: Moldavie
+    location:
+      latitude: 45.9075
+      longitude: 28.1944
+    deliveryPointLabels: []
+  - id: ungheni
+    displayName: Ungheni
+    country: Moldavie
+    location:
+      latitude: 47.2117
+      longitude: 27.8053
+    deliveryPointLabels: []
+  - id: soroca
+    displayName: Soroca
+    country: Moldavie
+    location:
+      latitude: 48.1558
+      longitude: 28.2975
+    deliveryPointLabels: []
+  - id: gomel
+    displayName: Gomel
+    country: Biélorussie
+    location:
+      latitude: 52.4345
+      longitude: 30.9754
+    deliveryPointLabels: []
+  - id: vitebsk
+    displayName: Vitebsk
+    country: Biélorussie
+    location:
+      latitude: 55.1904
+      longitude: 30.2049
+    deliveryPointLabels: []
+  - id: brest
+    displayName: Brest
+    country: Biélorussie
+    location:
+      latitude: 52.0976
+      longitude: 23.7341
+    deliveryPointLabels: []
+  - id: liepaja
+    displayName: Liepāja
+    country: Lettonie
+    location:
+      latitude: 56.5047
+      longitude: 21.0108
+    deliveryPointLabels: []
+  - id: jelgava
+    displayName: Jelgava
+    country: Lettonie
+    location:
+      latitude: 56.65
+      longitude: 23.7128
+    deliveryPointLabels: []
+  - id: jurmala
+    displayName: Jūrmala
+    country: Lettonie
+    location:
+      latitude: 56.968
+      longitude: 23.7704
+    deliveryPointLabels: []
+  - id: ventspils
+    displayName: Ventspils
+    country: Lettonie
+    location:
+      latitude: 57.3894
+      longitude: 21.5606
+    deliveryPointLabels: []
+  - id: narva
+    displayName: Narva
+    country: Estonie
+    location:
+      latitude: 59.3772
+      longitude: 28.1903
+    deliveryPointLabels: []
+  - id: parnu
+    displayName: Pärnu
+    country: Estonie
+    location:
+      latitude: 58.3859
+      longitude: 24.4971
+    deliveryPointLabels: []
+  - id: kohtla-jarve
+    displayName: Kohtla-Järve
+    country: Estonie
+    location:
+      latitude: 59.3986
+      longitude: 27.2731
+    deliveryPointLabels: []
+  - id: viljandi
+    displayName: Viljandi
+    country: Estonie
+    location:
+      latitude: 58.3639
+      longitude: 25.59
+    deliveryPointLabels: []
+  - id: moscou
+    displayName: Moscou
+    country: Russie
+    location:
+      latitude: 55.7558
+      longitude: 37.6173
+    deliveryPointLabels: []
+  - id: saint-petersbourg
+    displayName: Saint-Pétersbourg
+    country: Russie
+    location:
+      latitude: 59.9311
+      longitude: 30.3609
+    deliveryPointLabels: []
+  - id: novossibirsk
+    displayName: Novossibirsk
+    country: Russie
+    location:
+      latitude: 55.0084
+      longitude: 82.9357
+    deliveryPointLabels: []
+  - id: iekaterinbourg
+    displayName: Iekaterinbourg
+    country: Russie
+    location:
+      latitude: 56.8389
+      longitude: 60.6057
+    deliveryPointLabels: []
+  - id: kazan
+    displayName: Kazan
+    country: Russie
+    location:
+      latitude: 55.7963
+      longitude: 49.1088
+    deliveryPointLabels: []
+  - id: rostov-sur-le-don
+    displayName: Rostov-sur-le-Don
+    country: Russie
+    location:
+      latitude: 47.2357
+      longitude: 39.7015
+    deliveryPointLabels: []
+  - id: akureyri
+    displayName: Akureyri
+    country: Islande
+    location:
+      latitude: 65.6885
+      longitude: -18.1262
+    deliveryPointLabels: []
+  - id: kopavogur
+    displayName: Kópavogur
+    country: Islande
+    location:
+      latitude: 64.1126
+      longitude: -21.9127
+    deliveryPointLabels: []
+  - id: keflavik
+    displayName: Keflavík
+    country: Islande
+    location:
+      latitude: 64.0049
+      longitude: -22.5657
+    deliveryPointLabels: []
+  - id: selfoss
+    displayName: Selfoss
+    country: Islande
+    location:
+      latitude: 63.9333
+      longitude: -21.0
+    deliveryPointLabels: []
+  - id: akranes
+    displayName: Akranes
+    country: Islande
+    location:
+      latitude: 64.3211
+      longitude: -22.0747
+    deliveryPointLabels: []
+  - id: vestmannaeyjar
+    displayName: Vestmannaeyjar
+    country: Islande
+    location:
+      latitude: 63.4427
+      longitude: -20.2734
+    deliveryPointLabels: []
+  - id: la-valette
+    displayName: La Valette
+    country: Malte
+    location:
+      latitude: 35.8989
+      longitude: 14.5146
+    deliveryPointLabels: []
+  - id: birkirkara
+    displayName: Birkirkara
+    country: Malte
+    location:
+      latitude: 35.8972
+      longitude: 14.4611
+    deliveryPointLabels: []
+  - id: sliema
+    displayName: Sliema
+    country: Malte
+    location:
+      latitude: 35.9122
+      longitude: 14.5042
+    deliveryPointLabels: []
+  - id: mosta
+    displayName: Mosta
+    country: Malte
+    location:
+      latitude: 35.9094
+      longitude: 14.4256
+    deliveryPointLabels: []
+  - id: esch-sur-alzette
+    displayName: Esch-sur-Alzette
+    country: Luxembourg
+    location:
+      latitude: 49.4958
+      longitude: 5.9806
+    deliveryPointLabels: []
+  - id: differdange
+    displayName: Differdange
+    country: Luxembourg
+    location:
+      latitude: 49.5242
+      longitude: 5.8914
+    deliveryPointLabels: []
+  - id: dudelange
+    displayName: Dudelange
+    country: Luxembourg
+    location:
+      latitude: 49.4806
+      longitude: 6.0875
+    deliveryPointLabels: []
+  - id: petange
+    displayName: Pétange
+    country: Luxembourg
+    location:
+      latitude: 49.5583
+      longitude: 5.8806
+    deliveryPointLabels: []
+  - id: sanem
+    displayName: Sanem
+    country: Luxembourg
+    location:
+      latitude: 49.5489
+      longitude: 5.9197
+    deliveryPointLabels: []
+  - id: diekirch
+    displayName: Diekirch
+    country: Luxembourg
+    location:
+      latitude: 49.8674
+      longitude: 6.1596
+    deliveryPointLabels: []
+  - id: bitola
+    displayName: Bitola
+    country: Macédoine du Nord
+    location:
+      latitude: 41.0319
+      longitude: 21.3347
+    deliveryPointLabels: []
+  - id: kumanovo
+    displayName: Kumanovo
+    country: Macédoine du Nord
+    location:
+      latitude: 42.1322
+      longitude: 21.7144
+    deliveryPointLabels: []
+  - id: prilep
+    displayName: Prilep
+    country: Macédoine du Nord
+    location:
+      latitude: 41.3464
+      longitude: 21.555
+    deliveryPointLabels: []
+  - id: ohrid
+    displayName: Ohrid
+    country: Macédoine du Nord
+    location:
+      latitude: 41.1231
+      longitude: 20.8016
+    deliveryPointLabels: []
+  - id: veles
+    displayName: Veles
+    country: Macédoine du Nord
+    location:
+      latitude: 41.715
+      longitude: 21.7753
+    deliveryPointLabels: []
+  - id: stip
+    displayName: Štip
+    country: Macédoine du Nord
+    location:
+      latitude: 41.7458
+      longitude: 22.1958
+    deliveryPointLabels: []
+  - id: niksic
+    displayName: Nikšić
+    country: Monténégro
+    location:
+      latitude: 42.7731
+      longitude: 18.9447
+    deliveryPointLabels: []
+  - id: herceg-novi
+    displayName: Herceg Novi
+    country: Monténégro
+    location:
+      latitude: 42.4531
+      longitude: 18.5375
+    deliveryPointLabels: []
+  - id: bar
+    displayName: Bar
+    country: Monténégro
+    location:
+      latitude: 42.0931
+      longitude: 19.1003
+    deliveryPointLabels: []
+  - id: pljevlja
+    displayName: Pljevlja
+    country: Monténégro
+    location:
+      latitude: 43.3567
+      longitude: 19.3586
+    deliveryPointLabels: []
+  - id: budva
+    displayName: Budva
+    country: Monténégro
+    location:
+      latitude: 42.2911
+      longitude: 18.8403
+    deliveryPointLabels: []
+  - id: cetinje
+    displayName: Cetinje
+    country: Monténégro
+    location:
+      latitude: 42.3911
+      longitude: 18.9116
+    deliveryPointLabels: []
+  - id: prizren
+    displayName: Prizren
+    country: Kosovo
+    location:
+      latitude: 42.2139
+      longitude: 20.7397
+    deliveryPointLabels: []
+  - id: peja
+    displayName: Peja
+    country: Kosovo
+    location:
+      latitude: 42.6593
+      longitude: 20.2887
+    deliveryPointLabels: []
+  - id: gjakova
+    displayName: Gjakova
+    country: Kosovo
+    location:
+      latitude: 42.3803
+      longitude: 20.4308
+    deliveryPointLabels: []
+  - id: ferizaj
+    displayName: Ferizaj
+    country: Kosovo
+    location:
+      latitude: 42.37
+      longitude: 21.1483
+    deliveryPointLabels: []
+  - id: gjilan
+    displayName: Gjilan
+    country: Kosovo
+    location:
+      latitude: 42.4631
+      longitude: 21.4694
+    deliveryPointLabels: []
+  - id: podujevo
+    displayName: Podujevo
+    country: Kosovo
+    location:
+      latitude: 42.9106
+      longitude: 21.1933
+    deliveryPointLabels: []
+  - id: istanbul
+    displayName: Istanbul
+    country: Turquie
+    location:
+      latitude: 41.0082
+      longitude: 28.9784
+    deliveryPointLabels: []
+  - id: ankara
+    displayName: Ankara
+    country: Turquie
+    location:
+      latitude: 39.9334
+      longitude: 32.8597
+    deliveryPointLabels: []
+  - id: izmir
+    displayName: Izmir
+    country: Turquie
+    location:
+      latitude: 38.4237
+      longitude: 27.1428
+    deliveryPointLabels: []
+  - id: bursa
+    displayName: Bursa
+    country: Turquie
+    location:
+      latitude: 40.1885
+      longitude: 29.061
+    deliveryPointLabels: []
+  - id: antalya
+    displayName: Antalya
+    country: Turquie
+    location:
+      latitude: 36.8969
+      longitude: 30.7133
+    deliveryPointLabels: []
+  - id: adana
+    displayName: Adana
+    country: Turquie
+    location:
+      latitude: 37.0
+      longitude: 35.3213
+    deliveryPointLabels: []
+  - id: tbilissi
+    displayName: Tbilissi
+    country: Géorgie
+    location:
+      latitude: 41.7151
+      longitude: 44.8271
+    deliveryPointLabels: []
+  - id: koutaissi
+    displayName: Koutaïssi
+    country: Géorgie
+    location:
+      latitude: 42.2679
+      longitude: 42.718
+    deliveryPointLabels: []
+  - id: batoumi
+    displayName: Batoumi
+    country: Géorgie
+    location:
+      latitude: 41.6168
+      longitude: 41.6367
+    deliveryPointLabels: []
+  - id: roustavi
+    displayName: Roustavi
+    country: Géorgie
+    location:
+      latitude: 41.5497
+      longitude: 44.993
+    deliveryPointLabels: []
+  - id: zougdidi
+    displayName: Zougdidi
+    country: Géorgie
+    location:
+      latitude: 42.5088
+      longitude: 41.8709
+    deliveryPointLabels: []
+  - id: erevan
+    displayName: Erevan
+    country: Arménie
+    location:
+      latitude: 40.1792
+      longitude: 44.4991
+    deliveryPointLabels: []
+  - id: gyumri
+    displayName: Gyumri
+    country: Arménie
+    location:
+      latitude: 40.7894
+      longitude: 43.8475
+    deliveryPointLabels: []
+  - id: vanadzor
+    displayName: Vanadzor
+    country: Arménie
+    location:
+      latitude: 40.8128
+      longitude: 44.4883
+    deliveryPointLabels: []
+  - id: vagharchapat
+    displayName: Vagharchapat
+    country: Arménie
+    location:
+      latitude: 40.1622
+      longitude: 44.2911
+    deliveryPointLabels: []
+  - id: hrazdan
+    displayName: Hrazdan
+    country: Arménie
+    location:
+      latitude: 40.4969
+      longitude: 44.7644
+    deliveryPointLabels: []
+  - id: bakou
+    displayName: Bakou
+    country: Azerbaïdjan
+    location:
+      latitude: 40.4093
+      longitude: 49.8671
+    deliveryPointLabels: []
+  - id: gandja
+    displayName: Gandja
+    country: Azerbaïdjan
+    location:
+      latitude: 40.6828
+      longitude: 46.3606
+    deliveryPointLabels: []
+  - id: sumqayit
+    displayName: Sumqayit
+    country: Azerbaïdjan
+    location:
+      latitude: 40.5897
+      longitude: 49.6686
+    deliveryPointLabels: []
+  - id: mingachevir
+    displayName: Mingachevir
+    country: Azerbaïdjan
+    location:
+      latitude: 40.77
+      longitude: 47.0489
+    deliveryPointLabels: []
+  - id: lankaran
+    displayName: Lankaran
+    country: Azerbaïdjan
+    location:
+      latitude: 38.7529
+      longitude: 48.8475
+    deliveryPointLabels: []
+  - id: jerusalem
+    displayName: Jérusalem
+    country: Israël
+    location:
+      latitude: 31.7683
+      longitude: 35.2137
+    deliveryPointLabels: []
+  - id: tel-aviv
+    displayName: Tel-Aviv
+    country: Israël
+    location:
+      latitude: 32.0853
+      longitude: 34.7818
+    deliveryPointLabels: []
+  - id: haifa
+    displayName: Haïfa
+    country: Israël
+    location:
+      latitude: 32.794
+      longitude: 34.9896
+    deliveryPointLabels: []
+  - id: beer-sheva
+    displayName: Beer-Sheva
+    country: Israël
+    location:
+      latitude: 31.2518
+      longitude: 34.7913
+    deliveryPointLabels: []
+  - id: netanya
+    displayName: Netanya
+    country: Israël
+    location:
+      latitude: 32.3215
+      longitude: 34.8532
+    deliveryPointLabels: []
+  - id: beyrouth
+    displayName: Beyrouth
+    country: Liban
+    location:
+      latitude: 33.8938
+      longitude: 35.5018
+    deliveryPointLabels: []
+  - id: tripoli
+    displayName: Tripoli
+    country: Liban
+    location:
+      latitude: 34.4367
+      longitude: 35.8497
+    deliveryPointLabels: []
+  - id: saida
+    displayName: Saïda
+    country: Liban
+    location:
+      latitude: 33.5571
+      longitude: 35.3729
+    deliveryPointLabels: []
+  - id: tyr
+    displayName: Tyr
+    country: Liban
+    location:
+      latitude: 33.2705
+      longitude: 35.2038
+    deliveryPointLabels: []
+  - id: zahle
+    displayName: Zahlé
+    country: Liban
+    location:
+      latitude: 33.8463
+      longitude: 35.9019
+    deliveryPointLabels: []
+  - id: amman
+    displayName: Amman
+    country: Jordanie
+    location:
+      latitude: 31.9454
+      longitude: 35.9284
+    deliveryPointLabels: []
+  - id: zarqa
+    displayName: Zarqa
+    country: Jordanie
+    location:
+      latitude: 32.0728
+      longitude: 36.0876
+    deliveryPointLabels: []
+  - id: irbid
+    displayName: Irbid
+    country: Jordanie
+    location:
+      latitude: 32.5556
+      longitude: 35.85
+    deliveryPointLabels: []
+  - id: aqaba
+    displayName: Aqaba
+    country: Jordanie
+    location:
+      latitude: 29.532
+      longitude: 35.0063
+    deliveryPointLabels: []
+  - id: madaba
+    displayName: Madaba
+    country: Jordanie
+    location:
+      latitude: 31.716
+      longitude: 35.7938
+    deliveryPointLabels: []
+  - id: damas
+    displayName: Damas
+    country: Syrie
+    location:
+      latitude: 33.5138
+      longitude: 36.2765
+    deliveryPointLabels: []
+  - id: alep
+    displayName: Alep
+    country: Syrie
+    location:
+      latitude: 36.2021
+      longitude: 37.1343
+    deliveryPointLabels: []
+  - id: homs
+    displayName: Homs
+    country: Syrie
+    location:
+      latitude: 34.7324
+      longitude: 36.7137
+    deliveryPointLabels: []
+  - id: lattaquie
+    displayName: Lattaquié
+    country: Syrie
+    location:
+      latitude: 35.5236
+      longitude: 35.7917
+    deliveryPointLabels: []
+  - id: hama
+    displayName: Hama
+    country: Syrie
+    location:
+      latitude: 35.1318
+      longitude: 36.7578
+    deliveryPointLabels: []
+  - id: bagdad
+    displayName: Bagdad
+    country: Irak
+    location:
+      latitude: 33.3152
+      longitude: 44.3661
+    deliveryPointLabels: []
+  - id: bassorah
+    displayName: Bassorah
+    country: Irak
+    location:
+      latitude: 30.5085
+      longitude: 47.7804
+    deliveryPointLabels: []
+  - id: mossoul
+    displayName: Mossoul
+    country: Irak
+    location:
+      latitude: 36.345
+      longitude: 43.1189
+    deliveryPointLabels: []
+  - id: erbil
+    displayName: Erbil
+    country: Irak
+    location:
+      latitude: 36.1901
+      longitude: 44.0091
+    deliveryPointLabels: []
+  - id: nadjaf
+    displayName: Nadjaf
+    country: Irak
+    location:
+      latitude: 32.0
+      longitude: 44.3333
+    deliveryPointLabels: []
+  - id: teheran
+    displayName: Téhéran
+    country: Iran
+    location:
+      latitude: 35.6892
+      longitude: 51.389
+    deliveryPointLabels: []
+  - id: machhad
+    displayName: Machhad
+    country: Iran
+    location:
+      latitude: 36.2605
+      longitude: 59.6168
+    deliveryPointLabels: []
+  - id: ispahan
+    displayName: Ispahan
+    country: Iran
+    location:
+      latitude: 32.6539
+      longitude: 51.666
+    deliveryPointLabels: []
+  - id: chiraz
+    displayName: Chiraz
+    country: Iran
+    location:
+      latitude: 29.5918
+      longitude: 52.5837
+    deliveryPointLabels: []
+  - id: tabriz
+    displayName: Tabriz
+    country: Iran
+    location:
+      latitude: 38.08
+      longitude: 46.2919
+    deliveryPointLabels: []
+  - id: ahvaz
+    displayName: Ahvaz
+    country: Iran
+    location:
+      latitude: 31.3203
+      longitude: 48.6693
+    deliveryPointLabels: []
+  - id: riyad
+    displayName: Riyad
+    country: Arabie Saoudite
+    location:
+      latitude: 24.7136
+      longitude: 46.6753
+    deliveryPointLabels: []
+  - id: djeddah
+    displayName: Djeddah
+    country: Arabie Saoudite
+    location:
+      latitude: 21.4858
+      longitude: 39.1925
+    deliveryPointLabels: []
+  - id: la-mecque
+    displayName: La Mecque
+    country: Arabie Saoudite
+    location:
+      latitude: 21.3891
+      longitude: 39.8579
+    deliveryPointLabels: []
+  - id: medine
+    displayName: Médine
+    country: Arabie Saoudite
+    location:
+      latitude: 24.5247
+      longitude: 39.5692
+    deliveryPointLabels: []
+  - id: dammam
+    displayName: Dammam
+    country: Arabie Saoudite
+    location:
+      latitude: 26.4207
+      longitude: 50.0888
+    deliveryPointLabels: []
+  - id: tabouk
+    displayName: Tabouk
+    country: Arabie Saoudite
+    location:
+      latitude: 28.3838
+      longitude: 36.555
+    deliveryPointLabels: []
+  - id: dubai
+    displayName: Dubaï
+    country: Émirats Arabes Unis
+    location:
+      latitude: 25.2048
+      longitude: 55.2708
+    deliveryPointLabels: []
+  - id: abou-dabi
+    displayName: Abou Dabi
+    country: Émirats Arabes Unis
+    location:
+      latitude: 24.4539
+      longitude: 54.3773
+    deliveryPointLabels: []
+  - id: charjah
+    displayName: Charjah
+    country: Émirats Arabes Unis
+    location:
+      latitude: 25.3463
+      longitude: 55.4209
+    deliveryPointLabels: []
+  - id: al-ain
+    displayName: Al-Aïn
+    country: Émirats Arabes Unis
+    location:
+      latitude: 24.1302
+      longitude: 55.8023
+    deliveryPointLabels: []
+  - id: ajman
+    displayName: Ajman
+    country: Émirats Arabes Unis
+    location:
+      latitude: 25.4052
+      longitude: 55.5136
+    deliveryPointLabels: []
+  - id: doha
+    displayName: Doha
+    country: Qatar
+    location:
+      latitude: 25.2854
+      longitude: 51.531
+    deliveryPointLabels: []
+  - id: al-rayyan
+    displayName: Al Rayyan
+    country: Qatar
+    location:
+      latitude: 25.2919
+      longitude: 51.4244
+    deliveryPointLabels: []
+  - id: al-wakrah
+    displayName: Al Wakrah
+    country: Qatar
+    location:
+      latitude: 25.1715
+      longitude: 51.6034
+    deliveryPointLabels: []
+  - id: al-khor
+    displayName: Al Khor
+    country: Qatar
+    location:
+      latitude: 25.6804
+      longitude: 51.4969
+    deliveryPointLabels: []
+  - id: umm-salal
+    displayName: Umm Salal
+    country: Qatar
+    location:
+      latitude: 25.4167
+      longitude: 51.3833
+    deliveryPointLabels: []
+  - id: koweit
+    displayName: Koweït
+    country: Koweït
+    location:
+      latitude: 29.3759
+      longitude: 47.9774
+    deliveryPointLabels: []
+  - id: al-ahmadi
+    displayName: Al Ahmadi
+    country: Koweït
+    location:
+      latitude: 29.0769
+      longitude: 48.0838
+    deliveryPointLabels: []
+  - id: hawalli
+    displayName: Hawalli
+    country: Koweït
+    location:
+      latitude: 29.3328
+      longitude: 48.0289
+    deliveryPointLabels: []
+  - id: jahra
+    displayName: Jahra
+    country: Koweït
+    location:
+      latitude: 29.3375
+      longitude: 47.6581
+    deliveryPointLabels: []
+  - id: salmiya
+    displayName: Salmiya
+    country: Koweït
+    location:
+      latitude: 29.3394
+      longitude: 48.0506
+    deliveryPointLabels: []
+  - id: mascate
+    displayName: Mascate
+    country: Oman
+    location:
+      latitude: 23.588
+      longitude: 58.3829
+    deliveryPointLabels: []
+  - id: salalah
+    displayName: Salalah
+    country: Oman
+    location:
+      latitude: 17.0151
+      longitude: 54.0924
+    deliveryPointLabels: []
+  - id: sohar
+    displayName: Sohar
+    country: Oman
+    location:
+      latitude: 24.347
+      longitude: 56.709
+    deliveryPointLabels: []
+  - id: nizwa
+    displayName: Nizwa
+    country: Oman
+    location:
+      latitude: 22.9333
+      longitude: 57.5333
+    deliveryPointLabels: []
+  - id: sour
+    displayName: Sour
+    country: Oman
+    location:
+      latitude: 22.5667
+      longitude: 59.5289
+    deliveryPointLabels: []
+  - id: manama
+    displayName: Manama
+    country: Bahreïn
+    location:
+      latitude: 26.2285
+      longitude: 50.586
+    deliveryPointLabels: []
+  - id: riffa
+    displayName: Riffa
+    country: Bahreïn
+    location:
+      latitude: 26.13
+      longitude: 50.555
+    deliveryPointLabels: []
+  - id: muharraq
+    displayName: Muharraq
+    country: Bahreïn
+    location:
+      latitude: 26.2572
+      longitude: 50.6119
+    deliveryPointLabels: []
+  - id: hamad
+    displayName: Hamad
+    country: Bahreïn
+    location:
+      latitude: 26.1156
+      longitude: 50.5069
+    deliveryPointLabels: []
+  - id: isa
+    displayName: Isa
+    country: Bahreïn
+    location:
+      latitude: 26.1736
+      longitude: 50.5478
+    deliveryPointLabels: []
+  - id: sanaa
+    displayName: Sanaa
+    country: Yémen
+    location:
+      latitude: 15.3694
+      longitude: 44.191
+    deliveryPointLabels: []
+  - id: aden
+    displayName: Aden
+    country: Yémen
+    location:
+      latitude: 12.7855
+      longitude: 45.0187
+    deliveryPointLabels: []
+  - id: taiz
+    displayName: Taïz
+    country: Yémen
+    location:
+      latitude: 13.5795
+      longitude: 44.0209
+    deliveryPointLabels: []
+  - id: hodeida
+    displayName: Hodeïda
+    country: Yémen
+    location:
+      latitude: 14.7978
+      longitude: 42.9545
+    deliveryPointLabels: []
+  - id: ibb
+    displayName: Ibb
+    country: Yémen
+    location:
+      latitude: 13.9667
+      longitude: 44.1833
+    deliveryPointLabels: []
+  - id: kaboul
+    displayName: Kaboul
+    country: Afghanistan
+    location:
+      latitude: 34.5553
+      longitude: 69.2075
+    deliveryPointLabels: []
+  - id: kandahar
+    displayName: Kandahar
+    country: Afghanistan
+    location:
+      latitude: 31.6289
+      longitude: 65.7372
+    deliveryPointLabels: []
+  - id: herat
+    displayName: Herat
+    country: Afghanistan
+    location:
+      latitude: 34.3529
+      longitude: 62.204
+    deliveryPointLabels: []
+  - id: mazar-e-charif
+    displayName: Mazar-e-Charif
+    country: Afghanistan
+    location:
+      latitude: 36.709
+      longitude: 67.1109
+    deliveryPointLabels: []
+  - id: jalalabad
+    displayName: Jalalabad
+    country: Afghanistan
+    location:
+      latitude: 34.4265
+      longitude: 70.4515
+    deliveryPointLabels: []
+  - id: almaty
+    displayName: Almaty
+    country: Kazakhstan
+    location:
+      latitude: 43.222
+      longitude: 76.8512
+    deliveryPointLabels: []
+  - id: astana
+    displayName: Astana
+    country: Kazakhstan
+    location:
+      latitude: 51.1605
+      longitude: 71.4704
+    deliveryPointLabels: []
+  - id: chymkent
+    displayName: Chymkent
+    country: Kazakhstan
+    location:
+      latitude: 42.3417
+      longitude: 69.5901
+    deliveryPointLabels: []
+  - id: karaganda
+    displayName: Karaganda
+    country: Kazakhstan
+    location:
+      latitude: 49.8047
+      longitude: 73.1094
+    deliveryPointLabels: []
+  - id: aktobe
+    displayName: Aktobe
+    country: Kazakhstan
+    location:
+      latitude: 50.2839
+      longitude: 57.167
+    deliveryPointLabels: []
+  - id: tachkent
+    displayName: Tachkent
+    country: Ouzbékistan
+    location:
+      latitude: 41.2995
+      longitude: 69.2401
+    deliveryPointLabels: []
+  - id: samarcande
+    displayName: Samarcande
+    country: Ouzbékistan
+    location:
+      latitude: 39.627
+      longitude: 66.975
+    deliveryPointLabels: []
+  - id: boukhara
+    displayName: Boukhara
+    country: Ouzbékistan
+    location:
+      latitude: 39.7747
+      longitude: 64.4286
+    deliveryPointLabels: []
+  - id: namangan
+    displayName: Namangan
+    country: Ouzbékistan
+    location:
+      latitude: 40.9983
+      longitude: 71.6726
+    deliveryPointLabels: []
+  - id: andijan
+    displayName: Andijan
+    country: Ouzbékistan
+    location:
+      latitude: 40.7821
+      longitude: 72.3442
+    deliveryPointLabels: []
+  - id: achgabat
+    displayName: Achgabat
+    country: Turkménistan
+    location:
+      latitude: 37.9601
+      longitude: 58.3261
+    deliveryPointLabels: []
+  - id: turkmenabat
+    displayName: Türkmenabat
+    country: Turkménistan
+    location:
+      latitude: 39.0833
+      longitude: 63.5833
+    deliveryPointLabels: []
+  - id: dasoguz
+    displayName: Dasoguz
+    country: Turkménistan
+    location:
+      latitude: 41.8363
+      longitude: 59.9666
+    deliveryPointLabels: []
+  - id: mary
+    displayName: Mary
+    country: Turkménistan
+    location:
+      latitude: 37.6
+      longitude: 61.8333
+    deliveryPointLabels: []
+  - id: balkanabat
+    displayName: Balkanabat
+    country: Turkménistan
+    location:
+      latitude: 39.5108
+      longitude: 54.3672
+    deliveryPointLabels: []
+  - id: bichkek
+    displayName: Bichkek
+    country: Kirghizistan
+    location:
+      latitude: 42.8746
+      longitude: 74.5698
+    deliveryPointLabels: []
+  - id: och
+    displayName: Och
+    country: Kirghizistan
+    location:
+      latitude: 40.5283
+      longitude: 72.7985
+    deliveryPointLabels: []
+  - id: jalal-abad
+    displayName: Jalal-Abad
+    country: Kirghizistan
+    location:
+      latitude: 40.9333
+      longitude: 73.0
+    deliveryPointLabels: []
+  - id: karakol
+    displayName: Karakol
+    country: Kirghizistan
+    location:
+      latitude: 42.4907
+      longitude: 78.3936
+    deliveryPointLabels: []
+  - id: tokmok
+    displayName: Tokmok
+    country: Kirghizistan
+    location:
+      latitude: 42.8421
+      longitude: 75.29
+    deliveryPointLabels: []
+  - id: douchanbe
+    displayName: Douchanbé
+    country: Tadjikistan
+    location:
+      latitude: 38.5598
+      longitude: 68.787
+    deliveryPointLabels: []
+  - id: khoudjand
+    displayName: Khoudjand
+    country: Tadjikistan
+    location:
+      latitude: 40.2833
+      longitude: 69.6222
+    deliveryPointLabels: []
+  - id: kulob
+    displayName: Kulob
+    country: Tadjikistan
+    location:
+      latitude: 37.9092
+      longitude: 69.78
+    deliveryPointLabels: []
+  - id: bokhtar
+    displayName: Bokhtar
+    country: Tadjikistan
+    location:
+      latitude: 37.8364
+      longitude: 68.7806
+    deliveryPointLabels: []
+  - id: istaravchan
+    displayName: Istaravchan
+    country: Tadjikistan
+    location:
+      latitude: 39.91
+      longitude: 69.0011
+    deliveryPointLabels: []
+  - id: oulan-bator
+    displayName: Oulan-Bator
+    country: Mongolie
+    location:
+      latitude: 47.8864
+      longitude: 106.9057
+    deliveryPointLabels: []
+  - id: erdenet
+    displayName: Erdenet
+    country: Mongolie
+    location:
+      latitude: 49.0278
+      longitude: 104.0444
+    deliveryPointLabels: []
+  - id: darkhan
+    displayName: Darkhan
+    country: Mongolie
+    location:
+      latitude: 49.4861
+      longitude: 105.9228
+    deliveryPointLabels: []
+  - id: tchoibalsan
+    displayName: Tchoïbalsan
+    country: Mongolie
+    location:
+      latitude: 48.0667
+      longitude: 114.5
+    deliveryPointLabels: []
+  - id: moron
+    displayName: Mörön
+    country: Mongolie
+    location:
+      latitude: 49.6342
+      longitude: 100.1625
+    deliveryPointLabels: []
+  - id: new-delhi
+    displayName: New Delhi
+    country: Inde
+    location:
+      latitude: 28.6139
+      longitude: 77.209
+    deliveryPointLabels: []
+  - id: mumbai
+    displayName: Mumbai
+    country: Inde
+    location:
+      latitude: 19.076
+      longitude: 72.8777
+    deliveryPointLabels: []
+  - id: bangalore
+    displayName: Bangalore
+    country: Inde
+    location:
+      latitude: 12.9716
+      longitude: 77.5946
+    deliveryPointLabels: []
+  - id: calcutta
+    displayName: Calcutta
+    country: Inde
+    location:
+      latitude: 22.5726
+      longitude: 88.3639
+    deliveryPointLabels: []
+  - id: chennai
+    displayName: Chennai
+    country: Inde
+    location:
+      latitude: 13.0827
+      longitude: 80.2707
+    deliveryPointLabels: []
+  - id: hyderabad
+    displayName: Hyderabad
+    country: Inde
+    location:
+      latitude: 17.385
+      longitude: 78.4867
+    deliveryPointLabels: []
+  - id: ahmedabad
+    displayName: Ahmedabad
+    country: Inde
+    location:
+      latitude: 23.0225
+      longitude: 72.5714
+    deliveryPointLabels: []
+  - id: islamabad
+    displayName: Islamabad
+    country: Pakistan
+    location:
+      latitude: 33.6844
+      longitude: 73.0479
+    deliveryPointLabels: []
+  - id: karachi
+    displayName: Karachi
+    country: Pakistan
+    location:
+      latitude: 24.8607
+      longitude: 67.0011
+    deliveryPointLabels: []
+  - id: lahore
+    displayName: Lahore
+    country: Pakistan
+    location:
+      latitude: 31.5204
+      longitude: 74.3587
+    deliveryPointLabels: []
+  - id: faisalabad
+    displayName: Faisalabad
+    country: Pakistan
+    location:
+      latitude: 31.4504
+      longitude: 73.135
+    deliveryPointLabels: []
+  - id: rawalpindi
+    displayName: Rawalpindi
+    country: Pakistan
+    location:
+      latitude: 33.5651
+      longitude: 73.0169
+    deliveryPointLabels: []
+  - id: peshawar
+    displayName: Peshawar
+    country: Pakistan
+    location:
+      latitude: 34.0151
+      longitude: 71.5249
+    deliveryPointLabels: []
+  - id: dacca
+    displayName: Dacca
+    country: Bangladesh
+    location:
+      latitude: 23.8103
+      longitude: 90.4125
+    deliveryPointLabels: []
+  - id: chittagong
+    displayName: Chittagong
+    country: Bangladesh
+    location:
+      latitude: 22.3569
+      longitude: 91.7832
+    deliveryPointLabels: []
+  - id: khulna
+    displayName: Khulna
+    country: Bangladesh
+    location:
+      latitude: 22.8456
+      longitude: 89.5403
+    deliveryPointLabels: []
+  - id: rajshahi
+    displayName: Rajshahi
+    country: Bangladesh
+    location:
+      latitude: 24.3745
+      longitude: 88.6042
+    deliveryPointLabels: []
+  - id: sylhet
+    displayName: Sylhet
+    country: Bangladesh
+    location:
+      latitude: 24.8949
+      longitude: 91.8687
+    deliveryPointLabels: []
+  - id: colombo
+    displayName: Colombo
+    country: Sri Lanka
+    location:
+      latitude: 6.9271
+      longitude: 79.8612
+    deliveryPointLabels: []
+  - id: kandy
+    displayName: Kandy
+    country: Sri Lanka
+    location:
+      latitude: 7.2906
+      longitude: 80.6337
+    deliveryPointLabels: []
+  - id: galle
+    displayName: Galle
+    country: Sri Lanka
+    location:
+      latitude: 6.0535
+      longitude: 80.221
+    deliveryPointLabels: []
+  - id: jaffna
+    displayName: Jaffna
+    country: Sri Lanka
+    location:
+      latitude: 9.6615
+      longitude: 80.0255
+    deliveryPointLabels: []
+  - id: negombo
+    displayName: Negombo
+    country: Sri Lanka
+    location:
+      latitude: 7.2083
+      longitude: 79.8358
+    deliveryPointLabels: []
+  - id: katmandou
+    displayName: Katmandou
+    country: Népal
+    location:
+      latitude: 27.7172
+      longitude: 85.324
+    deliveryPointLabels: []
+  - id: pokhara
+    displayName: Pokhara
+    country: Népal
+    location:
+      latitude: 28.2096
+      longitude: 83.9856
+    deliveryPointLabels: []
+  - id: lalitpur
+    displayName: Lalitpur
+    country: Népal
+    location:
+      latitude: 27.6644
+      longitude: 85.3188
+    deliveryPointLabels: []
+  - id: biratnagar
+    displayName: Biratnagar
+    country: Népal
+    location:
+      latitude: 26.4525
+      longitude: 87.2718
+    deliveryPointLabels: []
+  - id: birganj
+    displayName: Birganj
+    country: Népal
+    location:
+      latitude: 27.0
+      longitude: 84.8667
+    deliveryPointLabels: []
+  - id: rangoun
+    displayName: Rangoun
+    country: Birmanie
+    location:
+      latitude: 16.8409
+      longitude: 96.1735
+    deliveryPointLabels: []
+  - id: mandalay
+    displayName: Mandalay
+    country: Birmanie
+    location:
+      latitude: 21.9588
+      longitude: 96.0891
+    deliveryPointLabels: []
+  - id: naypyidaw
+    displayName: Naypyidaw
+    country: Birmanie
+    location:
+      latitude: 19.7633
+      longitude: 96.0785
+    deliveryPointLabels: []
+  - id: bago
+    displayName: Bago
+    country: Birmanie
+    location:
+      latitude: 17.335
+      longitude: 96.4815
+    deliveryPointLabels: []
+  - id: mawlamyine
+    displayName: Mawlamyine
+    country: Birmanie
+    location:
+      latitude: 16.4909
+      longitude: 97.6283
+    deliveryPointLabels: []
+  - id: pekin
+    displayName: Pékin
+    country: Chine
+    location:
+      latitude: 39.9042
+      longitude: 116.4074
+    deliveryPointLabels: []
+  - id: shanghai
+    displayName: Shanghai
+    country: Chine
+    location:
+      latitude: 31.2304
+      longitude: 121.4737
+    deliveryPointLabels: []
+  - id: canton
+    displayName: Canton
+    country: Chine
+    location:
+      latitude: 23.1291
+      longitude: 113.2644
+    deliveryPointLabels: []
+  - id: shenzhen
+    displayName: Shenzhen
+    country: Chine
+    location:
+      latitude: 22.5431
+      longitude: 114.0579
+    deliveryPointLabels: []
+  - id: chengdu
+    displayName: Chengdu
+    country: Chine
+    location:
+      latitude: 30.5728
+      longitude: 104.0668
+    deliveryPointLabels: []
+  - id: wuhan
+    displayName: Wuhan
+    country: Chine
+    location:
+      latitude: 30.5928
+      longitude: 114.3055
+    deliveryPointLabels: []
+  - id: xi-an
+    displayName: "Xi'an"
+    country: Chine
+    location:
+      latitude: 34.3416
+      longitude: 108.9398
+    deliveryPointLabels: []
+  - id: chongqing
+    displayName: Chongqing
+    country: Chine
+    location:
+      latitude: 29.563
+      longitude: 106.5516
+    deliveryPointLabels: []
+  - id: tokyo
+    displayName: Tokyo
+    country: Japon
+    location:
+      latitude: 35.6762
+      longitude: 139.6503
+    deliveryPointLabels: []
+  - id: osaka
+    displayName: Osaka
+    country: Japon
+    location:
+      latitude: 34.6937
+      longitude: 135.5023
+    deliveryPointLabels: []
+  - id: nagoya
+    displayName: Nagoya
+    country: Japon
+    location:
+      latitude: 35.1815
+      longitude: 136.9066
+    deliveryPointLabels: []
+  - id: sapporo
+    displayName: Sapporo
+    country: Japon
+    location:
+      latitude: 43.0618
+      longitude: 141.3545
+    deliveryPointLabels: []
+  - id: fukuoka
+    displayName: Fukuoka
+    country: Japon
+    location:
+      latitude: 33.5904
+      longitude: 130.4017
+    deliveryPointLabels: []
+  - id: kyoto
+    displayName: Kyoto
+    country: Japon
+    location:
+      latitude: 35.0116
+      longitude: 135.7681
+    deliveryPointLabels: []
+  - id: sendai
+    displayName: Sendai
+    country: Japon
+    location:
+      latitude: 38.2682
+      longitude: 140.8694
+    deliveryPointLabels: []
+  - id: seoul
+    displayName: Séoul
+    country: Corée du Sud
+    location:
+      latitude: 37.5665
+      longitude: 126.978
+    deliveryPointLabels: []
+  - id: busan
+    displayName: Busan
+    country: Corée du Sud
+    location:
+      latitude: 35.1796
+      longitude: 129.0756
+    deliveryPointLabels: []
+  - id: incheon
+    displayName: Incheon
+    country: Corée du Sud
+    location:
+      latitude: 37.4563
+      longitude: 126.7052
+    deliveryPointLabels: []
+  - id: daegu
+    displayName: Daegu
+    country: Corée du Sud
+    location:
+      latitude: 35.8714
+      longitude: 128.6014
+    deliveryPointLabels: []
+  - id: daejeon
+    displayName: Daejeon
+    country: Corée du Sud
+    location:
+      latitude: 36.3504
+      longitude: 127.3845
+    deliveryPointLabels: []
+  - id: gwangju
+    displayName: Gwangju
+    country: Corée du Sud
+    location:
+      latitude: 35.1595
+      longitude: 126.8526
+    deliveryPointLabels: []
+  - id: pyongyang
+    displayName: Pyongyang
+    country: Corée du Nord
+    location:
+      latitude: 39.0392
+      longitude: 125.7625
+    deliveryPointLabels: []
+  - id: hamhung
+    displayName: Hamhung
+    country: Corée du Nord
+    location:
+      latitude: 39.9183
+      longitude: 127.536
+    deliveryPointLabels: []
+  - id: chongjin
+    displayName: Chongjin
+    country: Corée du Nord
+    location:
+      latitude: 41.7956
+      longitude: 129.7756
+    deliveryPointLabels: []
+  - id: nampo
+    displayName: Nampo
+    country: Corée du Nord
+    location:
+      latitude: 38.7375
+      longitude: 125.4078
+    deliveryPointLabels: []
+  - id: wonsan
+    displayName: Wonsan
+    country: Corée du Nord
+    location:
+      latitude: 39.1475
+      longitude: 127.4456
+    deliveryPointLabels: []
+  - id: hanoi
+    displayName: Hanoï
+    country: Vietnam
+    location:
+      latitude: 21.0278
+      longitude: 105.8342
+    deliveryPointLabels: []
+  - id: ho-chi-minh-ville
+    displayName: Hô Chi Minh-Ville
+    country: Vietnam
+    location:
+      latitude: 10.8231
+      longitude: 106.6297
+    deliveryPointLabels: []
+  - id: da-nang
+    displayName: Da Nang
+    country: Vietnam
+    location:
+      latitude: 16.0544
+      longitude: 108.2022
+    deliveryPointLabels: []
+  - id: haiphong
+    displayName: Haïphong
+    country: Vietnam
+    location:
+      latitude: 20.8449
+      longitude: 106.6881
+    deliveryPointLabels: []
+  - id: can-tho
+    displayName: Can Tho
+    country: Vietnam
+    location:
+      latitude: 10.0452
+      longitude: 105.7469
+    deliveryPointLabels: []
+  - id: hue
+    displayName: Hué
+    country: Vietnam
+    location:
+      latitude: 16.4637
+      longitude: 107.5909
+    deliveryPointLabels: []
+  - id: bangkok
+    displayName: Bangkok
+    country: Thaïlande
+    location:
+      latitude: 13.7563
+      longitude: 100.5018
+    deliveryPointLabels: []
+  - id: chiang-mai
+    displayName: Chiang Mai
+    country: Thaïlande
+    location:
+      latitude: 18.7883
+      longitude: 98.9853
+    deliveryPointLabels: []
+  - id: nonthaburi
+    displayName: Nonthaburi
+    country: Thaïlande
+    location:
+      latitude: 13.8591
+      longitude: 100.5217
+    deliveryPointLabels: []
+  - id: pattaya
+    displayName: Pattaya
+    country: Thaïlande
+    location:
+      latitude: 12.9236
+      longitude: 100.8825
+    deliveryPointLabels: []
+  - id: phuket
+    displayName: Phuket
+    country: Thaïlande
+    location:
+      latitude: 7.8804
+      longitude: 98.3923
+    deliveryPointLabels: []
+  - id: khon-kaen
+    displayName: Khon Kaen
+    country: Thaïlande
+    location:
+      latitude: 16.4419
+      longitude: 102.836
+    deliveryPointLabels: []
+  - id: jakarta
+    displayName: Jakarta
+    country: Indonésie
+    location:
+      latitude: -6.2088
+      longitude: 106.8456
+    deliveryPointLabels: []
+  - id: surabaya
+    displayName: Surabaya
+    country: Indonésie
+    location:
+      latitude: -7.2575
+      longitude: 112.7521
+    deliveryPointLabels: []
+  - id: bandung
+    displayName: Bandung
+    country: Indonésie
+    location:
+      latitude: -6.9175
+      longitude: 107.6191
+    deliveryPointLabels: []
+  - id: medan
+    displayName: Medan
+    country: Indonésie
+    location:
+      latitude: 3.5952
+      longitude: 98.6722
+    deliveryPointLabels: []
+  - id: semarang
+    displayName: Semarang
+    country: Indonésie
+    location:
+      latitude: -6.9667
+      longitude: 110.4167
+    deliveryPointLabels: []
+  - id: makassar
+    displayName: Makassar
+    country: Indonésie
+    location:
+      latitude: -5.1477
+      longitude: 119.4327
+    deliveryPointLabels: []
+  - id: denpasar
+    displayName: Denpasar
+    country: Indonésie
+    location:
+      latitude: -8.6705
+      longitude: 115.2126
+    deliveryPointLabels: []
+  - id: kuala-lumpur
+    displayName: Kuala Lumpur
+    country: Malaisie
+    location:
+      latitude: 3.139
+      longitude: 101.6869
+    deliveryPointLabels: []
+  - id: george-town
+    displayName: George Town
+    country: Malaisie
+    location:
+      latitude: 5.4141
+      longitude: 100.3288
+    deliveryPointLabels: []
+  - id: ipoh
+    displayName: Ipoh
+    country: Malaisie
+    location:
+      latitude: 4.5975
+      longitude: 101.0901
+    deliveryPointLabels: []
+  - id: johor-bahru
+    displayName: Johor Bahru
+    country: Malaisie
+    location:
+      latitude: 1.4927
+      longitude: 103.7414
+    deliveryPointLabels: []
+  - id: kuching
+    displayName: Kuching
+    country: Malaisie
+    location:
+      latitude: 1.5535
+      longitude: 110.3593
+    deliveryPointLabels: []
+  - id: kota-kinabalu
+    displayName: Kota Kinabalu
+    country: Malaisie
+    location:
+      latitude: 5.9804
+      longitude: 116.0735
+    deliveryPointLabels: []
+  - id: manille
+    displayName: Manille
+    country: Philippines
+    location:
+      latitude: 14.5995
+      longitude: 120.9842
+    deliveryPointLabels: []
+  - id: quezon-city
+    displayName: Quezon City
+    country: Philippines
+    location:
+      latitude: 14.676
+      longitude: 121.0437
+    deliveryPointLabels: []
+  - id: davao
+    displayName: Davao
+    country: Philippines
+    location:
+      latitude: 7.1907
+      longitude: 125.4553
+    deliveryPointLabels: []
+  - id: cebu
+    displayName: Cebu
+    country: Philippines
+    location:
+      latitude: 10.3157
+      longitude: 123.8854
+    deliveryPointLabels: []
+  - id: zamboanga
+    displayName: Zamboanga
+    country: Philippines
+    location:
+      latitude: 6.9214
+      longitude: 122.079
+    deliveryPointLabels: []
+  - id: cagayan-de-oro
+    displayName: Cagayan de Oro
+    country: Philippines
+    location:
+      latitude: 8.4542
+      longitude: 124.6319
+    deliveryPointLabels: []
+  - id: singapour
+    displayName: Singapour
+    country: Singapour
+    location:
+      latitude: 1.3521
+      longitude: 103.8198
+    deliveryPointLabels: []
+  - id: jurong
+    displayName: Jurong
+    country: Singapour
+    location:
+      latitude: 1.3329
+      longitude: 103.7436
+    deliveryPointLabels: []
+  - id: tampines
+    displayName: Tampines
+    country: Singapour
+    location:
+      latitude: 1.3496
+      longitude: 103.9568
+    deliveryPointLabels: []
+  - id: woodlands
+    displayName: Woodlands
+    country: Singapour
+    location:
+      latitude: 1.4382
+      longitude: 103.789
+    deliveryPointLabels: []
+  - id: changi
+    displayName: Changi
+    country: Singapour
+    location:
+      latitude: 1.3644
+      longitude: 103.9915
+    deliveryPointLabels: []
+  - id: phnom-penh
+    displayName: Phnom Penh
+    country: Cambodge
+    location:
+      latitude: 11.5564
+      longitude: 104.9282
+    deliveryPointLabels: []
+  - id: siem-reap
+    displayName: Siem Reap
+    country: Cambodge
+    location:
+      latitude: 13.3671
+      longitude: 103.8448
+    deliveryPointLabels: []
+  - id: battambang
+    displayName: Battambang
+    country: Cambodge
+    location:
+      latitude: 13.0957
+      longitude: 103.2022
+    deliveryPointLabels: []
+  - id: sihanoukville
+    displayName: Sihanoukville
+    country: Cambodge
+    location:
+      latitude: 10.6093
+      longitude: 103.5296
+    deliveryPointLabels: []
+  - id: kampong-cham
+    displayName: Kampong Cham
+    country: Cambodge
+    location:
+      latitude: 12.0
+      longitude: 105.45
+    deliveryPointLabels: []
+  - id: vientiane
+    displayName: Vientiane
+    country: Laos
+    location:
+      latitude: 17.9757
+      longitude: 102.6331
+    deliveryPointLabels: []
+  - id: luang-prabang
+    displayName: Luang Prabang
+    country: Laos
+    location:
+      latitude: 19.8845
+      longitude: 102.1348
+    deliveryPointLabels: []
+  - id: savannakhet
+    displayName: Savannakhet
+    country: Laos
+    location:
+      latitude: 16.5569
+      longitude: 104.751
+    deliveryPointLabels: []
+  - id: pakse
+    displayName: Pakse
+    country: Laos
+    location:
+      latitude: 15.1202
+      longitude: 105.7986
+    deliveryPointLabels: []
+  - id: thakhek
+    displayName: Thakhek
+    country: Laos
+    location:
+      latitude: 17.4053
+      longitude: 104.8003
+    deliveryPointLabels: []
+  - id: sydney
+    displayName: Sydney
+    country: Australie
+    location:
+      latitude: -33.8688
+      longitude: 151.2093
+    deliveryPointLabels: []
+  - id: melbourne
+    displayName: Melbourne
+    country: Australie
+    location:
+      latitude: -37.8136
+      longitude: 144.9631
+    deliveryPointLabels: []
+  - id: brisbane
+    displayName: Brisbane
+    country: Australie
+    location:
+      latitude: -27.4698
+      longitude: 153.0251
+    deliveryPointLabels: []
+  - id: perth
+    displayName: Perth
+    country: Australie
+    location:
+      latitude: -31.9523
+      longitude: 115.8613
+    deliveryPointLabels: []
+  - id: adelaide
+    displayName: Adelaide
+    country: Australie
+    location:
+      latitude: -34.9285
+      longitude: 138.6007
+    deliveryPointLabels: []
+  - id: canberra
+    displayName: Canberra
+    country: Australie
+    location:
+      latitude: -35.2809
+      longitude: 149.13
+    deliveryPointLabels: []
+  - id: darwin
+    displayName: Darwin
+    country: Australie
+    location:
+      latitude: -12.4634
+      longitude: 130.8456
+    deliveryPointLabels: []
+  - id: auckland
+    displayName: Auckland
+    country: Nouvelle-Zélande
+    location:
+      latitude: -36.8485
+      longitude: 174.7633
+    deliveryPointLabels: []
+  - id: wellington
+    displayName: Wellington
+    country: Nouvelle-Zélande
+    location:
+      latitude: -41.2865
+      longitude: 174.7762
+    deliveryPointLabels: []
+  - id: christchurch
+    displayName: Christchurch
+    country: Nouvelle-Zélande
+    location:
+      latitude: -43.5321
+      longitude: 172.6362
+    deliveryPointLabels: []
+  - id: hamilton
+    displayName: Hamilton
+    country: Nouvelle-Zélande
+    location:
+      latitude: -37.787
+      longitude: 175.2793
+    deliveryPointLabels: []
+  - id: dunedin
+    displayName: Dunedin
+    country: Nouvelle-Zélande
+    location:
+      latitude: -45.8788
+      longitude: 170.5028
+    deliveryPointLabels: []
+  - id: tauranga
+    displayName: Tauranga
+    country: Nouvelle-Zélande
+    location:
+      latitude: -37.6878
+      longitude: 176.1651
+    deliveryPointLabels: []
+  - id: port-moresby
+    displayName: Port Moresby
+    country: Papouasie-N.-G.
+    location:
+      latitude: -9.4438
+      longitude: 147.1803
+    deliveryPointLabels: []
+  - id: lae
+    displayName: Lae
+    country: Papouasie-N.-G.
+    location:
+      latitude: -6.733
+      longitude: 146.997
+    deliveryPointLabels: []
+  - id: mont-hagen
+    displayName: Mont Hagen
+    country: Papouasie-N.-G.
+    location:
+      latitude: -5.8576
+      longitude: 144.23
+    deliveryPointLabels: []
+  - id: madang
+    displayName: Madang
+    country: Papouasie-N.-G.
+    location:
+      latitude: -5.2246
+      longitude: 145.7848
+    deliveryPointLabels: []
+  - id: rabaul
+    displayName: Rabaul
+    country: Papouasie-N.-G.
+    location:
+      latitude: -4.198
+      longitude: 152.1632
+    deliveryPointLabels: []
+  - id: suva
+    displayName: Suva
+    country: Fidji
+    location:
+      latitude: -18.1248
+      longitude: 178.4501
+    deliveryPointLabels: []
+  - id: nadi
+    displayName: Nadi
+    country: Fidji
+    location:
+      latitude: -17.7765
+      longitude: 177.4356
+    deliveryPointLabels: []
+  - id: lautoka
+    displayName: Lautoka
+    country: Fidji
+    location:
+      latitude: -17.6242
+      longitude: 177.4677
+    deliveryPointLabels: []
+  - id: labasa
+    displayName: Labasa
+    country: Fidji
+    location:
+      latitude: -16.4333
+      longitude: 179.3667
+    deliveryPointLabels: []
+  - id: ba
+    displayName: Ba
+    country: Fidji
+    location:
+      latitude: -17.5333
+      longitude: 177.6667
+    deliveryPointLabels: []
+  - id: rabat
+    displayName: Rabat
+    country: Maroc
+    location:
+      latitude: 34.0209
+      longitude: -6.8416
+    deliveryPointLabels: []
+  - id: casablanca
+    displayName: Casablanca
+    country: Maroc
+    location:
+      latitude: 33.5731
+      longitude: -7.5898
+    deliveryPointLabels: []
+  - id: marrakech
+    displayName: Marrakech
+    country: Maroc
+    location:
+      latitude: 31.6295
+      longitude: -7.9811
+    deliveryPointLabels: []
+  - id: fes
+    displayName: Fès
+    country: Maroc
+    location:
+      latitude: 34.0181
+      longitude: -5.0078
+    deliveryPointLabels: []
+  - id: tanger
+    displayName: Tanger
+    country: Maroc
+    location:
+      latitude: 35.7595
+      longitude: -5.834
+    deliveryPointLabels: []
+  - id: agadir
+    displayName: Agadir
+    country: Maroc
+    location:
+      latitude: 30.4278
+      longitude: -9.5981
+    deliveryPointLabels: []
+  - id: alger
+    displayName: Alger
+    country: Algérie
+    location:
+      latitude: 36.7538
+      longitude: 3.0588
+    deliveryPointLabels: []
+  - id: oran
+    displayName: Oran
+    country: Algérie
+    location:
+      latitude: 35.6969
+      longitude: -0.6331
+    deliveryPointLabels: []
+  - id: constantine
+    displayName: Constantine
+    country: Algérie
+    location:
+      latitude: 36.365
+      longitude: 6.6147
+    deliveryPointLabels: []
+  - id: annaba
+    displayName: Annaba
+    country: Algérie
+    location:
+      latitude: 36.9
+      longitude: 7.7667
+    deliveryPointLabels: []
+  - id: blida
+    displayName: Blida
+    country: Algérie
+    location:
+      latitude: 36.47
+      longitude: 2.83
+    deliveryPointLabels: []
+  - id: setif
+    displayName: Sétif
+    country: Algérie
+    location:
+      latitude: 36.19
+      longitude: 5.41
+    deliveryPointLabels: []
+  - id: tunis
+    displayName: Tunis
+    country: Tunisie
+    location:
+      latitude: 36.8065
+      longitude: 10.1815
+    deliveryPointLabels: []
+  - id: sfax
+    displayName: Sfax
+    country: Tunisie
+    location:
+      latitude: 34.7406
+      longitude: 10.7603
+    deliveryPointLabels: []
+  - id: sousse
+    displayName: Sousse
+    country: Tunisie
+    location:
+      latitude: 35.8256
+      longitude: 10.6369
+    deliveryPointLabels: []
+  - id: kairouan
+    displayName: Kairouan
+    country: Tunisie
+    location:
+      latitude: 35.6781
+      longitude: 10.0963
+    deliveryPointLabels: []
+  - id: bizerte
+    displayName: Bizerte
+    country: Tunisie
+    location:
+      latitude: 37.2744
+      longitude: 9.8739
+    deliveryPointLabels: []
+  - id: gabes
+    displayName: Gabès
+    country: Tunisie
+    location:
+      latitude: 33.8814
+      longitude: 10.0982
+    deliveryPointLabels: []
+  - id: tripoli-lib
+    displayName: Tripoli
+    country: Libye
+    location:
+      latitude: 32.8872
+      longitude: 13.1913
+    deliveryPointLabels: []
+  - id: benghazi
+    displayName: Benghazi
+    country: Libye
+    location:
+      latitude: 32.1167
+      longitude: 20.0686
+    deliveryPointLabels: []
+  - id: misratah
+    displayName: Misratah
+    country: Libye
+    location:
+      latitude: 32.3754
+      longitude: 15.0925
+    deliveryPointLabels: []
+  - id: tobrouk
+    displayName: Tobrouk
+    country: Libye
+    location:
+      latitude: 32.0836
+      longitude: 23.9764
+    deliveryPointLabels: []
+  - id: syrte
+    displayName: Syrte
+    country: Libye
+    location:
+      latitude: 31.2089
+      longitude: 16.5887
+    deliveryPointLabels: []
+  - id: le-caire
+    displayName: Le Caire
+    country: Égypte
+    location:
+      latitude: 30.0444
+      longitude: 31.2357
+    deliveryPointLabels: []
+  - id: alexandrie
+    displayName: Alexandrie
+    country: Égypte
+    location:
+      latitude: 31.2001
+      longitude: 29.9187
+    deliveryPointLabels: []
+  - id: gizeh
+    displayName: Gizeh
+    country: Égypte
+    location:
+      latitude: 30.0131
+      longitude: 31.2089
+    deliveryPointLabels: []
+  - id: port-said
+    displayName: Port-Saïd
+    country: Égypte
+    location:
+      latitude: 31.2653
+      longitude: 32.3019
+    deliveryPointLabels: []
+  - id: louxor
+    displayName: Louxor
+    country: Égypte
+    location:
+      latitude: 25.6872
+      longitude: 32.6396
+    deliveryPointLabels: []
+  - id: assouan
+    displayName: Assouan
+    country: Égypte
+    location:
+      latitude: 24.0889
+      longitude: 32.8998
+    deliveryPointLabels: []
+  - id: khartoum
+    displayName: Khartoum
+    country: Soudan
+    location:
+      latitude: 15.5007
+      longitude: 32.5599
+    deliveryPointLabels: []
+  - id: omdourman
+    displayName: Omdourman
+    country: Soudan
+    location:
+      latitude: 15.6445
+      longitude: 32.4777
+    deliveryPointLabels: []
+  - id: port-soudan
+    displayName: Port-Soudan
+    country: Soudan
+    location:
+      latitude: 19.6175
+      longitude: 37.2164
+    deliveryPointLabels: []
+  - id: kassala
+    displayName: Kassala
+    country: Soudan
+    location:
+      latitude: 15.451
+      longitude: 36.4
+    deliveryPointLabels: []
+  - id: el-obeid
+    displayName: El-Obeid
+    country: Soudan
+    location:
+      latitude: 13.1842
+      longitude: 30.2167
+    deliveryPointLabels: []
+  - id: nouakchott
+    displayName: Nouakchott
+    country: Mauritanie
+    location:
+      latitude: 18.0735
+      longitude: -15.9582
+    deliveryPointLabels: []
+  - id: nouadhibou
+    displayName: Nouadhibou
+    country: Mauritanie
+    location:
+      latitude: 20.9333
+      longitude: -17.0333
+    deliveryPointLabels: []
+  - id: kiffa
+    displayName: Kiffa
+    country: Mauritanie
+    location:
+      latitude: 16.62
+      longitude: -11.4044
+    deliveryPointLabels: []
+  - id: kaedi
+    displayName: Kaédi
+    country: Mauritanie
+    location:
+      latitude: 16.15
+      longitude: -13.5
+    deliveryPointLabels: []
+  - id: rosso
+    displayName: Rosso
+    country: Mauritanie
+    location:
+      latitude: 16.5138
+      longitude: -15.805
+    deliveryPointLabels: []
+  - id: abuja
+    displayName: Abuja
+    country: Nigeria
+    location:
+      latitude: 9.0765
+      longitude: 7.3986
+    deliveryPointLabels: []
+  - id: lagos
+    displayName: Lagos
+    country: Nigeria
+    location:
+      latitude: 6.5244
+      longitude: 3.3792
+    deliveryPointLabels: []
+  - id: kano
+    displayName: Kano
+    country: Nigeria
+    location:
+      latitude: 12.0022
+      longitude: 8.5919
+    deliveryPointLabels: []
+  - id: ibadan
+    displayName: Ibadan
+    country: Nigeria
+    location:
+      latitude: 7.3776
+      longitude: 3.947
+    deliveryPointLabels: []
+  - id: port-harcourt
+    displayName: Port Harcourt
+    country: Nigeria
+    location:
+      latitude: 4.8156
+      longitude: 7.0498
+    deliveryPointLabels: []
+  - id: benin-city
+    displayName: Benin City
+    country: Nigeria
+    location:
+      latitude: 6.335
+      longitude: 5.6037
+    deliveryPointLabels: []
+  - id: accra
+    displayName: Accra
+    country: Ghana
+    location:
+      latitude: 5.6037
+      longitude: -0.187
+    deliveryPointLabels: []
+  - id: kumasi
+    displayName: Kumasi
+    country: Ghana
+    location:
+      latitude: 6.6885
+      longitude: -1.6244
+    deliveryPointLabels: []
+  - id: tamale
+    displayName: Tamale
+    country: Ghana
+    location:
+      latitude: 9.4008
+      longitude: -0.8393
+    deliveryPointLabels: []
+  - id: sekondi-takoradi
+    displayName: Sekondi-Takoradi
+    country: Ghana
+    location:
+      latitude: 4.9344
+      longitude: -1.7133
+    deliveryPointLabels: []
+  - id: cape-coast
+    displayName: Cape Coast
+    country: Ghana
+    location:
+      latitude: 5.1315
+      longitude: -1.2795
+    deliveryPointLabels: []
+  - id: abidjan
+    displayName: Abidjan
+    country: "Côte d'Ivoire"
+    location:
+      latitude: 5.36
+      longitude: -4.0083
+    deliveryPointLabels: []
+  - id: yamoussoukro
+    displayName: Yamoussoukro
+    country: "Côte d'Ivoire"
+    location:
+      latitude: 6.8276
+      longitude: -5.2893
+    deliveryPointLabels: []
+  - id: bouake
+    displayName: Bouaké
+    country: "Côte d'Ivoire"
+    location:
+      latitude: 7.69
+      longitude: -5.03
+    deliveryPointLabels: []
+  - id: daloa
+    displayName: Daloa
+    country: "Côte d'Ivoire"
+    location:
+      latitude: 6.8772
+      longitude: -6.4503
+    deliveryPointLabels: []
+  - id: san-pedro
+    displayName: San-Pédro
+    country: "Côte d'Ivoire"
+    location:
+      latitude: 4.7485
+      longitude: -6.6363
+    deliveryPointLabels: []
+  - id: dakar
+    displayName: Dakar
+    country: Sénégal
+    location:
+      latitude: 14.7167
+      longitude: -17.4677
+    deliveryPointLabels: []
+  - id: thies
+    displayName: Thiès
+    country: Sénégal
+    location:
+      latitude: 14.791
+      longitude: -16.9359
+    deliveryPointLabels: []
+  - id: saint-louis
+    displayName: Saint-Louis
+    country: Sénégal
+    location:
+      latitude: 16.0179
+      longitude: -16.4896
+    deliveryPointLabels: []
+  - id: kaolack
+    displayName: Kaolack
+    country: Sénégal
+    location:
+      latitude: 14.1652
+      longitude: -16.0726
+    deliveryPointLabels: []
+  - id: ziguinchor
+    displayName: Ziguinchor
+    country: Sénégal
+    location:
+      latitude: 12.5681
+      longitude: -16.2719
+    deliveryPointLabels: []
+  - id: bamako
+    displayName: Bamako
+    country: Mali
+    location:
+      latitude: 12.6392
+      longitude: -8.0029
+    deliveryPointLabels: []
+  - id: sikasso
+    displayName: Sikasso
+    country: Mali
+    location:
+      latitude: 11.3176
+      longitude: -5.6666
+    deliveryPointLabels: []
+  - id: segou
+    displayName: Ségou
+    country: Mali
+    location:
+      latitude: 13.4317
+      longitude: -6.2658
+    deliveryPointLabels: []
+  - id: mopti
+    displayName: Mopti
+    country: Mali
+    location:
+      latitude: 14.4843
+      longitude: -4.1796
+    deliveryPointLabels: []
+  - id: gao
+    displayName: Gao
+    country: Mali
+    location:
+      latitude: 16.2716
+      longitude: -0.0444
+    deliveryPointLabels: []
+  - id: ouagadougou
+    displayName: Ouagadougou
+    country: Burkina Faso
+    location:
+      latitude: 12.3714
+      longitude: -1.5197
+    deliveryPointLabels: []
+  - id: bobo-dioulasso
+    displayName: Bobo-Dioulasso
+    country: Burkina Faso
+    location:
+      latitude: 11.1771
+      longitude: -4.2979
+    deliveryPointLabels: []
+  - id: koudougou
+    displayName: Koudougou
+    country: Burkina Faso
+    location:
+      latitude: 12.2526
+      longitude: -2.3686
+    deliveryPointLabels: []
+  - id: banfora
+    displayName: Banfora
+    country: Burkina Faso
+    location:
+      latitude: 10.6333
+      longitude: -4.7667
+    deliveryPointLabels: []
+  - id: ouahigouya
+    displayName: Ouahigouya
+    country: Burkina Faso
+    location:
+      latitude: 13.5828
+      longitude: -2.4214
+    deliveryPointLabels: []
+  - id: niamey
+    displayName: Niamey
+    country: Niger
+    location:
+      latitude: 13.5117
+      longitude: 2.1251
+    deliveryPointLabels: []
+  - id: zinder
+    displayName: Zinder
+    country: Niger
+    location:
+      latitude: 13.8053
+      longitude: 8.9881
+    deliveryPointLabels: []
+  - id: maradi
+    displayName: Maradi
+    country: Niger
+    location:
+      latitude: 13.5
+      longitude: 7.1017
+    deliveryPointLabels: []
+  - id: agadez
+    displayName: Agadez
+    country: Niger
+    location:
+      latitude: 16.9737
+      longitude: 7.9911
+    deliveryPointLabels: []
+  - id: tahoua
+    displayName: Tahoua
+    country: Niger
+    location:
+      latitude: 14.8888
+      longitude: 5.2692
+    deliveryPointLabels: []
+  - id: conakry
+    displayName: Conakry
+    country: Guinée
+    location:
+      latitude: 9.6412
+      longitude: -13.5784
+    deliveryPointLabels: []
+  - id: kankan
+    displayName: Kankan
+    country: Guinée
+    location:
+      latitude: 10.3854
+      longitude: -9.3057
+    deliveryPointLabels: []
+  - id: nzerekore
+    displayName: Nzérékoré
+    country: Guinée
+    location:
+      latitude: 7.7561
+      longitude: -8.8179
+    deliveryPointLabels: []
+  - id: kindia
+    displayName: Kindia
+    country: Guinée
+    location:
+      latitude: 10.0569
+      longitude: -12.8658
+    deliveryPointLabels: []
+  - id: labe
+    displayName: Labé
+    country: Guinée
+    location:
+      latitude: 11.3167
+      longitude: -12.2833
+    deliveryPointLabels: []
+  - id: cotonou
+    displayName: Cotonou
+    country: Bénin
+    location:
+      latitude: 6.3703
+      longitude: 2.3912
+    deliveryPointLabels: []
+  - id: porto-novo
+    displayName: Porto-Novo
+    country: Bénin
+    location:
+      latitude: 6.4969
+      longitude: 2.6289
+    deliveryPointLabels: []
+  - id: parakou
+    displayName: Parakou
+    country: Bénin
+    location:
+      latitude: 9.337
+      longitude: 2.6303
+    deliveryPointLabels: []
+  - id: abomey
+    displayName: Abomey
+    country: Bénin
+    location:
+      latitude: 7.1826
+      longitude: 1.9912
+    deliveryPointLabels: []
+  - id: bohicon
+    displayName: Bohicon
+    country: Bénin
+    location:
+      latitude: 7.1782
+      longitude: 2.0667
+    deliveryPointLabels: []
+  - id: lome
+    displayName: Lomé
+    country: Togo
+    location:
+      latitude: 6.1725
+      longitude: 1.2314
+    deliveryPointLabels: []
+  - id: sokode
+    displayName: Sokodé
+    country: Togo
+    location:
+      latitude: 8.9837
+      longitude: 1.1326
+    deliveryPointLabels: []
+  - id: kara
+    displayName: Kara
+    country: Togo
+    location:
+      latitude: 9.5511
+      longitude: 1.1861
+    deliveryPointLabels: []
+  - id: kpalime
+    displayName: Kpalimé
+    country: Togo
+    location:
+      latitude: 6.9
+      longitude: 0.6333
+    deliveryPointLabels: []
+  - id: atakpame
+    displayName: Atakpamé
+    country: Togo
+    location:
+      latitude: 7.5333
+      longitude: 1.1167
+    deliveryPointLabels: []
+  - id: freetown
+    displayName: Freetown
+    country: Sierra Leone
+    location:
+      latitude: 8.4657
+      longitude: -13.2317
+    deliveryPointLabels: []
+  - id: bo
+    displayName: Bo
+    country: Sierra Leone
+    location:
+      latitude: 7.9647
+      longitude: -11.7383
+    deliveryPointLabels: []
+  - id: kenema
+    displayName: Kenema
+    country: Sierra Leone
+    location:
+      latitude: 7.8767
+      longitude: -11.19
+    deliveryPointLabels: []
+  - id: makeni
+    displayName: Makeni
+    country: Sierra Leone
+    location:
+      latitude: 8.8833
+      longitude: -12.05
+    deliveryPointLabels: []
+  - id: koidu
+    displayName: Koidu
+    country: Sierra Leone
+    location:
+      latitude: 8.6439
+      longitude: -10.9714
+    deliveryPointLabels: []
+  - id: monrovia
+    displayName: Monrovia
+    country: Liberia
+    location:
+      latitude: 6.3004
+      longitude: -10.7969
+    deliveryPointLabels: []
+  - id: gbarnga
+    displayName: Gbarnga
+    country: Liberia
+    location:
+      latitude: 6.9956
+      longitude: -9.4722
+    deliveryPointLabels: []
+  - id: buchanan
+    displayName: Buchanan
+    country: Liberia
+    location:
+      latitude: 5.8808
+      longitude: -10.0467
+    deliveryPointLabels: []
+  - id: kakata
+    displayName: Kakata
+    country: Liberia
+    location:
+      latitude: 6.53
+      longitude: -10.3536
+    deliveryPointLabels: []
+  - id: harper
+    displayName: Harper
+    country: Liberia
+    location:
+      latitude: 4.375
+      longitude: -7.7169
+    deliveryPointLabels: []
+  - id: yaounde
+    displayName: Yaoundé
+    country: Cameroun
+    location:
+      latitude: 3.848
+      longitude: 11.5021
+    deliveryPointLabels: []
+  - id: douala
+    displayName: Douala
+    country: Cameroun
+    location:
+      latitude: 4.0511
+      longitude: 9.7679
+    deliveryPointLabels: []
+  - id: garoua
+    displayName: Garoua
+    country: Cameroun
+    location:
+      latitude: 9.3017
+      longitude: 13.3921
+    deliveryPointLabels: []
+  - id: bamenda
+    displayName: Bamenda
+    country: Cameroun
+    location:
+      latitude: 5.9597
+      longitude: 10.1459
+    deliveryPointLabels: []
+  - id: bafoussam
+    displayName: Bafoussam
+    country: Cameroun
+    location:
+      latitude: 5.4781
+      longitude: 10.4178
+    deliveryPointLabels: []
+  - id: n-djamena
+    displayName: "N'Djamena"
+    country: Tchad
+    location:
+      latitude: 12.1348
+      longitude: 15.0557
+    deliveryPointLabels: []
+  - id: moundou
+    displayName: Moundou
+    country: Tchad
+    location:
+      latitude: 8.5667
+      longitude: 16.0833
+    deliveryPointLabels: []
+  - id: sarh
+    displayName: Sarh
+    country: Tchad
+    location:
+      latitude: 9.15
+      longitude: 18.3833
+    deliveryPointLabels: []
+  - id: abeche
+    displayName: Abéché
+    country: Tchad
+    location:
+      latitude: 13.8292
+      longitude: 20.8324
+    deliveryPointLabels: []
+  - id: kelo
+    displayName: Kelo
+    country: Tchad
+    location:
+      latitude: 9.3092
+      longitude: 15.8064
+    deliveryPointLabels: []
+  - id: libreville
+    displayName: Libreville
+    country: Gabon
+    location:
+      latitude: 0.4162
+      longitude: 9.4673
+    deliveryPointLabels: []
+  - id: port-gentil
+    displayName: Port-Gentil
+    country: Gabon
+    location:
+      latitude: -0.7193
+      longitude: 8.7815
+    deliveryPointLabels: []
+  - id: franceville
+    displayName: Franceville
+    country: Gabon
+    location:
+      latitude: -1.6333
+      longitude: 13.5833
+    deliveryPointLabels: []
+  - id: oyem
+    displayName: Oyem
+    country: Gabon
+    location:
+      latitude: 1.5993
+      longitude: 11.5793
+    deliveryPointLabels: []
+  - id: lambarene
+    displayName: Lambaréné
+    country: Gabon
+    location:
+      latitude: -0.7001
+      longitude: 10.2418
+    deliveryPointLabels: []
+  - id: brazzaville
+    displayName: Brazzaville
+    country: Congo
+    location:
+      latitude: -4.2634
+      longitude: 15.2429
+    deliveryPointLabels: []
+  - id: pointe-noire
+    displayName: Pointe-Noire
+    country: Congo
+    location:
+      latitude: -4.7692
+      longitude: 11.8664
+    deliveryPointLabels: []
+  - id: dolisie
+    displayName: Dolisie
+    country: Congo
+    location:
+      latitude: -4.1989
+      longitude: 12.673
+    deliveryPointLabels: []
+  - id: nkayi
+    displayName: Nkayi
+    country: Congo
+    location:
+      latitude: -4.1833
+      longitude: 13.2833
+    deliveryPointLabels: []
+  - id: ouesso
+    displayName: Ouesso
+    country: Congo
+    location:
+      latitude: 1.6136
+      longitude: 16.0517
+    deliveryPointLabels: []
+  - id: kinshasa
+    displayName: Kinshasa
+    country: RD Congo
+    location:
+      latitude: -4.4419
+      longitude: 15.2663
+    deliveryPointLabels: []
+  - id: lubumbashi
+    displayName: Lubumbashi
+    country: RD Congo
+    location:
+      latitude: -11.6647
+      longitude: 27.4794
+    deliveryPointLabels: []
+  - id: mbuji-mayi
+    displayName: Mbuji-Mayi
+    country: RD Congo
+    location:
+      latitude: -6.136
+      longitude: 23.5897
+    deliveryPointLabels: []
+  - id: kananga
+    displayName: Kananga
+    country: RD Congo
+    location:
+      latitude: -5.8961
+      longitude: 22.4174
+    deliveryPointLabels: []
+  - id: kisangani
+    displayName: Kisangani
+    country: RD Congo
+    location:
+      latitude: 0.5153
+      longitude: 25.191
+    deliveryPointLabels: []
+  - id: goma
+    displayName: Goma
+    country: RD Congo
+    location:
+      latitude: -1.6792
+      longitude: 29.2228
+    deliveryPointLabels: []
+  - id: nairobi
+    displayName: Nairobi
+    country: Kenya
+    location:
+      latitude: -1.2864
+      longitude: 36.8172
+    deliveryPointLabels: []
+  - id: mombasa
+    displayName: Mombasa
+    country: Kenya
+    location:
+      latitude: -4.0435
+      longitude: 39.6682
+    deliveryPointLabels: []
+  - id: kisumu
+    displayName: Kisumu
+    country: Kenya
+    location:
+      latitude: -0.0917
+      longitude: 34.768
+    deliveryPointLabels: []
+  - id: nakuru
+    displayName: Nakuru
+    country: Kenya
+    location:
+      latitude: -0.3031
+      longitude: 36.08
+    deliveryPointLabels: []
+  - id: eldoret
+    displayName: Eldoret
+    country: Kenya
+    location:
+      latitude: 0.5143
+      longitude: 35.2698
+    deliveryPointLabels: []
+  - id: dar-es-salaam
+    displayName: Dar es Salaam
+    country: Tanzanie
+    location:
+      latitude: -6.7924
+      longitude: 39.2083
+    deliveryPointLabels: []
+  - id: dodoma
+    displayName: Dodoma
+    country: Tanzanie
+    location:
+      latitude: -6.163
+      longitude: 35.7516
+    deliveryPointLabels: []
+  - id: mwanza
+    displayName: Mwanza
+    country: Tanzanie
+    location:
+      latitude: -2.5164
+      longitude: 32.9175
+    deliveryPointLabels: []
+  - id: arusha
+    displayName: Arusha
+    country: Tanzanie
+    location:
+      latitude: -3.3869
+      longitude: 36.683
+    deliveryPointLabels: []
+  - id: zanzibar
+    displayName: Zanzibar
+    country: Tanzanie
+    location:
+      latitude: -6.1659
+      longitude: 39.2026
+    deliveryPointLabels: []
+  - id: kampala
+    displayName: Kampala
+    country: Ouganda
+    location:
+      latitude: 0.3476
+      longitude: 32.5825
+    deliveryPointLabels: []
+  - id: gulu
+    displayName: Gulu
+    country: Ouganda
+    location:
+      latitude: 2.7724
+      longitude: 32.2881
+    deliveryPointLabels: []
+  - id: lira
+    displayName: Lira
+    country: Ouganda
+    location:
+      latitude: 2.235
+      longitude: 32.9097
+    deliveryPointLabels: []
+  - id: mbarara
+    displayName: Mbarara
+    country: Ouganda
+    location:
+      latitude: -0.6072
+      longitude: 30.6545
+    deliveryPointLabels: []
+  - id: jinja
+    displayName: Jinja
+    country: Ouganda
+    location:
+      latitude: 0.4244
+      longitude: 33.2042
+    deliveryPointLabels: []
+  - id: kigali
+    displayName: Kigali
+    country: Rwanda
+    location:
+      latitude: -1.9441
+      longitude: 30.0619
+    deliveryPointLabels: []
+  - id: butare
+    displayName: Butare
+    country: Rwanda
+    location:
+      latitude: -2.5967
+      longitude: 29.7394
+    deliveryPointLabels: []
+  - id: gisenyi
+    displayName: Gisenyi
+    country: Rwanda
+    location:
+      latitude: -1.7028
+      longitude: 29.2564
+    deliveryPointLabels: []
+  - id: ruhengeri
+    displayName: Ruhengeri
+    country: Rwanda
+    location:
+      latitude: -1.4997
+      longitude: 29.6342
+    deliveryPointLabels: []
+  - id: cyangugu
+    displayName: Cyangugu
+    country: Rwanda
+    location:
+      latitude: -2.4846
+      longitude: 28.9075
+    deliveryPointLabels: []
+  - id: addis-abeba
+    displayName: Addis-Abeba
+    country: Éthiopie
+    location:
+      latitude: 9.025
+      longitude: 38.7469
+    deliveryPointLabels: []
+  - id: dire-dawa
+    displayName: Dire Dawa
+    country: Éthiopie
+    location:
+      latitude: 9.5931
+      longitude: 41.8661
+    deliveryPointLabels: []
+  - id: mekele
+    displayName: Mekele
+    country: Éthiopie
+    location:
+      latitude: 13.4967
+      longitude: 39.4753
+    deliveryPointLabels: []
+  - id: gondar
+    displayName: Gondar
+    country: Éthiopie
+    location:
+      latitude: 12.6
+      longitude: 37.4667
+    deliveryPointLabels: []
+  - id: hawassa
+    displayName: Hawassa
+    country: Éthiopie
+    location:
+      latitude: 7.0621
+      longitude: 38.4769
+    deliveryPointLabels: []
+  - id: mogadiscio
+    displayName: Mogadiscio
+    country: Somalie
+    location:
+      latitude: 2.0469
+      longitude: 45.3182
+    deliveryPointLabels: []
+  - id: hargeisa
+    displayName: Hargeisa
+    country: Somalie
+    location:
+      latitude: 9.56
+      longitude: 44.065
+    deliveryPointLabels: []
+  - id: bosaso
+    displayName: Bosaso
+    country: Somalie
+    location:
+      latitude: 11.2842
+      longitude: 49.1816
+    deliveryPointLabels: []
+  - id: kismayo
+    displayName: Kismayo
+    country: Somalie
+    location:
+      latitude: -0.3582
+      longitude: 42.5454
+    deliveryPointLabels: []
+  - id: berbera
+    displayName: Berbera
+    country: Somalie
+    location:
+      latitude: 10.4396
+      longitude: 45.0143
+    deliveryPointLabels: []
+  - id: luanda
+    displayName: Luanda
+    country: Angola
+    location:
+      latitude: -8.839
+      longitude: 13.2894
+    deliveryPointLabels: []
+  - id: huambo
+    displayName: Huambo
+    country: Angola
+    location:
+      latitude: -12.7761
+      longitude: 15.7392
+    deliveryPointLabels: []
+  - id: lobito
+    displayName: Lobito
+    country: Angola
+    location:
+      latitude: -12.3644
+      longitude: 13.5364
+    deliveryPointLabels: []
+  - id: benguela
+    displayName: Benguela
+    country: Angola
+    location:
+      latitude: -12.5763
+      longitude: 13.4055
+    deliveryPointLabels: []
+  - id: lubango
+    displayName: Lubango
+    country: Angola
+    location:
+      latitude: -14.9177
+      longitude: 13.4925
+    deliveryPointLabels: []
+  - id: lusaka
+    displayName: Lusaka
+    country: Zambie
+    location:
+      latitude: -15.3875
+      longitude: 28.3228
+    deliveryPointLabels: []
+  - id: kitwe
+    displayName: Kitwe
+    country: Zambie
+    location:
+      latitude: -12.8024
+      longitude: 28.2132
+    deliveryPointLabels: []
+  - id: ndola
+    displayName: Ndola
+    country: Zambie
+    location:
+      latitude: -12.9587
+      longitude: 28.6366
+    deliveryPointLabels: []
+  - id: kabwe
+    displayName: Kabwe
+    country: Zambie
+    location:
+      latitude: -14.4469
+      longitude: 28.4464
+    deliveryPointLabels: []
+  - id: livingstone
+    displayName: Livingstone
+    country: Zambie
+    location:
+      latitude: -17.8419
+      longitude: 25.8543
+    deliveryPointLabels: []
+  - id: harare
+    displayName: Harare
+    country: Zimbabwe
+    location:
+      latitude: -17.8252
+      longitude: 31.0335
+    deliveryPointLabels: []
+  - id: bulawayo
+    displayName: Bulawayo
+    country: Zimbabwe
+    location:
+      latitude: -20.1325
+      longitude: 28.6266
+    deliveryPointLabels: []
+  - id: mutare
+    displayName: Mutare
+    country: Zimbabwe
+    location:
+      latitude: -18.9707
+      longitude: 32.6709
+    deliveryPointLabels: []
+  - id: gweru
+    displayName: Gweru
+    country: Zimbabwe
+    location:
+      latitude: -19.45
+      longitude: 29.8167
+    deliveryPointLabels: []
+  - id: kwekwe
+    displayName: Kwekwe
+    country: Zimbabwe
+    location:
+      latitude: -18.9281
+      longitude: 29.8149
+    deliveryPointLabels: []
+  - id: maputo
+    displayName: Maputo
+    country: Mozambique
+    location:
+      latitude: -25.9692
+      longitude: 32.5732
+    deliveryPointLabels: []
+  - id: matola
+    displayName: Matola
+    country: Mozambique
+    location:
+      latitude: -25.9622
+      longitude: 32.4589
+    deliveryPointLabels: []
+  - id: beira
+    displayName: Beira
+    country: Mozambique
+    location:
+      latitude: -19.8436
+      longitude: 34.8389
+    deliveryPointLabels: []
+  - id: nampula
+    displayName: Nampula
+    country: Mozambique
+    location:
+      latitude: -15.1165
+      longitude: 39.2666
+    deliveryPointLabels: []
+  - id: quelimane
+    displayName: Quelimane
+    country: Mozambique
+    location:
+      latitude: -17.8786
+      longitude: 36.8883
+    deliveryPointLabels: []
+  - id: antananarivo
+    displayName: Antananarivo
+    country: Madagascar
+    location:
+      latitude: -18.8792
+      longitude: 47.5079
+    deliveryPointLabels: []
+  - id: toamasina
+    displayName: Toamasina
+    country: Madagascar
+    location:
+      latitude: -18.1492
+      longitude: 49.4023
+    deliveryPointLabels: []
+  - id: antsirabe
+    displayName: Antsirabe
+    country: Madagascar
+    location:
+      latitude: -19.8659
+      longitude: 47.0333
+    deliveryPointLabels: []
+  - id: mahajanga
+    displayName: Mahajanga
+    country: Madagascar
+    location:
+      latitude: -15.7167
+      longitude: 46.3167
+    deliveryPointLabels: []
+  - id: fianarantsoa
+    displayName: Fianarantsoa
+    country: Madagascar
+    location:
+      latitude: -21.4536
+      longitude: 47.0858
+    deliveryPointLabels: []
+  - id: lilongwe
+    displayName: Lilongwe
+    country: Malawi
+    location:
+      latitude: -13.9626
+      longitude: 33.7741
+    deliveryPointLabels: []
+  - id: blantyre
+    displayName: Blantyre
+    country: Malawi
+    location:
+      latitude: -15.7861
+      longitude: 35.0058
+    deliveryPointLabels: []
+  - id: mzuzu
+    displayName: Mzuzu
+    country: Malawi
+    location:
+      latitude: -11.4656
+      longitude: 34.0207
+    deliveryPointLabels: []
+  - id: zomba
+    displayName: Zomba
+    country: Malawi
+    location:
+      latitude: -15.3833
+      longitude: 35.3333
+    deliveryPointLabels: []
+  - id: kasungu
+    displayName: Kasungu
+    country: Malawi
+    location:
+      latitude: -13.0333
+      longitude: 33.4833
+    deliveryPointLabels: []
+  - id: le-cap
+    displayName: Le Cap
+    country: Afrique du Sud
+    location:
+      latitude: -33.9249
+      longitude: 18.4241
+    deliveryPointLabels: []
+  - id: johannesburg
+    displayName: Johannesburg
+    country: Afrique du Sud
+    location:
+      latitude: -26.2041
+      longitude: 28.0473
+    deliveryPointLabels: []
+  - id: durban
+    displayName: Durban
+    country: Afrique du Sud
+    location:
+      latitude: -29.8587
+      longitude: 31.0218
+    deliveryPointLabels: []
+  - id: pretoria
+    displayName: Pretoria
+    country: Afrique du Sud
+    location:
+      latitude: -25.7479
+      longitude: 28.2293
+    deliveryPointLabels: []
+  - id: port-elizabeth
+    displayName: Port Elizabeth
+    country: Afrique du Sud
+    location:
+      latitude: -33.9608
+      longitude: 25.6022
+    deliveryPointLabels: []
+  - id: bloemfontein
+    displayName: Bloemfontein
+    country: Afrique du Sud
+    location:
+      latitude: -29.0852
+      longitude: 26.1596
+    deliveryPointLabels: []
+  - id: windhoek
+    displayName: Windhoek
+    country: Namibie
+    location:
+      latitude: -22.5594
+      longitude: 17.0832
+    deliveryPointLabels: []
+  - id: walvis-bay
+    displayName: Walvis Bay
+    country: Namibie
+    location:
+      latitude: -22.9576
+      longitude: 14.5053
+    deliveryPointLabels: []
+  - id: swakopmund
+    displayName: Swakopmund
+    country: Namibie
+    location:
+      latitude: -22.6792
+      longitude: 14.5272
+    deliveryPointLabels: []
+  - id: rundu
+    displayName: Rundu
+    country: Namibie
+    location:
+      latitude: -17.9333
+      longitude: 19.7667
+    deliveryPointLabels: []
+  - id: oshakati
+    displayName: Oshakati
+    country: Namibie
+    location:
+      latitude: -17.7833
+      longitude: 15.6833
+    deliveryPointLabels: []
+  - id: gaborone
+    displayName: Gaborone
+    country: Botswana
+    location:
+      latitude: -24.6282
+      longitude: 25.9231
+    deliveryPointLabels: []
+  - id: francistown
+    displayName: Francistown
+    country: Botswana
+    location:
+      latitude: -21.17
+      longitude: 27.5167
+    deliveryPointLabels: []
+  - id: maun
+    displayName: Maun
+    country: Botswana
+    location:
+      latitude: -19.9833
+      longitude: 23.4167
+    deliveryPointLabels: []
+  - id: serowe
+    displayName: Serowe
+    country: Botswana
+    location:
+      latitude: -22.3875
+      longitude: 26.7106
+    deliveryPointLabels: []
+  - id: selebi-phikwe
+    displayName: Selebi-Phikwe
+    country: Botswana
+    location:
+      latitude: -21.9783
+      longitude: 27.85
+    deliveryPointLabels: []
+  - id: port-louis
+    displayName: Port-Louis
+    country: Maurice
+    location:
+      latitude: -20.1609
+      longitude: 57.5012
+    deliveryPointLabels: []
+  - id: vacoas
+    displayName: Vacoas
+    country: Maurice
+    location:
+      latitude: -20.2981
+      longitude: 57.4783
+    deliveryPointLabels: []
+  - id: curepipe
+    displayName: Curepipe
+    country: Maurice
+    location:
+      latitude: -20.3188
+      longitude: 57.5264
+    deliveryPointLabels: []
+  - id: quatre-bornes
+    displayName: Quatre Bornes
+    country: Maurice
+    location:
+      latitude: -20.2654
+      longitude: 57.4791
+    deliveryPointLabels: []
+  - id: rose-hill
+    displayName: Rose Hill
+    country: Maurice
+    location:
+      latitude: -20.2419
+      longitude: 57.4674
+    deliveryPointLabels: []
+  - id: new-york
+    displayName: New York
+    country: États-Unis
+    location:
+      latitude: 40.7128
+      longitude: -74.006
+    deliveryPointLabels: []
+  - id: los-angeles
+    displayName: Los Angeles
+    country: États-Unis
+    location:
+      latitude: 34.0522
+      longitude: -118.2437
+    deliveryPointLabels: []
+  - id: chicago
+    displayName: Chicago
+    country: États-Unis
+    location:
+      latitude: 41.8781
+      longitude: -87.6298
+    deliveryPointLabels: []
+  - id: houston
+    displayName: Houston
+    country: États-Unis
+    location:
+      latitude: 29.7604
+      longitude: -95.3698
+    deliveryPointLabels: []
+  - id: phoenix
+    displayName: Phoenix
+    country: États-Unis
+    location:
+      latitude: 33.4484
+      longitude: -112.074
+    deliveryPointLabels: []
+  - id: miami
+    displayName: Miami
+    country: États-Unis
+    location:
+      latitude: 25.7617
+      longitude: -80.1918
+    deliveryPointLabels: []
+  - id: seattle
+    displayName: Seattle
+    country: États-Unis
+    location:
+      latitude: 47.6062
+      longitude: -122.3321
+    deliveryPointLabels: []
+  - id: denver
+    displayName: Denver
+    country: États-Unis
+    location:
+      latitude: 39.7392
+      longitude: -104.9903
+    deliveryPointLabels: []
+  - id: toronto
+    displayName: Toronto
+    country: Canada
+    location:
+      latitude: 43.6532
+      longitude: -79.3832
+    deliveryPointLabels: []
+  - id: montreal
+    displayName: Montréal
+    country: Canada
+    location:
+      latitude: 45.5017
+      longitude: -73.5673
+    deliveryPointLabels: []
+  - id: vancouver
+    displayName: Vancouver
+    country: Canada
+    location:
+      latitude: 49.2827
+      longitude: -123.1207
+    deliveryPointLabels: []
+  - id: ottawa
+    displayName: Ottawa
+    country: Canada
+    location:
+      latitude: 45.4215
+      longitude: -75.6972
+    deliveryPointLabels: []
+  - id: calgary
+    displayName: Calgary
+    country: Canada
+    location:
+      latitude: 51.0447
+      longitude: -114.0719
+    deliveryPointLabels: []
+  - id: edmonton
+    displayName: Edmonton
+    country: Canada
+    location:
+      latitude: 53.5461
+      longitude: -113.4938
+    deliveryPointLabels: []
+  - id: quebec
+    displayName: Québec
+    country: Canada
+    location:
+      latitude: 46.8139
+      longitude: -71.208
+    deliveryPointLabels: []
+  - id: mexico
+    displayName: Mexico
+    country: Mexique
+    location:
+      latitude: 19.4326
+      longitude: -99.1332
+    deliveryPointLabels: []
+  - id: guadalajara
+    displayName: Guadalajara
+    country: Mexique
+    location:
+      latitude: 20.6597
+      longitude: -103.3496
+    deliveryPointLabels: []
+  - id: monterrey
+    displayName: Monterrey
+    country: Mexique
+    location:
+      latitude: 25.6866
+      longitude: -100.3161
+    deliveryPointLabels: []
+  - id: puebla
+    displayName: Puebla
+    country: Mexique
+    location:
+      latitude: 19.0414
+      longitude: -98.2063
+    deliveryPointLabels: []
+  - id: tijuana
+    displayName: Tijuana
+    country: Mexique
+    location:
+      latitude: 32.5149
+      longitude: -117.0382
+    deliveryPointLabels: []
+  - id: cancun
+    displayName: Cancún
+    country: Mexique
+    location:
+      latitude: 21.1619
+      longitude: -86.8515
+    deliveryPointLabels: []
+  - id: merida
+    displayName: Mérida
+    country: Mexique
+    location:
+      latitude: 20.9674
+      longitude: -89.5926
+    deliveryPointLabels: []
+  - id: guatemala
+    displayName: Guatemala
+    country: Guatemala
+    location:
+      latitude: 14.6349
+      longitude: -90.5069
+    deliveryPointLabels: []
+  - id: quetzaltenango
+    displayName: Quetzaltenango
+    country: Guatemala
+    location:
+      latitude: 14.8333
+      longitude: -91.5167
+    deliveryPointLabels: []
+  - id: escuintla
+    displayName: Escuintla
+    country: Guatemala
+    location:
+      latitude: 14.305
+      longitude: -90.785
+    deliveryPointLabels: []
+  - id: mixco
+    displayName: Mixco
+    country: Guatemala
+    location:
+      latitude: 14.6333
+      longitude: -90.6064
+    deliveryPointLabels: []
+  - id: villa-nueva
+    displayName: Villa Nueva
+    country: Guatemala
+    location:
+      latitude: 14.5269
+      longitude: -90.5872
+    deliveryPointLabels: []
+  - id: tegucigalpa
+    displayName: Tegucigalpa
+    country: Honduras
+    location:
+      latitude: 14.0723
+      longitude: -87.1921
+    deliveryPointLabels: []
+  - id: san-pedro-sula
+    displayName: San Pedro Sula
+    country: Honduras
+    location:
+      latitude: 15.5
+      longitude: -88.0333
+    deliveryPointLabels: []
+  - id: choloma
+    displayName: Choloma
+    country: Honduras
+    location:
+      latitude: 15.6144
+      longitude: -87.9528
+    deliveryPointLabels: []
+  - id: la-ceiba
+    displayName: La Ceiba
+    country: Honduras
+    location:
+      latitude: 15.7597
+      longitude: -86.7822
+    deliveryPointLabels: []
+  - id: el-progreso
+    displayName: El Progreso
+    country: Honduras
+    location:
+      latitude: 15.4006
+      longitude: -87.8011
+    deliveryPointLabels: []
+  - id: san-salvador
+    displayName: San Salvador
+    country: Salvador
+    location:
+      latitude: 13.6929
+      longitude: -89.2182
+    deliveryPointLabels: []
+  - id: santa-ana
+    displayName: Santa Ana
+    country: Salvador
+    location:
+      latitude: 13.9942
+      longitude: -89.5597
+    deliveryPointLabels: []
+  - id: san-miguel
+    displayName: San Miguel
+    country: Salvador
+    location:
+      latitude: 13.4833
+      longitude: -88.1833
+    deliveryPointLabels: []
+  - id: soyapango
+    displayName: Soyapango
+    country: Salvador
+    location:
+      latitude: 13.71
+      longitude: -89.1389
+    deliveryPointLabels: []
+  - id: santa-tecla
+    displayName: Santa Tecla
+    country: Salvador
+    location:
+      latitude: 13.6731
+      longitude: -89.2797
+    deliveryPointLabels: []
+  - id: managua
+    displayName: Managua
+    country: Nicaragua
+    location:
+      latitude: 12.1149
+      longitude: -86.2362
+    deliveryPointLabels: []
+  - id: leon
+    displayName: León
+    country: Nicaragua
+    location:
+      latitude: 12.4347
+      longitude: -86.878
+    deliveryPointLabels: []
+  - id: masaya
+    displayName: Masaya
+    country: Nicaragua
+    location:
+      latitude: 11.9744
+      longitude: -86.0942
+    deliveryPointLabels: []
+  - id: chinandega
+    displayName: Chinandega
+    country: Nicaragua
+    location:
+      latitude: 12.6294
+      longitude: -87.1311
+    deliveryPointLabels: []
+  - id: granada
+    displayName: Granada
+    country: Nicaragua
+    location:
+      latitude: 11.9344
+      longitude: -85.956
+    deliveryPointLabels: []
+  - id: san-jose
+    displayName: San José
+    country: Costa Rica
+    location:
+      latitude: 9.9281
+      longitude: -84.0907
+    deliveryPointLabels: []
+  - id: alajuela
+    displayName: Alajuela
+    country: Costa Rica
+    location:
+      latitude: 10.0162
+      longitude: -84.2117
+    deliveryPointLabels: []
+  - id: cartago
+    displayName: Cartago
+    country: Costa Rica
+    location:
+      latitude: 9.8644
+      longitude: -83.9194
+    deliveryPointLabels: []
+  - id: heredia
+    displayName: Heredia
+    country: Costa Rica
+    location:
+      latitude: 10.0023
+      longitude: -84.1165
+    deliveryPointLabels: []
+  - id: liberia
+    displayName: Liberia
+    country: Costa Rica
+    location:
+      latitude: 10.6346
+      longitude: -85.4377
+    deliveryPointLabels: []
+  - id: panama
+    displayName: Panama
+    country: Panama
+    location:
+      latitude: 8.9824
+      longitude: -79.5199
+    deliveryPointLabels: []
+  - id: colon
+    displayName: Colón
+    country: Panama
+    location:
+      latitude: 9.3592
+      longitude: -79.9014
+    deliveryPointLabels: []
+  - id: david
+    displayName: David
+    country: Panama
+    location:
+      latitude: 8.4333
+      longitude: -82.4333
+    deliveryPointLabels: []
+  - id: santiago
+    displayName: Santiago
+    country: Panama
+    location:
+      latitude: 8.1
+      longitude: -80.9833
+    deliveryPointLabels: []
+  - id: chitre
+    displayName: Chitré
+    country: Panama
+    location:
+      latitude: 7.9667
+      longitude: -80.4333
+    deliveryPointLabels: []
+  - id: la-havane
+    displayName: La Havane
+    country: Cuba
+    location:
+      latitude: 23.1136
+      longitude: -82.3666
+    deliveryPointLabels: []
+  - id: santiago-de-cuba
+    displayName: Santiago de Cuba
+    country: Cuba
+    location:
+      latitude: 20.0247
+      longitude: -75.8219
+    deliveryPointLabels: []
+  - id: camaguey
+    displayName: Camagüey
+    country: Cuba
+    location:
+      latitude: 21.3808
+      longitude: -77.9169
+    deliveryPointLabels: []
+  - id: holguin
+    displayName: Holguín
+    country: Cuba
+    location:
+      latitude: 20.8872
+      longitude: -76.2631
+    deliveryPointLabels: []
+  - id: santa-clara
+    displayName: Santa Clara
+    country: Cuba
+    location:
+      latitude: 22.4069
+      longitude: -79.9647
+    deliveryPointLabels: []
+  - id: saint-domingue
+    displayName: Saint-Domingue
+    country: République Dominicaine
+    location:
+      latitude: 18.4861
+      longitude: -69.9312
+    deliveryPointLabels: []
+  - id: santiago-rep
+    displayName: Santiago
+    country: République Dominicaine
+    location:
+      latitude: 19.4517
+      longitude: -70.697
+    deliveryPointLabels: []
+  - id: la-romana
+    displayName: La Romana
+    country: République Dominicaine
+    location:
+      latitude: 18.4273
+      longitude: -68.9728
+    deliveryPointLabels: []
+  - id: san-pedro-de-macoris
+    displayName: San Pedro de Macorís
+    country: République Dominicaine
+    location:
+      latitude: 18.4539
+      longitude: -69.3086
+    deliveryPointLabels: []
+  - id: puerto-plata
+    displayName: Puerto Plata
+    country: République Dominicaine
+    location:
+      latitude: 19.79
+      longitude: -70.69
+    deliveryPointLabels: []
+  - id: port-au-prince
+    displayName: Port-au-Prince
+    country: Haïti
+    location:
+      latitude: 18.5944
+      longitude: -72.3074
+    deliveryPointLabels: []
+  - id: cap-haitien
+    displayName: Cap-Haïtien
+    country: Haïti
+    location:
+      latitude: 19.7592
+      longitude: -72.1989
+    deliveryPointLabels: []
+  - id: gonaives
+    displayName: Gonaïves
+    country: Haïti
+    location:
+      latitude: 19.45
+      longitude: -72.6833
+    deliveryPointLabels: []
+  - id: les-cayes
+    displayName: Les Cayes
+    country: Haïti
+    location:
+      latitude: 18.2
+      longitude: -73.75
+    deliveryPointLabels: []
+  - id: jacmel
+    displayName: Jacmel
+    country: Haïti
+    location:
+      latitude: 18.2342
+      longitude: -72.5347
+    deliveryPointLabels: []
+  - id: kingston
+    displayName: Kingston
+    country: Jamaïque
+    location:
+      latitude: 17.9714
+      longitude: -76.792
+    deliveryPointLabels: []
+  - id: montego-bay
+    displayName: Montego Bay
+    country: Jamaïque
+    location:
+      latitude: 18.4762
+      longitude: -77.8939
+    deliveryPointLabels: []
+  - id: spanish-town
+    displayName: Spanish Town
+    country: Jamaïque
+    location:
+      latitude: 17.9911
+      longitude: -76.9575
+    deliveryPointLabels: []
+  - id: portmore
+    displayName: Portmore
+    country: Jamaïque
+    location:
+      latitude: 17.95
+      longitude: -76.88
+    deliveryPointLabels: []
+  - id: may-pen
+    displayName: May Pen
+    country: Jamaïque
+    location:
+      latitude: 17.9656
+      longitude: -77.2456
+    deliveryPointLabels: []
+  - id: brasilia
+    displayName: Brasília
+    country: Brésil
+    location:
+      latitude: -15.7939
+      longitude: -47.8828
+    deliveryPointLabels: []
+  - id: sao-paulo
+    displayName: São Paulo
+    country: Brésil
+    location:
+      latitude: -23.5505
+      longitude: -46.6333
+    deliveryPointLabels: []
+  - id: rio-de-janeiro
+    displayName: Rio de Janeiro
+    country: Brésil
+    location:
+      latitude: -22.9068
+      longitude: -43.1729
+    deliveryPointLabels: []
+  - id: salvador
+    displayName: Salvador
+    country: Brésil
+    location:
+      latitude: -12.9777
+      longitude: -38.5016
+    deliveryPointLabels: []
+  - id: fortaleza
+    displayName: Fortaleza
+    country: Brésil
+    location:
+      latitude: -3.7319
+      longitude: -38.5267
+    deliveryPointLabels: []
+  - id: belo-horizonte
+    displayName: Belo Horizonte
+    country: Brésil
+    location:
+      latitude: -19.9167
+      longitude: -43.9345
+    deliveryPointLabels: []
+  - id: manaus
+    displayName: Manaus
+    country: Brésil
+    location:
+      latitude: -3.119
+      longitude: -60.0217
+    deliveryPointLabels: []
+  - id: curitiba
+    displayName: Curitiba
+    country: Brésil
+    location:
+      latitude: -25.4284
+      longitude: -49.2733
+    deliveryPointLabels: []
+  - id: buenos-aires
+    displayName: Buenos Aires
+    country: Argentine
+    location:
+      latitude: -34.6037
+      longitude: -58.3816
+    deliveryPointLabels: []
+  - id: cordoba
+    displayName: Córdoba
+    country: Argentine
+    location:
+      latitude: -31.4201
+      longitude: -64.1888
+    deliveryPointLabels: []
+  - id: rosario
+    displayName: Rosario
+    country: Argentine
+    location:
+      latitude: -32.9442
+      longitude: -60.6505
+    deliveryPointLabels: []
+  - id: mendoza
+    displayName: Mendoza
+    country: Argentine
+    location:
+      latitude: -32.8895
+      longitude: -68.8458
+    deliveryPointLabels: []
+  - id: la-plata
+    displayName: La Plata
+    country: Argentine
+    location:
+      latitude: -34.9215
+      longitude: -57.9545
+    deliveryPointLabels: []
+  - id: mar-del-plata
+    displayName: Mar del Plata
+    country: Argentine
+    location:
+      latitude: -38.0055
+      longitude: -57.5426
+    deliveryPointLabels: []
+  - id: bogota
+    displayName: Bogota
+    country: Colombie
+    location:
+      latitude: 4.711
+      longitude: -74.0721
+    deliveryPointLabels: []
+  - id: medellin
+    displayName: Medellín
+    country: Colombie
+    location:
+      latitude: 6.2442
+      longitude: -75.5812
+    deliveryPointLabels: []
+  - id: cali
+    displayName: Cali
+    country: Colombie
+    location:
+      latitude: 3.4516
+      longitude: -76.532
+    deliveryPointLabels: []
+  - id: barranquilla
+    displayName: Barranquilla
+    country: Colombie
+    location:
+      latitude: 10.9685
+      longitude: -74.7813
+    deliveryPointLabels: []
+  - id: cartagena
+    displayName: Cartagena
+    country: Colombie
+    location:
+      latitude: 10.391
+      longitude: -75.4794
+    deliveryPointLabels: []
+  - id: bucaramanga
+    displayName: Bucaramanga
+    country: Colombie
+    location:
+      latitude: 7.1193
+      longitude: -73.1227
+    deliveryPointLabels: []
+  - id: santiago-chi
+    displayName: Santiago
+    country: Chili
+    location:
+      latitude: -33.4489
+      longitude: -70.6693
+    deliveryPointLabels: []
+  - id: valparaiso
+    displayName: Valparaíso
+    country: Chili
+    location:
+      latitude: -33.0472
+      longitude: -71.6127
+    deliveryPointLabels: []
+  - id: concepcion
+    displayName: Concepción
+    country: Chili
+    location:
+      latitude: -36.827
+      longitude: -73.0498
+    deliveryPointLabels: []
+  - id: antofagasta
+    displayName: Antofagasta
+    country: Chili
+    location:
+      latitude: -23.6509
+      longitude: -70.3975
+    deliveryPointLabels: []
+  - id: temuco
+    displayName: Temuco
+    country: Chili
+    location:
+      latitude: -38.7359
+      longitude: -72.5904
+    deliveryPointLabels: []
+  - id: la-serena
+    displayName: La Serena
+    country: Chili
+    location:
+      latitude: -29.9027
+      longitude: -71.2519
+    deliveryPointLabels: []
+  - id: lima
+    displayName: Lima
+    country: Pérou
+    location:
+      latitude: -12.0464
+      longitude: -77.0428
+    deliveryPointLabels: []
+  - id: arequipa
+    displayName: Arequipa
+    country: Pérou
+    location:
+      latitude: -16.409
+      longitude: -71.5375
+    deliveryPointLabels: []
+  - id: trujillo
+    displayName: Trujillo
+    country: Pérou
+    location:
+      latitude: -8.1116
+      longitude: -79.0288
+    deliveryPointLabels: []
+  - id: chiclayo
+    displayName: Chiclayo
+    country: Pérou
+    location:
+      latitude: -6.7714
+      longitude: -79.8409
+    deliveryPointLabels: []
+  - id: cuzco
+    displayName: Cuzco
+    country: Pérou
+    location:
+      latitude: -13.5319
+      longitude: -71.9675
+    deliveryPointLabels: []
+  - id: piura
+    displayName: Piura
+    country: Pérou
+    location:
+      latitude: -5.1945
+      longitude: -80.6328
+    deliveryPointLabels: []
+  - id: caracas
+    displayName: Caracas
+    country: Venezuela
+    location:
+      latitude: 10.4806
+      longitude: -66.9036
+    deliveryPointLabels: []
+  - id: maracaibo
+    displayName: Maracaibo
+    country: Venezuela
+    location:
+      latitude: 10.6545
+      longitude: -71.6406
+    deliveryPointLabels: []
+  - id: valencia
+    displayName: Valencia
+    country: Venezuela
+    location:
+      latitude: 10.162
+      longitude: -68.0077
+    deliveryPointLabels: []
+  - id: barquisimeto
+    displayName: Barquisimeto
+    country: Venezuela
+    location:
+      latitude: 10.0647
+      longitude: -69.357
+    deliveryPointLabels: []
+  - id: maracay
+    displayName: Maracay
+    country: Venezuela
+    location:
+      latitude: 10.2469
+      longitude: -67.5958
+    deliveryPointLabels: []
+  - id: quito
+    displayName: Quito
+    country: Équateur
+    location:
+      latitude: -0.1807
+      longitude: -78.4678
+    deliveryPointLabels: []
+  - id: guayaquil
+    displayName: Guayaquil
+    country: Équateur
+    location:
+      latitude: -2.1894
+      longitude: -79.8891
+    deliveryPointLabels: []
+  - id: cuenca
+    displayName: Cuenca
+    country: Équateur
+    location:
+      latitude: -2.9001
+      longitude: -79.0059
+    deliveryPointLabels: []
+  - id: santo-domingo
+    displayName: Santo Domingo
+    country: Équateur
+    location:
+      latitude: -0.2542
+      longitude: -79.1719
+    deliveryPointLabels: []
+  - id: ambato
+    displayName: Ambato
+    country: Équateur
+    location:
+      latitude: -1.249
+      longitude: -78.6168
+    deliveryPointLabels: []
+  - id: la-paz
+    displayName: La Paz
+    country: Bolivie
+    location:
+      latitude: -16.4897
+      longitude: -68.1193
+    deliveryPointLabels: []
+  - id: santa-cruz
+    displayName: Santa Cruz
+    country: Bolivie
+    location:
+      latitude: -17.7833
+      longitude: -63.1821
+    deliveryPointLabels: []
+  - id: cochabamba
+    displayName: Cochabamba
+    country: Bolivie
+    location:
+      latitude: -17.3895
+      longitude: -66.1568
+    deliveryPointLabels: []
+  - id: sucre
+    displayName: Sucre
+    country: Bolivie
+    location:
+      latitude: -19.0196
+      longitude: -65.2619
+    deliveryPointLabels: []
+  - id: oruro
+    displayName: Oruro
+    country: Bolivie
+    location:
+      latitude: -17.9833
+      longitude: -67.15
+    deliveryPointLabels: []
+  - id: asuncion
+    displayName: Asunción
+    country: Paraguay
+    location:
+      latitude: -25.2637
+      longitude: -57.5759
+    deliveryPointLabels: []
+  - id: ciudad-del-este
+    displayName: Ciudad del Este
+    country: Paraguay
+    location:
+      latitude: -25.5097
+      longitude: -54.6111
+    deliveryPointLabels: []
+  - id: san-lorenzo
+    displayName: San Lorenzo
+    country: Paraguay
+    location:
+      latitude: -25.3397
+      longitude: -57.5089
+    deliveryPointLabels: []
+  - id: encarnacion
+    displayName: Encarnación
+    country: Paraguay
+    location:
+      latitude: -27.3306
+      longitude: -55.8667
+    deliveryPointLabels: []
+  - id: pedro-juan-caballero
+    displayName: Pedro Juan Caballero
+    country: Paraguay
+    location:
+      latitude: -22.5472
+      longitude: -55.7333
+    deliveryPointLabels: []
+  - id: montevideo
+    displayName: Montevideo
+    country: Uruguay
+    location:
+      latitude: -34.9011
+      longitude: -56.1645
+    deliveryPointLabels: []
+  - id: salto
+    displayName: Salto
+    country: Uruguay
+    location:
+      latitude: -31.3833
+      longitude: -57.9667
+    deliveryPointLabels: []
+  - id: paysandu
+    displayName: Paysandú
+    country: Uruguay
+    location:
+      latitude: -32.3214
+      longitude: -58.0756
+    deliveryPointLabels: []
+  - id: las-piedras
+    displayName: Las Piedras
+    country: Uruguay
+    location:
+      latitude: -34.7286
+      longitude: -56.2206
+    deliveryPointLabels: []
+  - id: maldonado
+    displayName: Maldonado
+    country: Uruguay
+    location:
+      latitude: -34.9
+      longitude: -54.95
+    deliveryPointLabels: []
+  - id: larnaca
+    displayName: Larnaca
+    country: Chypre
+    location:
+      latitude: 34.9182
+      longitude: 33.6207
+    deliveryPointLabels: []
+  - id: paphos
+    displayName: Paphos
+    country: Chypre
+    location:
+      latitude: 34.7754
+      longitude: 32.4245
+    deliveryPointLabels: []
+  - id: famagouste
+    displayName: Famagouste
+    country: Chypre
+    location:
+      latitude: 35.1264
+      longitude: 33.9407
+    deliveryPointLabels: []
+  - id: kyrenia
+    displayName: Kyrenia
+    country: Chypre
+    location:
+      latitude: 35.3414
+      longitude: 33.3192
+    deliveryPointLabels: []

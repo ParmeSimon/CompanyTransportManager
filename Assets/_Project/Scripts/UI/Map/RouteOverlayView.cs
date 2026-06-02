@@ -40,6 +40,12 @@ namespace TransportManager.UI.Map
         private readonly List<RectTransform> _segments = new List<RectTransform>();
         private static Sprite  _capSprite;   // disque doux pour caps/joints arrondis
 
+        // Escales intermédiaires (tournées multi-arrêts) + liste ordonnée de tous les arrêts.
+        private readonly List<(RectTransform circle, RectTransform label, double lat, double lon)> _viaMarkers
+            = new List<(RectTransform, RectTransform, double, double)>();
+        private readonly List<(double lat, double lon)> _stops = new List<(double, double)>();
+        private static readonly Color ColorVia = new Color(0.26f, 0.56f, 0.98f, 1f); // bleu (= tracé)
+
         // ── Init ──────────────────────────────────────────────────────────────────
         public void Init(SlippyMapView map)
         {
@@ -70,11 +76,36 @@ namespace TransportManager.UI.Map
         public void ShowMarkers(double latA, double lonA, double latB, double lonB,
                                 string nameA, string nameB)
         {
-            _latA = latA; _lonA = lonA;
-            _latB = latB; _lonB = lonB;
+            ShowRouteStops(new List<(double, double, string)>
+            {
+                (latA, lonA, nameA),
+                (latB, lonB, nameB)
+            });
+        }
 
-            SetMarkerLabel(_labelA, nameA);
-            SetMarkerLabel(_labelB, nameB);
+        /// Affiche un trajet à arrêts multiples : stops[0] = origine, dernier = destination,
+        /// les autres = escales intermédiaires (marqueurs numérotés bleus).
+        public void ShowRouteStops(List<(double lat, double lon, string name)> stops)
+        {
+            if (stops == null || stops.Count < 2) return;
+
+            _stops.Clear();
+            foreach (var s in stops) _stops.Add((s.lat, s.lon));
+
+            // Extrémités → marqueurs A (vert) / B (rouge)
+            _latA = stops[0].lat;                 _lonA = stops[0].lon;
+            _latB = stops[stops.Count - 1].lat;   _lonB = stops[stops.Count - 1].lon;
+            SetMarkerLabel(_labelA, stops[0].name);
+            SetMarkerLabel(_labelB, stops[stops.Count - 1].name);
+
+            // Escales intermédiaires → marqueurs bleus numérotés
+            ClearViaMarkers();
+            for (int i = 1; i < stops.Count - 1; i++)
+            {
+                var (circle, label) = BuildMarker(i.ToString(), ColorVia);
+                SetMarkerLabel(label, stops[i].name);
+                _viaMarkers.Add((circle, label, stops[i].lat, stops[i].lon));
+            }
 
             gameObject.SetActive(true);
             SetMarkersVisible(true);
@@ -108,6 +139,17 @@ namespace TransportManager.UI.Map
             if (_map == null) return;
             MoveMarker(_circleA, _labelA, _latA, _lonA);
             MoveMarker(_circleB, _labelB, _latB, _lonB);
+            foreach (var v in _viaMarkers) MoveMarker(v.circle, v.label, v.lat, v.lon);
+        }
+
+        private void ClearViaMarkers()
+        {
+            foreach (var v in _viaMarkers)
+            {
+                if (v.circle != null) Destroy(v.circle.gameObject);
+                if (v.label  != null) Destroy(v.label.gameObject);
+            }
+            _viaMarkers.Clear();
         }
 
         private void MoveMarker(RectTransform circle, RectTransform label, double lat, double lon)
@@ -133,6 +175,12 @@ namespace TransportManager.UI.Map
                     screen.Add(_map.LatLonToLocal(pts[i].latitude, pts[i].longitude));
                 var last = pts[pts.Count - 1];
                 screen.Add(_map.LatLonToLocal(last.latitude, last.longitude));
+            }
+            else if (_stops.Count >= 2)
+            {
+                // Repli : relie en ligne droite tous les arrêts dans l'ordre (origine → escales → destination).
+                foreach (var s in _stops)
+                    screen.Add(_map.LatLonToLocal(s.lat, s.lon));
             }
             else
             {
@@ -296,6 +344,11 @@ namespace TransportManager.UI.Map
             if (_circleB != null) _circleB.gameObject.SetActive(visible);
             if (_labelA  != null) _labelA.gameObject.SetActive(visible);
             if (_labelB  != null) _labelB.gameObject.SetActive(visible);
+            foreach (var v in _viaMarkers)
+            {
+                if (v.circle != null) v.circle.gameObject.SetActive(visible);
+                if (v.label  != null) v.label.gameObject.SetActive(visible);
+            }
         }
 
         // ── Helpers ───────────────────────────────────────────────────────────────

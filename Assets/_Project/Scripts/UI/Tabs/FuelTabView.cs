@@ -320,9 +320,8 @@ namespace TransportManager.UI.Tabs
 
         private void OnRefillClicked()
         {
-            var fuel = ServiceLocator.Get<FuelSystem>();
-            if (fuel == null) return;
-            fuel.TryStartTruckRefill(fuel.RemainingCapacity);
+            // Ouvre la popup de commande (prix, fluctuation, choix des litres).
+            UI.Tabs.FuelOrderPopupView.Show();
         }
 
         private void OnInstantRefillClicked()
@@ -360,12 +359,17 @@ namespace TransportManager.UI.Tabs
             if (_refillButton) _refillButton.interactable = canRefill;
             if (_refillButtonLabel) _refillButtonLabel.text = autoRefill ? "Auto" : (isRefilling ? "En cours..." : "Commander");
             if (_refillStatusLabel && autoRefill) _refillStatusLabel.text = "Citerne autonome — remplissage automatique";
-            else if (_refillStatusLabel && !isRefilling) _refillStatusLabel.text = "Cuve disponible";
+            else if (_refillStatusLabel && !isRefilling)
+            {
+                string arrow = fuel.FuelPriceTrend > 0 ? "<color=#ff6b6b>▲</color>"
+                             : fuel.FuelPriceTrend < 0 ? "<color=#3DC96E>▼</color>" : "<color=#7A8FA6>▬</color>";
+                _refillStatusLabel.text = $"Carburant : {fuel.CurrentDollarsPerLiter:F2} $/L  {arrow}";
+            }
 
             if (fuel.Config != null && tier != null)
             {
                 float remaining = fuel.RemainingCapacity;
-                int refillCost = Mathf.CeilToInt(remaining * fuel.Config.dollarsPerLiter);
+                int refillCost = Mathf.CeilToInt(remaining * fuel.CurrentDollarsPerLiter);
                 if (_refillCostLabel) _refillCostLabel.text = $"$ {refillCost:N0}";
 
                 float pct = capacity > 0 ? remaining / capacity : 0f;

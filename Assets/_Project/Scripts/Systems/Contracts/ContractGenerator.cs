@@ -24,6 +24,11 @@ namespace TransportManager.Systems.Contracts
         // Number of city pairs we'll try before giving up when a distance cap is set.
         private const int MaxPairAttempts = 12;
 
+        // ── Tournées multi-arrêts (skill « Tournées multi-arrêts ») ──
+        private const int   MultiStopMaxStops         = 4;     // jusqu'à 4 livraisons par tournée
+        private const float MultiStopChance           = 0.28f; // proba d'une tournée quand le skill est débloqué
+        private const float MultiStopRewardMultiplier = 1.5f;  // bonus de base d'une tournée (+0,2 par escale)
+
         // maxDistanceKm bounds the route length so a contract never exceeds the range
         // of the available fleet. Pass float.MaxValue (default) for no cap.
         public async Task<ContractData> GenerateAsync(
@@ -35,20 +40,40 @@ namespace TransportManager.Systems.Contracts
             if (map == null || !map.HasCities) return null;
 
             // Portée géographique débloquée (arbre Dépôt) : restreint les pays éligibles.
-            var allowedCountries = AllowedCountriesForContracts(map);
+            var allowed = AllowedCountriesForContracts(map);
 
-            CityEntry from = null, to = null;
-            float distance = 0f, duration = 0f;
-            bool found = false;
+            // Tout part (ou revient) du dépôt : la ville du siège est toujours une extrémité.
+            var depot = HomeCity(map) ?? map.GetRandomCityIn(allowed);
+            if (depot == null) return null;
 
+            // Tournée à escales si le skill est débloqué (jamais sur les contrats faciles).
+            bool tryTour = difficulty != ContractDifficulty.Easy
+                           && MultiStopUnlocked()
+                           && UnityEngine.Random.value < MultiStopChance;
+            if (tryTour)
+            {
+                var tour = await GenerateTour(map, allowed, depot, profile, difficulty, maxDistanceKm);
+                if (tour != null) return tour;   // sinon, repli sur un contrat direct
+            }
+
+            return await GenerateSingle(map, allowed, depot, profile, difficulty, maxDistanceKm);
+        }
+
+        // Contrat direct : dépôt → ville (livraison) ou ville → dépôt (collecte).
+        private async Task<ContractData> GenerateSingle(
+            Systems.Map.MapSystem map, System.Collections.Generic.HashSet<string> allowed,
+            CityEntry depot, VehicleRoutingProfile profile, ContractDifficulty difficulty, float maxDistanceKm)
+        {
             int attempts = maxDistanceKm >= float.MaxValue ? 1 : MaxPairAttempts;
             for (int i = 0; i < attempts; i++)
             {
-                (from, to) = map.GetRandomCityPair(allowedCountries);
-                if (from == null || to == null) continue;
+                var other = map.GetRandomCityIn(allowed, depot);
+                if (other == null || other == depot) continue;
 
-                // Cheap pre-filter: a straight-line estimate already over the cap can
-                // never route under it, so skip without spending a routing call.
+                bool collection = UnityEngine.Random.value < 0.5f;   // sens du contrat
+                var from = collection ? other : depot;
+                var to   = collection ? depot : other;
+
                 if (maxDistanceKm < float.MaxValue)
                 {
                     float estimate = (float)(Entities.Map.GeoPoint.HaversineKm(from.location, to.location)
@@ -56,42 +81,93 @@ namespace TransportManager.Systems.Contracts
                     if (estimate > maxDistanceKm) continue;
                 }
 
-                var route = await map.GetRouteAsync(from, to, profile);
-
-                // Routing can fail (no API key, offline, rate limit). Fall back to a
-                // great-circle estimate so a contract is always produced when cities exist.
-                if (route != null && route.found)
-                {
-                    distance = route.distanceKm;
-                    duration = route.durationSeconds;
-                }
-                else
-                {
-                    distance = (float)(Entities.Map.GeoPoint.HaversineKm(from.location, to.location) * FallbackDetourFactor);
-                    float speed = profile == VehicleRoutingProfile.HeavyGoodsVehicle ? FallbackSpeedKmhHgv : FallbackSpeedKmhCar;
-                    duration = distance / UnityEngine.Mathf.Max(1f, speed) * 3600f;
-                }
-
+                var (distance, duration) = await LegAsync(map, from, to, profile);
                 float jit = 1f + UnityEngine.Random.Range(-AddressVariancePercent, AddressVariancePercent);
-                distance *= jit;
-                duration *= jit;
+                distance *= jit; duration *= jit;
+                if (distance > maxDistanceKm) continue;
 
-                if (distance <= maxDistanceKm) { found = true; break; }
+                return BuildContract(map, difficulty, from, to, distance, duration, null);
+            }
+            return null;
+        }
+
+        // Tournée : dépôt → escale 1 → escale 2 → … (2 à 4 livraisons enchaînées).
+        private async Task<ContractData> GenerateTour(
+            Systems.Map.MapSystem map, System.Collections.Generic.HashSet<string> allowed,
+            CityEntry depot, VehicleRoutingProfile profile, ContractDifficulty difficulty, float maxDistanceKm)
+        {
+            int target = UnityEngine.Random.Range(2, MultiStopMaxStops + 1);   // 2..MaxStops
+            var stops = new System.Collections.Generic.List<CityEntry>();
+            var chosen = new System.Collections.Generic.HashSet<CityEntry> { depot };
+            var prev = depot;
+            float totalDist = 0f, totalDur = 0f;
+            int guard = target * 5;
+
+            while (stops.Count < target && guard-- > 0)
+            {
+                var next = map.GetRandomCityIn(allowed, depot);
+                if (next == null || chosen.Contains(next)) continue;
+
+                var (d, du) = await LegAsync(map, prev, next, profile);
+                if (maxDistanceKm < float.MaxValue && totalDist + d > maxDistanceKm)
+                    break;   // on garde la tournée construite jusqu'ici si elle a ≥2 arrêts
+
+                totalDist += d; totalDur += du;
+                stops.Add(next); chosen.Add(next); prev = next;
             }
 
-            if (!found) return null;
+            if (stops.Count < 2) return null;   // pas une vraie tournée → repli sur contrat direct
 
+            float jit = 1f + UnityEngine.Random.Range(-AddressVariancePercent, AddressVariancePercent);
+            totalDist *= jit; totalDur *= jit;
+
+            // Le dépôt est toujours une extrémité. Sens aléatoire :
+            //  - sortante : dépôt → escale → … → ville
+            //  - rentrante : ville → … → escale → dépôt
+            // Inverser l'ordre ne change pas la distance totale (mêmes segments).
+            var ordered = new System.Collections.Generic.List<CityEntry> { depot };
+            ordered.AddRange(stops);
+            if (UnityEngine.Random.value < 0.5f) ordered.Reverse();
+
+            var from = ordered[0];
+            var to   = ordered[ordered.Count - 1];
+            var via  = ordered.GetRange(1, ordered.Count - 2);   // escales intermédiaires
+            return BuildContract(map, difficulty, from, to, totalDist, totalDur, via);
+        }
+
+        // Calcule une étape (route réelle ou repli grand-cercle).
+        private async System.Threading.Tasks.Task<(float dist, float dur)> LegAsync(
+            Systems.Map.MapSystem map, CityEntry a, CityEntry b, VehicleRoutingProfile profile)
+        {
+            var route = await map.GetRouteAsync(a, b, profile);
+            if (route != null && route.found)
+                return (route.distanceKm, route.durationSeconds);
+
+            float dist = (float)(Entities.Map.GeoPoint.HaversineKm(a.location, b.location) * FallbackDetourFactor);
+            float speed = profile == VehicleRoutingProfile.HeavyGoodsVehicle ? FallbackSpeedKmhHgv : FallbackSpeedKmhCar;
+            return (dist, dist / UnityEngine.Mathf.Max(1f, speed) * 3600f);
+        }
+
+        // Assemble le ContractData (direct si via == null, sinon tournée à escales).
+        private ContractData BuildContract(
+            Systems.Map.MapSystem map, ContractDifficulty difficulty,
+            CityEntry from, CityEntry to, float distance, float duration,
+            System.Collections.Generic.List<CityEntry> via)
+        {
             int cargoTons = CargoTonsFor(difficulty);
             string cargoLabel = CargoGoods[UnityEngine.Random.Range(0, CargoGoods.Length)];
 
-            // Priorité : distance (base) > difficulté (multiplicateur) > cargaison (bonus mineur).
+            bool multi = via != null && via.Count > 0;
             float cargoBonus = 1f + cargoTons * CargoBonusPerTon;
-            int reward = Mathf.RoundToInt(distance * BaseDollarsPerKm * DifficultyRewardMultiplier(difficulty) * cargoBonus);
+            float multiMult  = multi ? (MultiStopRewardMultiplier + 0.2f * via.Count) : 1f;
 
-            return new ContractData
+            // Priorité : distance (base) > difficulté (multiplicateur) > tournée > cargaison (bonus mineur).
+            int reward = Mathf.RoundToInt(distance * BaseDollarsPerKm
+                         * DifficultyRewardMultiplier(difficulty) * multiMult * cargoBonus);
+
+            var data = new ContractData
             {
                 id = Guid.NewGuid().ToString(),
-                displayName = $"{from.displayName} → {to.displayName}",
                 difficulty = difficulty,
                 originCityId = from.id,
                 destinationCityId = to.id,
@@ -102,9 +178,35 @@ namespace TransportManager.Systems.Contracts
                 cargoTons = cargoTons,
                 cargoLabel = cargoLabel,
                 requiredCapacity = cargoTons,
-                baseReward = reward
+                baseReward = reward,
+                isMultiStop = multi
             };
+
+            var names = new System.Collections.Generic.List<string> { from.displayName };
+            if (multi)
+                foreach (var c in via)
+                {
+                    data.viaCityIds.Add(c.id);
+                    data.viaAddressLabels.Add(map.GetRandomAddressLabel(c));
+                    names.Add(c.displayName);
+                }
+            names.Add(to.displayName);
+            data.displayName = string.Join(" → ", names);
+            return data;
         }
+
+        private static CityEntry HomeCity(Systems.Map.MapSystem map)
+        {
+            // Dépôt = vraie position de l'entreprise (entrée « maison »), pas la ville la plus proche.
+            if (map.Catalog?.Home != null) return map.Catalog.Home;
+
+            var company = GameManager.Instance?.Save?.company;
+            if (company == null || !company.hasLocationCoordinates) return null;
+            return map.GetNearestCity(company.locationLatitude, company.locationLongitude);
+        }
+
+        private static bool MultiStopUnlocked() =>
+            (ServiceLocator.Get<SkillTreeSystem>()?.Flat(SkillEffectType.MultiStopContractsUnlocked) ?? 0) > 0;
 
         public async Task RefreshAvailablePool(
             List<ContractData> pool, int targetCount, VehicleRoutingProfile profile,

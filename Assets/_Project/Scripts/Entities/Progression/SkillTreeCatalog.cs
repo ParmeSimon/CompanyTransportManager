@@ -66,6 +66,7 @@ namespace TransportManager.Entities.Progression
                     return NodeShape.Square;
                 case SkillEffectType.AutoRepair:
                 case SkillEffectType.PremiumContractsUnlocked:
+                case SkillEffectType.MultiStopContractsUnlocked:
                 case SkillEffectType.AutoStationRefill:
                 case SkillEffectType.HrRefreshInstant:
                 case SkillEffectType.HrRefreshFree:
@@ -116,6 +117,10 @@ namespace TransportManager.Entities.Progression
                 // depth 4
                 Node("depot_a1a",  B, "Achats groupés",      "-12 % supplémentaires sur l'agrandissement.",   "depot_a1",  U, 0.12f, 4),
                 Node("depot_a2a",  B, "Clients fidèles",     "+6 % sur la récompense des contrats.",          "depot_a2",  W, 0.06f, 4),
+                // Débloque les tournées à escales (contrats multi-arrêts très rémunérateurs)
+                Node("depot_tour", B, "Tournées multi-arrêts",
+                    "Débloque les contrats avec escales : plusieurs livraisons d'affilée, bien plus rémunérateurs.",
+                    "depot_a2a", SkillEffectType.MultiStopContractsUnlocked, 1f, 5),
                 Node("depot_b1a",  B, "Mécanos chevronnés",  "-12 % supplémentaires sur la réparation.",      "depot_b1",  R, 0.12f, 4),
                 Node("depot_b2a",  B, "Troisième quai",      "+1 emplacement de véhicule supplémentaire.",    "depot_b2",  E, 1f,    4),
                 Node("depot_b2b",  B, "Logistique fluide",   "+5 % sur la récompense des contrats.",          "depot_b2",  W, 0.05f, 4),
@@ -220,6 +225,15 @@ namespace TransportManager.Entities.Progression
                 Node("fuel_a1",   B, "Conduite souple",     "-8 % supplémentaires de consommation.",         "fuel_a",  Co, 0.08f, 3),
                 Node("fuel_a2",   B, "Moteurs optimisés",   "+5 % de vitesse sur les trajets.",              "fuel_a",  Sp, 0.05f, 3),
                 Node("fuel_a3",   B, "Contrat grossiste",   "-10 % supplémentaires sur le prix.",            "fuel_a",  Pr, 0.10f, 3),
+                // ── Sous-branche MARCHÉ (historique + prévision du prix du carburant) ──
+                Node("fuel_market1", B, "Analyse de marché",
+                    "Débloque l'historique du prix du carburant dans la popup de ravitaillement.",          "fuel_a3", SkillEffectType.FuelMarketHistory,  1f, 4),
+                Node("fuel_market2", B, "Prévision J+1",
+                    "Affiche la prévision du prix du carburant à +1 jour.",                                 "fuel_market1", SkillEffectType.FuelMarketForecast, 1f, 5),
+                Node("fuel_market3", B, "Prévision J+2",
+                    "Étend la prévision du prix à +2 jours.",                                               "fuel_market2", SkillEffectType.FuelMarketForecast, 1f, 5),
+                Node("fuel_market4", B, "Prévision J+3",
+                    "Étend la prévision du prix à +3 jours.",                                               "fuel_market3", SkillEffectType.FuelMarketForecast, 1f, 6),
                 // fuel_b split 2
                 Node("fuel_b1",   B, "Double cuve",         "+25 % supplémentaires de capacité.",            "fuel_b",  Ca, 0.25f, 3),
                 Node("fuel_b2",   B, "Pompe rapide",        "+20 % de vitesse de remplissage.",              "fuel_b",  Re, 0.20f, 3),

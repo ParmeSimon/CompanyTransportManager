@@ -390,7 +390,7 @@ namespace TransportManager.UI.Fleet
             void ApplyIcon()
             {
                 bool visible = FleetMapDisplayState.IsVisible(id);
-                iconImg.sprite = Resources.Load<Sprite>(visible ? "UI/Icons/icons/eye" : "UI/Icons/icons/eye-off");
+                UiIcons.Apply(iconImg, visible ? "UI/Icons/icons/eye" : "UI/Icons/icons/eye-off");
                 iconImg.color  = visible ? new Color32(0x35, 0x8E, 0xF5, 220) : new Color32(0x5A, 0x65, 0x77, 220);
             }
             ApplyIcon();

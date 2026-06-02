@@ -326,11 +326,13 @@ namespace TransportManager.UI.Map
             // Row 1 : route + ETA pill
             var topRow = HRow(cardGo.transform, 22f);
             var routeLbl = MakeTMP("R", topRow,
-                $"{CityName(def.originCityId)}  →  {CityName(def.destinationCityId)}",
+                RouteSummary(def),
                 14.5f, FontStyles.Bold, TextPrime);
             routeLbl.textWrappingMode = TextWrappingModes.NoWrap;
             routeLbl.overflowMode     = TextOverflowModes.Ellipsis;
             Le(routeLbl.gameObject, flexW: true, h: 22f);
+            if (def.isMultiStop)
+                RoundedPill(topRow, $"⇆ {def.StopCount} arrêts", AccentAmber, 78f);
             RoundedPill(topRow, FormatRemaining(inst), AccentBlue, 60f);
 
             // Row 2 : cargo description
@@ -527,7 +529,7 @@ namespace TransportManager.UI.Map
             else
                 RoundedPill(cHdrGo.transform, DiffNames[(int)d.difficulty], accentColor, 78f);
 
-            var closeX = LinkBtn(cHdrGo.transform, "✕", TextSecond);
+            var closeX = IconBtn(cHdrGo.transform, "minus", TextSecond, 16f);
             Le(closeX.gameObject, w: 26f, h: 34f);
             closeX.onClick.AddListener(ClosePopup);
 
@@ -545,28 +547,57 @@ namespace TransportManager.UI.Map
             rbVlg.childControlHeight     = true;
             routeBlock.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            var originLbl = MakeTMP("From", routeBlock.transform,
-                CityName(d.originCityId), 21f, FontStyles.Bold, TextPrime);
-            originLbl.alignment = TextAlignmentOptions.Left;
-            Le(originLbl.gameObject, h: 28f);
+            // Toutes les villes du trajet : origine → (escales) → destination.
+            var stopNames = new System.Collections.Generic.List<string> { CityName(d.originCityId) };
+            if (d.isMultiStop && d.viaCityIds != null)
+                foreach (var vc in d.viaCityIds) stopNames.Add(CityName(vc));
+            stopNames.Add(CityName(d.destinationCityId));
 
-            var arrowRow = HRow(routeBlock.transform, 14f);
-            var arrowDot = MakeGO("ODot", arrowRow);
-            var aDotImg = arrowDot.AddComponent<Image>();
-            aDotImg.sprite = _sprR8; aDotImg.type = Image.Type.Sliced;
-            aDotImg.color  = accentColor;
-            Le(arrowDot, w: 7f, h: 7f);
-            var arrowLine = MakeGO("Line", arrowRow);
-            arrowLine.AddComponent<Image>().color = new Color(accentColor.r, accentColor.g, accentColor.b, 0.45f);
-            Le(arrowLine, h: 2f, flexW: true);
-            var arrowLbl = MakeTMP("Arrow", arrowRow, "→", 13f, FontStyles.Bold, accentColor);
-            arrowLbl.textWrappingMode = TextWrappingModes.NoWrap;
-            Le(arrowLbl.gameObject, w: 16f, h: 14f);
+            if (stopNames.Count > 2)
+            {
+                // Tournée : on empile toutes les villes avec un repère coloré (extrémités = dépôt/arrivée).
+                for (int s = 0; s < stopNames.Count; s++)
+                {
+                    bool end = (s == 0 || s == stopNames.Count - 1);
+                    var row = HRow(routeBlock.transform, 26f);
+                    var dotGo = MakeGO("D" + s, row);
+                    var dImg = dotGo.AddComponent<Image>();
+                    dImg.sprite = _sprR8; dImg.type = Image.Type.Sliced;
+                    dImg.color  = end ? accentColor : new Color(accentColor.r, accentColor.g, accentColor.b, 0.5f);
+                    dImg.raycastTarget = false;
+                    Le(dotGo, w: 8f, h: 8f);
+                    var lbl = MakeTMP("S" + s, row, stopNames[s], 18f, FontStyles.Bold, end ? TextPrime : TextSecond);
+                    lbl.alignment        = TextAlignmentOptions.Left;
+                    lbl.textWrappingMode = TextWrappingModes.NoWrap;
+                    lbl.overflowMode     = TextOverflowModes.Ellipsis;
+                    Le(lbl.gameObject, flexW: true, h: 24f);
+                }
+            }
+            else
+            {
+                var originLbl = MakeTMP("From", routeBlock.transform,
+                    stopNames[0], 21f, FontStyles.Bold, TextPrime);
+                originLbl.alignment = TextAlignmentOptions.Left;
+                Le(originLbl.gameObject, h: 28f);
 
-            var destLbl = MakeTMP("To", routeBlock.transform,
-                CityName(d.destinationCityId), 21f, FontStyles.Bold, TextPrime);
-            destLbl.alignment = TextAlignmentOptions.Right;
-            Le(destLbl.gameObject, h: 28f);
+                var arrowRow = HRow(routeBlock.transform, 14f);
+                var arrowDot = MakeGO("ODot", arrowRow);
+                var aDotImg = arrowDot.AddComponent<Image>();
+                aDotImg.sprite = _sprR8; aDotImg.type = Image.Type.Sliced;
+                aDotImg.color  = accentColor;
+                Le(arrowDot, w: 7f, h: 7f);
+                var arrowLine = MakeGO("Line", arrowRow);
+                arrowLine.AddComponent<Image>().color = new Color(accentColor.r, accentColor.g, accentColor.b, 0.45f);
+                Le(arrowLine, h: 2f, flexW: true);
+                var arrowLbl = MakeTMP("Arrow", arrowRow, "→", 13f, FontStyles.Bold, accentColor);
+                arrowLbl.textWrappingMode = TextWrappingModes.NoWrap;
+                Le(arrowLbl.gameObject, w: 16f, h: 14f);
+
+                var destLbl = MakeTMP("To", routeBlock.transform,
+                    stopNames[1], 21f, FontStyles.Bold, TextPrime);
+                destLbl.alignment = TextAlignmentOptions.Right;
+                Le(destLbl.gameObject, h: 28f);
+            }
 
             var cargoRow = HRow(routeBlock.transform, 18f);
             var cargoTag = MakeTMP("CT", cargoRow, "MARCHANDISE", 8f, FontStyles.Bold, TextDim);
@@ -611,6 +642,24 @@ namespace TransportManager.UI.Map
                 RoundedStatCell(gridGo.transform, FormatRemaining(_popupInst), "RESTANT", AccentBlue);
             else
                 RoundedStatCell(gridGo.transform, DiffNames[(int)d.difficulty], "DIFFICULTÉ", accentColor);
+
+            // ── Note ponctualité (E1) ───────────────────────────────────────────────
+            string punctNote;
+            if (isActive)
+            {
+                bool onTime = _popupInst.deadlineTimeUtcTicks <= 0
+                              || _popupInst.completionTimeUtcTicks <= _popupInst.deadlineTimeUtcTicks;
+                punctNote = onTime
+                    ? "<color=#3DC96E>Livraison à l'heure — bonus +15 %</color>"
+                    : "<color=#ff6b6b>Livraison en retard — pénalité -20 %</color>";
+            }
+            else
+            {
+                punctNote = "Livré à temps : <color=#3DC96E>+15 %</color>   ·   en retard : <color=#ff6b6b>-20 %</color>";
+            }
+            var pn = MakeTMP("Punct", cardGo.transform, punctNote, 11.5f, FontStyles.Normal, TextSecond);
+            pn.alignment = TextAlignmentOptions.Center;
+            Le(pn.gameObject, h: 20f);
 
             // ── 4 — Sélecteur de camion (contrats disponibles uniquement) ───────────
             if (!isActive)
@@ -1090,7 +1139,7 @@ namespace TransportManager.UI.Map
 
             var accent = DiffColors[(int)_sessionDiffs[slotIdx]];
 
-            _genRouteLabels[slotIdx].text      = $"{CityName(def.originCityId)}  →  {CityName(def.destinationCityId)}";
+            _genRouteLabels[slotIdx].text      = RouteSummary(def);
             _genRouteLabels[slotIdx].color     = TextPrime;
             _genRouteLabels[slotIdx].fontStyle = FontStyles.Bold;
 
@@ -1292,6 +1341,14 @@ namespace TransportManager.UI.Map
             return c?.GetById(id)?.displayName ?? id;
         }
 
+        // Texte de route : chaîne complète à escales pour une tournée, sinon « origine → destination ».
+        private static string RouteSummary(ContractData def)
+        {
+            if (def != null && def.isMultiStop && !string.IsNullOrEmpty(def.displayName))
+                return def.displayName;
+            return $"{CityName(def.originCityId)}  →  {CityName(def.destinationCityId)}";
+        }
+
         private static string FullCity(string id)
         {
             var c = ServiceLocator.Get<MapSystem>()?.Catalog;
@@ -1407,6 +1464,30 @@ namespace TransportManager.UI.Map
         }
 
         // Link-style button: transparent bg, colored text
+        // Bouton transparent avec une icône centrée (Resources/UI/Icons/icons/<iconName>).
+        private static Button IconBtn(Transform parent, string iconName, Color color, float iconSize = 16f)
+        {
+            var go  = MakeGO("IconBtn", parent);
+            go.AddComponent<Image>().color = new Color(0, 0, 0, 0);
+            var btn = go.AddComponent<Button>();
+            btn.transition = Selectable.Transition.None;
+
+            var icGo = MakeGO("Ic", go.transform);
+            var img  = icGo.AddComponent<Image>();
+            var spr  = Resources.Load<Sprite>($"UI/Icons/icons/{iconName}");
+            img.sprite         = spr;
+            img.enabled        = spr != null;   // pas de carré si l'icône manque
+            img.color          = color;
+            img.preserveAspect = true;
+            img.raycastTarget  = false;
+            var rt = icGo.GetComponent<RectTransform>();
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot            = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta        = new Vector2(iconSize, iconSize);
+            rt.anchoredPosition = Vector2.zero;
+            return btn;
+        }
+
         private static Button LinkBtn(Transform parent, string label, Color color)
         {
             var go  = MakeGO("LBtn", parent);

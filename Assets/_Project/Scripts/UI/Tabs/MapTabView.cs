@@ -158,10 +158,30 @@ namespace TransportManager.UI.Tabs
                 new Color(0.22f, 0.52f, 1f, 1f), 240f);
             reopenBtn.onClick.AddListener(ReopenPreviewedContract);
 
-            // Bouton fermeture (masque la prévisualisation)
-            var closeBtn = MakeBarButton("Close", "✕",
+            // Bouton fermeture (masque la prévisualisation) — icône x.png
+            var closeBtn = MakeBarButton("Close", "",
                 new Color(0.17f, 0.18f, 0.22f, 1f), 52f);
+            AddCenterIcon(closeBtn.transform, "x", new Color(0.85f, 0.88f, 0.93f), 18f);
             closeBtn.onClick.AddListener(ClearPreview);
+        }
+
+        // Icône centrée sur un bouton (Resources/UI/Icons/icons/<iconName>).
+        private static void AddCenterIcon(Transform parent, string iconName, Color color, float size)
+        {
+            var spr = Resources.Load<Sprite>($"UI/Icons/icons/{iconName}");
+            if (spr == null) return;
+            var go  = new GameObject("Icon", typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+            var img = go.AddComponent<Image>();
+            img.sprite         = spr;
+            img.color          = color;
+            img.preserveAspect = true;
+            img.raycastTarget  = false;
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot            = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta        = new Vector2(size, size);
+            rt.anchoredPosition = Vector2.zero;
         }
 
         private Button MakeBarButton(string name, string label, Color color, float width)
@@ -243,31 +263,53 @@ namespace TransportManager.UI.Tabs
             var mapSys = ServiceLocator.Get<MapSystem>();
             if (mapSys == null || def == null || mapView == null || _routeOverlay == null) return;
 
-            var from = mapSys.Catalog?.GetById(def.originCityId);
-            var to   = mapSys.Catalog?.GetById(def.destinationCityId);
-            if (from == null || to == null) return;
+            // Liste ordonnée des villes : origine → escales → destination.
+            var cities = new System.Collections.Generic.List<Entities.Map.CityEntry>();
+            var origin = mapSys.Catalog?.GetById(def.originCityId);
+            if (origin == null) return;
+            cities.Add(origin);
+            if (def.isMultiStop && def.viaCityIds != null)
+                foreach (var vc in def.viaCityIds)
+                {
+                    var c = mapSys.Catalog?.GetById(vc);
+                    if (c != null) cities.Add(c);
+                }
+            var dest = mapSys.Catalog?.GetById(def.destinationCityId);
+            if (dest == null) return;
+            cities.Add(dest);
 
-            // 1. Zoom immédiat sur les deux villes
-            mapView.FitBounds(from.location.latitude, from.location.longitude,
-                              to.location.latitude,   to.location.longitude);
+            // 1. Cadrage sur l'ensemble des arrêts + marqueurs (avec escales) tout de suite
+            double minLat = double.MaxValue, maxLat = -double.MaxValue;
+            double minLon = double.MaxValue, maxLon = -double.MaxValue;
+            var stops = new System.Collections.Generic.List<(double, double, string)>();
+            foreach (var c in cities)
+            {
+                double la = c.location.latitude, lo = c.location.longitude;
+                stops.Add((la, lo, c.displayName));
+                if (la < minLat) minLat = la; if (la > maxLat) maxLat = la;
+                if (lo < minLon) minLon = lo; if (lo > maxLon) maxLon = lo;
+            }
+            mapView.FitBounds(minLat, minLon, maxLat, maxLon);
+            _routeOverlay.ShowRouteStops(stops);
 
-            // 2. Marqueurs A/B visibles tout de suite
-            _routeOverlay.ShowMarkers(
-                from.location.latitude, from.location.longitude,
-                to.location.latitude,   to.location.longitude,
-                from.displayName,       to.displayName);
+            // 2. Récupérer chaque segment et concaténer la polyline complète (passe par les escales)
+            var combined = new Entities.Map.RouteResult { found = true };
+            for (int i = 0; i < cities.Count - 1; i++)
+            {
+                var leg = await mapSys.GetRouteAsync(cities[i], cities[i + 1], VehicleRoutingProfile.HeavyGoodsVehicle);
+                if (_routeOverlay == null || mapView == null) return;   // toujours valide après l'await ?
 
-            // 3. Récupérer la route (cache ORS ou appel réseau)
-            var route = await mapSys.GetRouteAsync(from, to, VehicleRoutingProfile.HeavyGoodsVehicle);
+                if (leg != null && leg.found && leg.polyline != null && leg.polyline.Count >= 2)
+                    combined.polyline.AddRange(leg.polyline);
+                else
+                {
+                    combined.polyline.Add(new Entities.Map.GeoPoint(cities[i].location.latitude, cities[i].location.longitude));
+                    combined.polyline.Add(new Entities.Map.GeoPoint(cities[i + 1].location.latitude, cities[i + 1].location.longitude));
+                }
+            }
 
-            // Diagnostic : un tracé à 2 points = repli en ligne droite (ORS non utilisé
-            // ou échec). Un vrai itinéraire routier compte des dizaines de points.
-            Debug.Log($"[Route] {from.id}->{to.id} found={(route != null && route.found)} " +
-                      $"points={(route?.polyline?.Count ?? 0)} dist={(route?.distanceKm ?? 0f):F0}km");
-
-            // Vérifier que l'objet est toujours valide après l'await
-            if (_routeOverlay == null || mapView == null) return;
-            _routeOverlay.SetRoute(route);
+            Debug.Log($"[Route] {origin.id}->{dest.id} legs={cities.Count - 1} points={combined.polyline.Count}");
+            _routeOverlay.SetRoute(combined);
         }
 
         private void EnsureHomeMarker()

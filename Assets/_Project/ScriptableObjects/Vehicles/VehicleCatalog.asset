@@ -205,3 +205,419 @@ MonoBehaviour:
     fuelTankCapacityLiters: 2000
     fuelConsumptionLPer100Km: 130
     routingProfile: 1
+  - id: pickup_leger
+    displayName: Pick-up Léger
+    category: 0
+    icon: {fileID: 0}
+    purchasePrice: 5000
+    maintenanceCost: 300
+    speedKmh: 115
+    capacity: 4
+    maxKilometers: 12000
+    fuelTankCapacityLiters: 60
+    fuelConsumptionLPer100Km: 8.5
+    routingProfile: 0
+    minCompanyLevelRequired: 1
+  - id: fourgon_compact
+    displayName: Fourgon Compact
+    category: 0
+    icon: {fileID: 0}
+    purchasePrice: 12000
+    maintenanceCost: 450
+    speedKmh: 120
+    capacity: 7
+    maxKilometers: 18000
+    fuelTankCapacityLiters: 70
+    fuelConsumptionLPer100Km: 9
+    routingProfile: 0
+    minCompanyLevelRequired: 2
+  - id: fourgon_xl_premium
+    displayName: Fourgon XL Premium
+    category: 0
+    icon: {fileID: 0}
+    purchasePrice: 64000
+    maintenanceCost: 1200
+    speedKmh: 125
+    capacity: 16
+    maxKilometers: 42000
+    fuelTankCapacityLiters: 95
+    fuelConsumptionLPer100Km: 9.5
+    routingProfile: 0
+    minCompanyLevelRequired: 4
+  - id: porteur_urbain_10t
+    displayName: Porteur Urbain 10t
+    category: 1
+    icon: {fileID: 0}
+    purchasePrice: 40000
+    maintenanceCost: 2000
+    speedKmh: 110
+    capacity: 10
+    maxKilometers: 30000
+    fuelTankCapacityLiters: 150
+    fuelConsumptionLPer100Km: 18
+    routingProfile: 1
+    minCompanyLevelRequired: 3
+  - id: porteur_renforce_18t
+    displayName: Porteur Renforcé 18t
+    category: 1
+    icon: {fileID: 0}
+    purchasePrice: 95000
+    maintenanceCost: 4800
+    speedKmh: 100
+    capacity: 18
+    maxKilometers: 45000
+    fuelTankCapacityLiters: 200
+    fuelConsumptionLPer100Km: 24
+    routingProfile: 1
+    minCompanyLevelRequired: 5
+  - id: camion_grue_14t
+    displayName: Camion-Grue 14t
+    category: 1
+    icon: {fileID: 0}
+    purchasePrice: 120000
+    maintenanceCost: 6500
+    speedKmh: 90
+    capacity: 14
+    maxKilometers: 40000
+    fuelTankCapacityLiters: 220
+    fuelConsumptionLPer100Km: 27
+    routingProfile: 1
+    minCompanyLevelRequired: 6
+  - id: poids_lourd_26t
+    displayName: Poids Lourd 26t
+    category: 2
+    icon: {fileID: 0}
+    purchasePrice: 150000
+    maintenanceCost: 8000
+    speedKmh: 95
+    capacity: 26
+    maxKilometers: 60000
+    fuelTankCapacityLiters: 300
+    fuelConsumptionLPer100Km: 30
+    routingProfile: 1
+    minCompanyLevelRequired: 6
+  - id: poids_lourd_32t
+    displayName: Poids Lourd 32t
+    category: 2
+    icon: {fileID: 0}
+    purchasePrice: 210000
+    maintenanceCost: 11000
+    speedKmh: 90
+    capacity: 32
+    maxKilometers: 75000
+    fuelTankCapacityLiters: 350
+    fuelConsumptionLPer100Km: 33
+    routingProfile: 1
+    minCompanyLevelRequired: 7
+  - id: poids_lourd_premium_38t
+    displayName: Poids Lourd Premium 38t
+    category: 2
+    icon: {fileID: 0}
+    purchasePrice: 300000
+    maintenanceCost: 15000
+    speedKmh: 92
+    capacity: 38
+    maxKilometers: 95000
+    fuelTankCapacityLiters: 400
+    fuelConsumptionLPer100Km: 35
+    routingProfile: 1
+    minCompanyLevelRequired: 9
+  - id: benne_chantier_18t
+    displayName: Benne de Chantier 18t
+    category: 6
+    icon: {fileID: 0}
+    purchasePrice: 130000
+    maintenanceCost: 7000
+    speedKmh: 85
+    capacity: 18
+    maxKilometers: 50000
+    fuelTankCapacityLiters: 260
+    fuelConsumptionLPer100Km: 28
+    routingProfile: 1
+    minCompanyLevelRequired: 4
+  - id: benne_tp_26t
+    displayName: Benne TP 26t
+    category: 6
+    icon: {fileID: 0}
+    purchasePrice: 220000
+    maintenanceCost: 12000
+    speedKmh: 80
+    capacity: 26
+    maxKilometers: 70000
+    fuelTankCapacityLiters: 320
+    fuelConsumptionLPer100Km: 34
+    routingProfile: 1
+    minCompanyLevelRequired: 6
+  - id: benne_carriere_40t
+    displayName: Benne de Carrière 40t
+    category: 6
+    icon: {fileID: 0}
+    purchasePrice: 480000
+    maintenanceCost: 26000
+    speedKmh: 65
+    capacity: 40
+    maxKilometers: 90000
+    fuelTankCapacityLiters: 420
+    fuelConsumptionLPer100Km: 46
+    routingProfile: 1
+    minCompanyLevelRequired: 9
+  - id: frigo_compact_12t
+    displayName: Frigorifique Compact 12t
+    category: 5
+    icon: {fileID: 0}
+    purchasePrice: 90000
+    maintenanceCost: 5000
+    speedKmh: 105
+    capacity: 12
+    maxKilometers: 40000
+    fuelTankCapacityLiters: 180
+    fuelConsumptionLPer100Km: 21
+    routingProfile: 1
+    minCompanyLevelRequired: 5
+  - id: frigo_renforce_22t
+    displayName: Frigorifique Renforcé 22t
+    category: 5
+    icon: {fileID: 0}
+    purchasePrice: 190000
+    maintenanceCost: 10500
+    speedKmh: 98
+    capacity: 22
+    maxKilometers: 65000
+    fuelTankCapacityLiters: 280
+    fuelConsumptionLPer100Km: 29
+    routingProfile: 1
+    minCompanyLevelRequired: 7
+  - id: frigo_pharma_30t
+    displayName: Frigorifique Pharma 30t
+    category: 5
+    icon: {fileID: 0}
+    purchasePrice: 380000
+    maintenanceCost: 19000
+    speedKmh: 100
+    capacity: 30
+    maxKilometers: 90000
+    fuelTankCapacityLiters: 360
+    fuelConsumptionLPer100Km: 32
+    routingProfile: 1
+    minCompanyLevelRequired: 10
+  - id: citerne_alim_24t
+    displayName: Citerne Alimentaire 24t
+    category: 7
+    icon: {fileID: 0}
+    purchasePrice: 240000
+    maintenanceCost: 13000
+    speedKmh: 90
+    capacity: 24
+    maxKilometers: 70000
+    fuelTankCapacityLiters: 320
+    fuelConsumptionLPer100Km: 33
+    routingProfile: 1
+    minCompanyLevelRequired: 8
+  - id: citerne_carburant_30t
+    displayName: Citerne Carburant 30t
+    category: 7
+    icon: {fileID: 0}
+    purchasePrice: 360000
+    maintenanceCost: 19000
+    speedKmh: 88
+    capacity: 30
+    maxKilometers: 85000
+    fuelTankCapacityLiters: 380
+    fuelConsumptionLPer100Km: 37
+    routingProfile: 1
+    minCompanyLevelRequired: 10
+  - id: citerne_chimique_36t
+    displayName: Citerne Chimique 36t
+    category: 7
+    icon: {fileID: 0}
+    purchasePrice: 520000
+    maintenanceCost: 28000
+    speedKmh: 85
+    capacity: 36
+    maxKilometers: 100000
+    fuelTankCapacityLiters: 440
+    fuelConsumptionLPer100Km: 41
+    routingProfile: 1
+    minCompanyLevelRequired: 12
+  - id: semi_tautliner_34t
+    displayName: Semi Tautliner 34t
+    category: 3
+    icon: {fileID: 0}
+    purchasePrice: 280000
+    maintenanceCost: 14000
+    speedKmh: 95
+    capacity: 34
+    maxKilometers: 90000
+    fuelTankCapacityLiters: 400
+    fuelConsumptionLPer100Km: 34
+    routingProfile: 1
+    minCompanyLevelRequired: 10
+  - id: semi_megatrailer_40t
+    displayName: Semi Mega-Trailer 40t
+    category: 3
+    icon: {fileID: 0}
+    purchasePrice: 420000
+    maintenanceCost: 21000
+    speedKmh: 92
+    capacity: 40
+    maxKilometers: 110000
+    fuelTankCapacityLiters: 450
+    fuelConsumptionLPer100Km: 38
+    routingProfile: 1
+    minCompanyLevelRequired: 12
+  - id: semi_double_44t
+    displayName: Semi Double Plancher 44t
+    category: 3
+    icon: {fileID: 0}
+    purchasePrice: 600000
+    maintenanceCost: 30000
+    speedKmh: 90
+    capacity: 44
+    maxKilometers: 130000
+    fuelTankCapacityLiters: 500
+    fuelConsumptionLPer100Km: 42
+    routingProfile: 1
+    minCompanyLevelRequired: 14
+  - id: porte_conteneur_20
+    displayName: "Porte-Conteneur 20'"
+    category: 8
+    icon: {fileID: 0}
+    purchasePrice: 350000
+    maintenanceCost: 18000
+    speedKmh: 90
+    capacity: 28
+    maxKilometers: 90000
+    fuelTankCapacityLiters: 400
+    fuelConsumptionLPer100Km: 36
+    routingProfile: 1
+    minCompanyLevelRequired: 13
+  - id: porte_conteneur_40
+    displayName: "Porte-Conteneur 40'"
+    category: 8
+    icon: {fileID: 0}
+    purchasePrice: 520000
+    maintenanceCost: 27000
+    speedKmh: 88
+    capacity: 36
+    maxKilometers: 110000
+    fuelTankCapacityLiters: 460
+    fuelConsumptionLPer100Km: 40
+    routingProfile: 1
+    minCompanyLevelRequired: 15
+  - id: porte_conteneur_double_45t
+    displayName: Porte-Conteneur Double 45t
+    category: 8
+    icon: {fileID: 0}
+    purchasePrice: 780000
+    maintenanceCost: 40000
+    speedKmh: 85
+    capacity: 45
+    maxKilometers: 130000
+    fuelTankCapacityLiters: 520
+    fuelConsumptionLPer100Km: 45
+    routingProfile: 1
+    minCompanyLevelRequired: 17
+  - id: convoi_90t
+    displayName: Convoi Exceptionnel 90t
+    category: 4
+    icon: {fileID: 0}
+    purchasePrice: 1500000
+    maintenanceCost: 95000
+    speedKmh: 55
+    capacity: 90
+    maxKilometers: 120000
+    fuelTankCapacityLiters: 1100
+    fuelConsumptionLPer100Km: 90
+    routingProfile: 1
+    minCompanyLevelRequired: 16
+  - id: convoi_eolien_120t
+    displayName: Convoi Éolien 120t
+    category: 4
+    icon: {fileID: 0}
+    purchasePrice: 2400000
+    maintenanceCost: 150000
+    speedKmh: 45
+    capacity: 120
+    maxKilometers: 130000
+    fuelTankCapacityLiters: 1500
+    fuelConsumptionLPer100Km: 110
+    routingProfile: 1
+    minCompanyLevelRequired: 18
+  - id: train_routier_double_70t
+    displayName: Train Routier Double 70t
+    category: 9
+    icon: {fileID: 0}
+    purchasePrice: 1900000
+    maintenanceCost: 110000
+    speedKmh: 80
+    capacity: 70
+    maxKilometers: 150000
+    fuelTankCapacityLiters: 900
+    fuelConsumptionLPer100Km: 70
+    routingProfile: 1
+    minCompanyLevelRequired: 20
+  - id: train_routier_triple_110t
+    displayName: Train Routier Triple 110t
+    category: 9
+    icon: {fileID: 0}
+    purchasePrice: 3200000
+    maintenanceCost: 180000
+    speedKmh: 75
+    capacity: 110
+    maxKilometers: 170000
+    fuelTankCapacityLiters: 1300
+    fuelConsumptionLPer100Km: 95
+    routingProfile: 1
+    minCompanyLevelRequired: 22
+  - id: train_routier_outback_160t
+    displayName: Train Routier Outback 160t
+    category: 9
+    icon: {fileID: 0}
+    purchasePrice: 5000000
+    maintenanceCost: 280000
+    speedKmh: 70
+    capacity: 160
+    maxKilometers: 190000
+    fuelTankCapacityLiters: 1800
+    fuelConsumptionLPer100Km: 125
+    routingProfile: 1
+    minCompanyLevelRequired: 24
+  - id: mega_convoi_300t
+    displayName: Méga-Convoi 300t
+    category: 10
+    icon: {fileID: 0}
+    purchasePrice: 8000000
+    maintenanceCost: 450000
+    speedKmh: 40
+    capacity: 300
+    maxKilometers: 160000
+    fuelTankCapacityLiters: 2600
+    fuelConsumptionLPer100Km: 160
+    routingProfile: 1
+    minCompanyLevelRequired: 26
+  - id: mega_convoi_industriel_500t
+    displayName: Méga-Convoi Industriel 500t
+    category: 10
+    icon: {fileID: 0}
+    purchasePrice: 15000000
+    maintenanceCost: 820000
+    speedKmh: 32
+    capacity: 500
+    maxKilometers: 180000
+    fuelTankCapacityLiters: 3500
+    fuelConsumptionLPer100Km: 230
+    routingProfile: 1
+    minCompanyLevelRequired: 30
+  - id: mega_convoi_titan_800t
+    displayName: Méga-Convoi Titan 800t
+    category: 10
+    icon: {fileID: 0}
+    purchasePrice: 30000000
+    maintenanceCost: 1600000
+    speedKmh: 25
+    capacity: 800
+    maxKilometers: 200000
+    fuelTankCapacityLiters: 5000
+    fuelConsumptionLPer100Km: 340
+    routingProfile: 1
+    minCompanyLevelRequired: 34

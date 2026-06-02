@@ -12,6 +12,7 @@ namespace TransportManager.Entities.Contracts
         public string assignedVehicleInstanceId;
         public long startTimeUtcTicks;
         public long completionTimeUtcTicks;
+        public long deadlineTimeUtcTicks;   // livrer avant cette heure pour le bonus de ponctualité
         public ContractStatus status;
 
         // Accident pré-calculé à la signature du contrat (0 / None = aucun accident prévu)

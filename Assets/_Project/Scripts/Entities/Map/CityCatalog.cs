@@ -8,6 +8,16 @@ namespace TransportManager.Entities.Map
     {
         public List<CityEntry> cities = new List<CityEntry>();
 
-        public CityEntry GetById(string id) => cities.Find(c => c.id == id);
+        // Dépôt du joueur : entrée synthétique bâtie au runtime depuis les coordonnées
+        // de l'entreprise. NON sérialisée → jamais écrite dans l'asset.
+        [System.NonSerialized] private CityEntry _home;
+        public CityEntry Home => _home;
+        public void SetHome(CityEntry home) => _home = home;
+
+        public CityEntry GetById(string id)
+        {
+            if (_home != null && _home.id == id) return _home;
+            return cities.Find(c => c.id == id);
+        }
     }
 }

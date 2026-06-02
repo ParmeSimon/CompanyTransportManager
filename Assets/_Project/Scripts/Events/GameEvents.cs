@@ -25,9 +25,11 @@ namespace TransportManager.Events
 
         // Contracts
         public static event Action<ContractInstance> OnContractStarted;
-        public static event Action<ContractInstance> OnContractCompleted;
+        public static event Action<ContractInstance> OnContractCompleted;       // fin (succès OU accident)
+        public static event Action<ContractInstance, int> OnContractDelivered;  // succès uniquement (+ récompense)
         public static void RaiseContractStarted(ContractInstance c) => OnContractStarted?.Invoke(c);
         public static void RaiseContractCompleted(ContractInstance c) => OnContractCompleted?.Invoke(c);
+        public static void RaiseContractDelivered(ContractInstance c, int reward) => OnContractDelivered?.Invoke(c, reward);
 
         // Maintenance
         public static event Action<VehicleInstance> OnMaintenanceDue;
@@ -72,6 +74,13 @@ namespace TransportManager.Events
         // Company level-up (oldLevel, newLevel)
         public static event Action<int, int> OnCompanyLevelUp;
         public static void RaiseCompanyLevelUp(int oldLevel, int newLevel) => OnCompanyLevelUp?.Invoke(oldLevel, newLevel);
+
+        // Réputation (valeur, indice de palier)
+        public static event Action<int, int> OnReputationChanged;
+        public static void RaiseReputationChanged(int reputation, int tier) => OnReputationChanged?.Invoke(reputation, tier);
+        // Montée de palier de réputation (nom du nouveau palier)
+        public static event Action<string> OnReputationTierUp;
+        public static void RaiseReputationTierUp(string tierName) => OnReputationTierUp?.Invoke(tierName);
 
         // Skill tree
         public static event Action<int> OnSkillPointsChanged;     // points disponibles

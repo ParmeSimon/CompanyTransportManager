@@ -27,6 +27,42 @@ namespace TransportManager.Systems.Fuel
         public FuelStationConfig Config => _config;
         public FuelPumpTier CurrentTier => _config?.GetTier(_save.fuelStation.pumpLevel);
 
+        // Prix courant du litre = prix de base × cours du marché × (1 - réduction skill).
+        // Le cours est IDENTIQUE pour tous les joueurs : il suit le cours réel du pétrole (Brent),
+        // figé à la valeur du jour. Si l'API est indisponible → repli déterministe (aussi commun à tous).
+        public float CurrentDollarsPerLiter => DollarsPerLiterAt(0f);
+
+        public float FuelPriceMultiplier => RealFuelMarket.Available ? RealFuelMarket.Multiplier : Market.FuelPriceMultiplier;
+        public int   FuelPriceTrend      => RealFuelMarket.Available ? RealFuelMarket.Trend      : Market.FuelTrend;
+
+        // Prix au litre à un décalage temporel (heures ; négatif = passé, positif = futur) — pour le graphe.
+        public float DollarsPerLiterAt(float hoursOffset)
+        {
+            float reduction = ServiceLocator.Get<SkillTreeSystem>()?.Pct(SkillEffectType.FuelPriceReduction) ?? 0f;
+            float baseP = _config != null ? _config.dollarsPerLiter : 0f;
+
+            float mult;
+            if (RealFuelMarket.Available)
+            {
+                // Historique réel pour le passé ; pas de prévision possible sur du réel → plat dans le futur.
+                mult = hoursOffset <= 0f
+                    ? RealFuelMarket.MultiplierDaysAgo(Mathf.RoundToInt(-hoursOffset / 24f))
+                    : RealFuelMarket.Multiplier;
+            }
+            else
+            {
+                mult = Market.MultiplierAtOffsetHours(hoursOffset);   // repli local déterministe
+            }
+            return baseP * mult * (1f - reduction);
+        }
+
+        // Vrai si le prix affiché provient du cours réel (vs repli local déterministe).
+        public bool UsesRealMarket => RealFuelMarket.Available;
+
+        // Compétences de marché (arbre Essence).
+        public bool HasMarketHistory => (ServiceLocator.Get<SkillTreeSystem>()?.Flat(SkillEffectType.FuelMarketHistory) ?? 0) > 0;
+        public int  ForecastDays     => ServiceLocator.Get<SkillTreeSystem>()?.Flat(SkillEffectType.FuelMarketForecast) ?? 0;
+
         public float MaxCapacityLiters
         {
             get
@@ -85,12 +121,11 @@ namespace TransportManager.Systems.Fuel
             liters = Mathf.Min(liters, RemainingCapacity);
             if (liters <= 0f) return false;
 
-            var skills = ServiceLocator.Get<SkillTreeSystem>();
-            float priceReduction = skills?.Pct(SkillEffectType.FuelPriceReduction) ?? 0f;
-            int cost = Mathf.CeilToInt(liters * _config.dollarsPerLiter * (1f - priceReduction));
+            int cost = Mathf.CeilToInt(liters * CurrentDollarsPerLiter);
             var wallet = ServiceLocator.Get<WalletSystem>();
             if (wallet == null || !wallet.TrySpend(CurrencyType.Dollar, cost)) return false;
 
+            var skills = ServiceLocator.Get<SkillTreeSystem>();
             float refillSpeedBonus = skills?.Pct(SkillEffectType.RefillSpeedBonus) ?? 0f;
             float seconds = liters / tier.storageCapacityLiters * tier.fullRefillDurationSeconds
                           * Mathf.Max(0.1f, 1f - refillSpeedBonus);

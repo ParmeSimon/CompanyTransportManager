@@ -23,6 +23,9 @@ namespace TransportManager.Systems.Contracts
 
         public ContractSystem(GameSaveData save) { _save = save; }
 
+        // Rythme exigé pour la ponctualité (km/h). En dessous de cette moyenne effective → retard.
+        private const float DeadlineSpeedKmh = 72f;
+
         public IReadOnlyList<ContractData> Available => _save.availableContracts;
         public IReadOnlyList<ContractInstance> Active => _save.activeContracts;
 
@@ -75,6 +78,10 @@ namespace TransportManager.Systems.Contracts
             float durationSeconds = definition.distanceKm / effectiveSpeed * 3600f;
             DateTime completion = now.AddSeconds(durationSeconds);
 
+            // Délai de livraison (E1) : rythme exigé. Un véhicule lent (gros convoi) peut le rater.
+            float deadlineSeconds = definition.distanceKm / DeadlineSpeedKmh * 3600f;
+            DateTime deadline = now.AddSeconds(deadlineSeconds);
+
             var instance = new ContractInstance
             {
                 instanceId = Guid.NewGuid().ToString(),
@@ -82,6 +89,7 @@ namespace TransportManager.Systems.Contracts
                 assignedVehicleInstanceId = vehicle.instanceId,
                 startTimeUtcTicks = now.Ticks,
                 completionTimeUtcTicks = completion.Ticks,
+                deadlineTimeUtcTicks = deadline.Ticks,
                 status = ContractStatus.InProgress
             };
 
@@ -157,8 +165,22 @@ namespace TransportManager.Systems.Contracts
         {
             var wallet = ServiceLocator.Get<WalletSystem>();
             float rewardBonus = ServiceLocator.Get<SkillTreeSystem>()?.Pct(SkillEffectType.ContractRewardBonus) ?? 0f;
-            int reward = Mathf.RoundToInt(contract.definition.baseReward * (1f + rewardBonus));
+            float eventMult   = TransportManager.Systems.Events.LiveEvents.RewardMultiplier;   // bonus événement du jour
+
+            // Ponctualité (E1) : livré avant le délai → bonus ; en retard → pénalité.
+            bool onTime = contract.deadlineTimeUtcTicks <= 0
+                          || contract.completionTimeUtcTicks <= contract.deadlineTimeUtcTicks;
+            float punctualMult = onTime ? 1.15f : 0.80f;
+
+            // Réputation (E4) : bonus de récompense par palier.
+            var reputation = ServiceLocator.Get<ReputationSystem>();
+            float repBonus = reputation?.RewardBonus ?? 0f;
+
+            int reward = Mathf.RoundToInt(contract.definition.baseReward
+                         * (1f + rewardBonus) * eventMult * (1f + repBonus) * punctualMult);
             wallet?.Add(CurrencyType.Dollar, reward);
+
+            reputation?.AddForDelivery(contract.definition.difficulty, onTime);
 
             var fleet   = ServiceLocator.Get<FleetSystem>();
             var vehicle = fleet?.GetById(contract.assignedVehicleInstanceId);
@@ -187,6 +209,7 @@ namespace TransportManager.Systems.Contracts
 
             ServiceLocator.Get<XpSystem>()?.AddCompanyXpForContract(contract.definition);
             contract.status = ContractStatus.Completed;
+            GameEvents.RaiseContractDelivered(contract, reward);   // succès → célébration (game feel)
             GameEvents.RaiseContractCompleted(contract);
         }
 
@@ -247,6 +270,9 @@ namespace TransportManager.Systems.Contracts
                     GameEvents.RaiseDriverXpChanged(driver);
                 }
             }
+
+            // Réputation entamée par l'accident (E4) — plus sévère si mortel.
+            ServiceLocator.Get<ReputationSystem>()?.Penalize(accident.IsFatal ? 120 : 50);
 
             // Pas de récompense, pas d'XP entreprise — contrat annulé
             contract.status = ContractStatus.Completed;

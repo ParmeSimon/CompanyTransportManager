@@ -31,7 +31,7 @@ namespace TransportManager.UI.Map
         private const float CasingThickness = 6f;
         private const int   MaxSegments     = 160;
         private const float TruckSize       = 30f;
-        private const float TickSeconds     = 1f;
+        private const float TickSeconds     = 0.25f;   // repositionnement fluide le long du tracé
 
         private SlippyMapView _map;
         private MapSystem     _mapSys;
@@ -100,6 +100,15 @@ namespace TransportManager.UI.Map
         }
 
         private void OnContractsChanged(ContractInstance _) => Reconcile();
+
+        // Léger « battement » des camions → donne vie à la carte (game feel).
+        private void Update()
+        {
+            if (_visuals.Count == 0) return;
+            float pulse = 1f + 0.06f * Mathf.Sin(Time.unscaledTime * 3.2f);
+            foreach (var v in _visuals.Values)
+                if (v.truck != null) v.truck.localScale = new Vector3(pulse, pulse, 1f);
+        }
 
         private IEnumerator TickRoutine()
         {

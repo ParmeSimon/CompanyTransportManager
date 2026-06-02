@@ -67,7 +67,7 @@ namespace TransportManager.UI.Common
 
             var iconGo  = Make("Icon", btnGo.transform);
             var iconImg = iconGo.AddComponent<Image>();
-            iconImg.sprite         = Resources.Load<Sprite>("UI/Icons/icons/x");
+            UiIcons.Apply(iconImg, "UI/Icons/icons/x");
             iconImg.color          = TextSec;
             iconImg.preserveAspect = true;
             iconImg.raycastTarget  = false;

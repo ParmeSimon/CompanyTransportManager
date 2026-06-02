@@ -12,6 +12,7 @@ namespace TransportManager.Enums
         RepairCostReduction,        // pct  : réduction du coût de réparation/maintenance
         ContractRewardBonus,        // pct  : bonus sur la récompense des contrats
         ContractCountryReach,       // flat : portée géographique des contrats (0 pays d'attache · 1 limitrophes · 2 continent · 3 monde)
+        MultiStopContractsUnlocked, // flag : débloque les contrats à escales (tournées multi-arrêts), bien mieux payés
         AutoRepair,                 // flag : atelier robotisé — réparation auto gratuite au retour (capstone Dépôt)
 
         // ── RH ──
@@ -32,6 +33,8 @@ namespace TransportManager.Enums
         StationCapacityBonus,       // pct  : bonus de capacité de la cuve de la station
         RefillSpeedBonus,           // pct  : accélération du remplissage de la station
         TripSpeedBonus,             // pct  : bonus de vitesse sur les trajets (durée réduite)
+        FuelMarketHistory,          // flag : débloque l'historique du prix du carburant
+        FuelMarketForecast,         // flat : nombre de jours de prévision du prix (cumulatif)
         AutoStationRefill           // flag : remplissage automatique et gratuit de la station (capstone Essence)
     }
 }

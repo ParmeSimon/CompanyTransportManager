@@ -428,6 +428,7 @@ namespace TransportManager.UI.Tabs
             var iconGo = MakeGO("Icon", inner.transform);
             var iconImg = iconGo.AddComponent<Image>();
             iconImg.sprite = Resources.Load<Sprite>("UI/Icons/icons/research");
+            iconImg.enabled = iconImg.sprite != null;
             iconImg.color = accentHr;
             iconImg.preserveAspect = true;
             iconImg.raycastTarget = false;

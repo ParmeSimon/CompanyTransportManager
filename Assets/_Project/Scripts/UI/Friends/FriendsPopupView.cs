@@ -4,6 +4,8 @@ using TMPro;
 using TransportManager.Core;
 using TransportManager.Events;
 using TransportManager.Social;
+using TransportManager.Systems.Daily;
+using TransportManager.Systems.Social;
 using TransportManager.UI.Common;
 using UnityEngine;
 using UnityEngine.UI;
@@ -31,8 +33,12 @@ namespace TransportManager.UI.Friends
         private readonly System.Collections.Generic.Dictionary<string, bool> _routeVisible =
             new System.Collections.Generic.Dictionary<string, bool>();
 
-        private const int TitleBarH    = 56;
-        private const int InviteAreaH  = 76; // 12 + 52 + 12
+        private const int TitleBarH = 56;
+        private const int TabBarH   = 48;
+
+        private int      _activeTab; // 0 = Amis, 1 = Classement
+        private Image    _tabAmisBg, _tabRankBg;
+        private TMP_Text _tabAmisLbl, _tabRankLbl;
 
         // ── Entry point ───────────────────────────────────────────────────────
 
@@ -84,66 +90,78 @@ namespace TransportManager.UI.Friends
             panelRt.offsetMin = Vector2.zero;
             panelRt.offsetMax = Vector2.zero;
 
-            PopupHeader.Build(panelGo.transform, "Amis", Close, TitleBarH, _sprRound8);
-            BuildInviteBar(panelGo.transform);
+            PopupHeader.Build(panelGo.transform, "Social", Close, TitleBarH, _sprRound8);
+            BuildTabBar(panelGo.transform);
             BuildScrollArea(panelGo.transform);
+            SetTab(0);
         }
 
-        // ── Invite bar (fixed, below title) ───────────────────────────────────
+        // ── Onglets (Amis | Classement) ───────────────────────────────────────
 
-        private void BuildInviteBar(Transform parent)
+        private void BuildTabBar(Transform parent)
         {
-            int top    = TitleBarH + 1;
-            int bottom = top + InviteAreaH;
-
-            var bar   = MakeGO("InviteBar", parent);
+            int top = TitleBarH + 1;
+            var bar   = MakeGO("TabBar", parent);
             var barRt = bar.GetComponent<RectTransform>();
             barRt.anchorMin = new Vector2(0, 1);
             barRt.anchorMax = new Vector2(1, 1);
             barRt.pivot     = new Vector2(0.5f, 1);
-            barRt.offsetMin = new Vector2(14, -bottom);
+            barRt.offsetMin = new Vector2(14, -(top + TabBarH));
             barRt.offsetMax = new Vector2(-14, -top);
 
-            var btn    = MakeGO("BtnInvite", bar.transform);
-            var btnImg = btn.AddComponent<Image>();
-            btnImg.sprite = _sprRound8;
-            btnImg.type   = Image.Type.Sliced;
-            btnImg.color  = Accent;
-            FillParent(btn.GetComponent<RectTransform>());
-            var btnComp = btn.AddComponent<Button>();
-            btnComp.targetGraphic = btnImg;
-            btnComp.onClick.AddListener(OnInviteFriend);
+            var hlg = bar.AddComponent<HorizontalLayoutGroup>();
+            hlg.spacing                = 8;
+            hlg.padding                = new RectOffset(0, 0, 6, 6);
+            hlg.childAlignment         = TextAnchor.MiddleCenter;
+            hlg.childForceExpandWidth  = true;  hlg.childControlWidth  = true;
+            hlg.childForceExpandHeight = true;  hlg.childControlHeight = true;
 
-            // Icon + label row
-            var row    = MakeGO("Row", btn.transform);
-            var rowRt  = row.GetComponent<RectTransform>();
-            FillParent(rowRt);
-            var hlg = row.AddComponent<HorizontalLayoutGroup>();
-            hlg.childAlignment        = TextAnchor.MiddleCenter;
-            hlg.spacing               = 10;
-            hlg.childForceExpandWidth  = false;
-            hlg.childForceExpandHeight = false;
-            hlg.childControlWidth      = false;
-            hlg.childControlHeight     = false;
+            (_tabAmisBg, _tabAmisLbl) = BuildTab(bar.transform, "Amis", 0);
+            (_tabRankBg, _tabRankLbl) = BuildTab(bar.transform, "Classement", 1);
+        }
 
-            var iconGo  = MakeGO("Icon", row.transform);
-            var iconImg = iconGo.AddComponent<Image>();
-            var shareSprite = Resources.Load<Sprite>("UI/Icons/icons/share");
-            iconImg.sprite         = shareSprite != null ? shareSprite : Resources.Load<Sprite>("UI/Icons/icons/users");
-            iconImg.color          = TextPri;
-            iconImg.preserveAspect = true;
-            iconImg.raycastTarget  = false;
-            iconGo.GetComponent<RectTransform>().sizeDelta = new Vector2(22, 22);
+        private (Image, TMP_Text) BuildTab(Transform parent, string label, int index)
+        {
+            var go  = MakeGO("Tab" + index, parent);
+            var img = go.AddComponent<Image>();
+            img.sprite = _sprRound8; img.type = Image.Type.Sliced; img.color = BgPill;
+            var btn = go.AddComponent<Button>();
+            btn.targetGraphic = img;
+            btn.onClick.AddListener(() => SetTab(index));
+            var lbl = AddTMP("Lbl", go.transform, label, 14, FontStyles.Bold, TextSec);
+            lbl.alignment = TextAlignmentOptions.Center; lbl.raycastTarget = false;
+            FillParent(lbl.GetComponent<RectTransform>());
+            return (img, lbl);
+        }
 
-            var lbl = AddTMP("Lbl", row.transform, "Inviter un ami", 16, FontStyles.Bold, TextPri);
-            lbl.raycastTarget = false;
+        private void SetTab(int index)
+        {
+            _activeTab = index;
+            if (_tabAmisBg) { _tabAmisBg.color = index == 0 ? AccentBlue : BgPill; _tabAmisLbl.color = index == 0 ? TextPri : TextSec; }
+            if (_tabRankBg) { _tabRankBg.color = index == 1 ? AccentBlue : BgPill; _tabRankLbl.color = index == 1 ? TextPri : TextSec; }
+            RefreshContent();
+        }
+
+        private void BuildInviteButton()
+        {
+            var go  = MakeGO("BtnInvite", _listContent);
+            var img = go.AddComponent<Image>();
+            img.sprite = _sprRound8; img.type = Image.Type.Sliced; img.color = Accent;
+            var btn = go.AddComponent<Button>();
+            btn.targetGraphic = img;
+            btn.onClick.AddListener(OnInviteFriend);
+            go.AddComponent<LayoutElement>().preferredHeight = 50;
+            var lbl = AddTMP("Lbl", go.transform, "Inviter un ami", 15, FontStyles.Bold, TextPri);
+            lbl.alignment = TextAlignmentOptions.Center; lbl.raycastTarget = false;
+            FillParent(lbl.GetComponent<RectTransform>());
+            MakeGO("SpInv", _listContent).AddComponent<LayoutElement>().preferredHeight = 6;
         }
 
         // ── Scroll area (friends list) ────────────────────────────────────────
 
         private void BuildScrollArea(Transform parent)
         {
-            int scrollTopOffset = TitleBarH + 1 + InviteAreaH;
+            int scrollTopOffset = TitleBarH + 1 + TabBarH;
 
             var scrollGo = MakeGO("Scroll", parent);
             var scrollRt = scrollGo.GetComponent<RectTransform>();
@@ -181,6 +199,21 @@ namespace TransportManager.UI.Friends
             scrollRect.content = contentRt;
 
             _listContent = content.transform;
+        }
+
+        // ── Contenu selon l'onglet ────────────────────────────────────────────
+
+        private void RefreshContent()
+        {
+            if (_listContent == null) return;
+            for (int i = _listContent.childCount - 1; i >= 0; i--) Destroy(_listContent.GetChild(i).gameObject);
+            if (_activeTab == 0) BuildAmisContent();
+            else                 BuildClassementContent();
+        }
+
+        private void BuildAmisContent()
+        {
+            BuildInviteButton();
 
             var sectionLbl = AddTMP("LblSection", _listContent, "MES AMIS", 10, FontStyles.Bold, TextMuted);
             sectionLbl.characterSpacing = 120;
@@ -202,7 +235,145 @@ namespace TransportManager.UI.Friends
                     BuildFriendCard(f);
         }
 
-        // ── Friend card ───────────────────────────────────────────────────────
+        // ── Classement (par km) ───────────────────────────────────────────────
+
+        private void BuildClassementContent()
+        {
+            var daily = ServiceLocator.Get<DailySystem>();
+            if (daily != null && daily.LeaguePending) BuildLeagueRewardBanner(daily);
+
+            var world  = Leaderboard.BuildWorld();
+            var player = Leaderboard.PlayerEntry(world);
+            int li     = Leaderboard.LeagueIndex(player?.km ?? 0);
+            Color32 lc = Leaderboard.LeagueColor(li);
+            string  ln = Leaderboard.LeagueName(li);
+
+            // En-tête : ligue + rang mondial + reset
+            var hero = LbCard();
+            var hr   = LbRowGO(hero.transform, 30);
+            var badge = AddTMP("Badge", hr.transform, $"◆ LIGUE {ln.ToUpper()}", 14, FontStyles.Bold, lc);
+            badge.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
+            var rk = AddTMP("Rank", hr.transform, $"Mondial #{player?.worldRank ?? 0}", 14, FontStyles.Bold, TextPri);
+            rk.alignment = TextAlignmentOptions.MidlineRight;
+            rk.gameObject.AddComponent<LayoutElement>().preferredWidth = 150;
+            var sub = AddTMP("Sub", hero.transform, $"Classement de la semaine · réinitialise dans {Leaderboard.DaysUntilReset} j", 11.5f, FontStyles.Normal, TextMuted);
+            sub.gameObject.AddComponent<LayoutElement>().preferredHeight = 16;
+
+            // Le 1er de ta ligue (+ ta position dans la ligue)
+            LbSection($"TA LIGUE — {ln.ToUpper()}");
+            var leader = Leaderboard.LeagueLeader(world, li);
+            if (leader != null) LbRow("1er", leader);
+            if (player != null && player != leader)
+                LbRow(Leaderboard.LeagueRank(world, player) + "e", player);
+
+            // Les premiers mondiaux
+            LbSection("TOP MONDIAL");
+            bool playerInTop = false;
+            foreach (var e in Leaderboard.WorldTop(world, 6))
+            {
+                LbRow("#" + e.worldRank, e);
+                if (e.isPlayer) playerInTop = true;
+            }
+            if (!playerInTop && player != null) LbRow("#" + player.worldRank, player);
+
+            // Tes amis
+            LbSection("TES AMIS");
+            foreach (var e in Leaderboard.FriendsBoard()) LbRow("#" + e.worldRank, e);
+        }
+
+        private void BuildLeagueRewardBanner(DailySystem daily)
+        {
+            int li = daily.LeaguePendingLeague;
+            Color32 lc = Leaderboard.LeagueColor(li);
+
+            var card = LbCard();
+            card.GetComponent<Image>().color = new Color(lc.r / 255f, lc.g / 255f, lc.b / 255f, 0.16f);
+            var ol = card.AddComponent<Outline>();
+            ol.effectColor = new Color(lc.r / 255f, lc.g / 255f, lc.b / 255f, 0.7f);
+            ol.effectDistance = new Vector2(1.5f, -1.5f);
+
+            var t = AddTMP("Lt", card.transform, $"RÉCOMPENSE DE LIGUE · {Leaderboard.LeagueName(li).ToUpper()}", 13, FontStyles.Bold, lc);
+            t.gameObject.AddComponent<LayoutElement>().preferredHeight = 18;
+            AddTMP("Ld", card.transform, $"Fini #{daily.LeaguePendingRank} de ta ligue la semaine dernière.", 12, FontStyles.Normal, TextSec)
+                .gameObject.AddComponent<LayoutElement>().preferredHeight = 16;
+
+            var row = LbRowGO(card.transform, 34);
+            string reward = $"+{daily.LeaguePendingDollars:N0} $" + (daily.LeaguePendingGold > 0 ? $"   +{daily.LeaguePendingGold} ◆" : "");
+            var rl = AddTMP("Lr", row.transform, reward, 15, FontStyles.Bold, new Color32(0xF2, 0xD9, 0x66, 255));
+            rl.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
+
+            var b  = MakeGO("LbClaim", row.transform);
+            var bi = b.AddComponent<Image>();
+            bi.sprite = _sprRound8; bi.type = Image.Type.Sliced; bi.color = Accent;
+            var bt = b.AddComponent<Button>();
+            bt.targetGraphic = bi;
+            var ble = b.AddComponent<LayoutElement>();
+            ble.preferredWidth = 130; ble.preferredHeight = 34;
+            var bl = AddTMP("Lbl", b.transform, "Récupérer", 13, FontStyles.Bold, TextPri);
+            bl.alignment = TextAlignmentOptions.Center; bl.raycastTarget = false;
+            FillParent(bl.GetComponent<RectTransform>());
+            bt.onClick.AddListener(() => { if (daily.ClaimLeague()) RefreshContent(); });
+        }
+
+        private GameObject LbCard()
+        {
+            var c = MakeGO("LbCard", _listContent);
+            var img = c.AddComponent<Image>();
+            img.sprite = _sprRound12; img.type = Image.Type.Sliced; img.color = BgCard;
+            var v = c.AddComponent<VerticalLayoutGroup>();
+            v.padding = new RectOffset(14, 14, 12, 12); v.spacing = 4;
+            v.childForceExpandWidth = true; v.childControlWidth = true;
+            v.childForceExpandHeight = false; v.childControlHeight = true;
+            c.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            return c;
+        }
+
+        private GameObject LbRowGO(Transform parent, int minHeight)
+        {
+            var go = MakeGO("R", parent);
+            var h = go.AddComponent<HorizontalLayoutGroup>();
+            h.spacing = 10; h.childAlignment = TextAnchor.MiddleLeft;
+            h.childForceExpandWidth = false; h.childControlWidth = true;
+            h.childForceExpandHeight = false; h.childControlHeight = true;
+            go.AddComponent<LayoutElement>().minHeight = minHeight;
+            return go;
+        }
+
+        private void LbSection(string text)
+        {
+            var t = AddTMP("Sec", _listContent, text, 10, FontStyles.Bold, TextMuted);
+            t.characterSpacing = 120;
+            t.gameObject.AddComponent<LayoutElement>().preferredHeight = 18;
+        }
+
+        private void LbRow(string rankText, LeaderboardEntry e)
+        {
+            var go  = MakeGO("Lb", _listContent);
+            var img = go.AddComponent<Image>();
+            img.sprite = _sprRound8; img.type = Image.Type.Sliced;
+            img.color  = e.isPlayer ? new Color(AccentBlue.r / 255f, AccentBlue.g / 255f, AccentBlue.b / 255f, 0.22f) : (Color)(Color32)BgPill;
+            if (e.isPlayer) { var ol = go.AddComponent<Outline>(); ol.effectColor = AccentBlue; ol.effectDistance = new Vector2(1.5f, -1.5f); }
+            go.AddComponent<LayoutElement>().preferredHeight = 44;
+            var h = go.AddComponent<HorizontalLayoutGroup>();
+            h.padding = new RectOffset(12, 12, 0, 0); h.spacing = 10; h.childAlignment = TextAnchor.MiddleLeft;
+            h.childForceExpandWidth = false; h.childControlWidth = true;
+            h.childForceExpandHeight = true; h.childControlHeight = true;
+
+            Color32 rankCol = e.worldRank == 1 ? new Color32(0xF2, 0xD9, 0x66, 255) : TextSec;
+            var rkLbl = AddTMP("Rk", go.transform, rankText, 14, FontStyles.Bold, rankCol);
+            rkLbl.alignment = TextAlignmentOptions.Center;
+            rkLbl.gameObject.AddComponent<LayoutElement>().preferredWidth = 46;
+
+            string tag = e.isPlayer ? "  <size=10><color=#5fa8ff>(vous)</color></size>"
+                       : e.isFriend ? "  <size=10><color=#3DC96E>(ami)</color></size>" : "";
+            var nm = AddTMP("Nm", go.transform, e.name + tag, 14, e.isPlayer ? FontStyles.Bold : FontStyles.Normal, TextPri);
+            nm.richText = true; nm.textWrappingMode = TextWrappingModes.NoWrap; nm.overflowMode = TextOverflowModes.Ellipsis;
+            nm.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
+
+            var kmLbl = AddTMP("Km", go.transform, $"{e.km:N0} km", 13, FontStyles.Bold, TextSec);
+            kmLbl.alignment = TextAlignmentOptions.MidlineRight;
+            kmLbl.gameObject.AddComponent<LayoutElement>().preferredWidth = 120;
+        }
 
         private void BuildEmptyState()
         {
@@ -351,7 +522,7 @@ namespace TransportManager.UI.Friends
 
         private static void RefreshRouteBtn(Image iconImg, TMP_Text lbl, bool isOn)
         {
-            iconImg.sprite = Resources.Load<Sprite>(isOn ? "UI/Icons/icons/eye" : "UI/Icons/icons/eye-off");
+            UiIcons.Apply(iconImg, isOn ? "UI/Icons/icons/eye" : "UI/Icons/icons/eye-off");
             iconImg.color  = isOn ? new Color32(0x3D, 0xC9, 0x6E, 255) : new Color32(0x7A, 0x8F, 0xA6, 255);
             lbl.text       = isOn ? "Masquer" : "Trajets";
             lbl.color      = isOn ? new Color32(0x3D, 0xC9, 0x6E, 255) : new Color32(0x7A, 0x8F, 0xA6, 255);
@@ -379,7 +550,7 @@ namespace TransportManager.UI.Friends
 
             var iconGo  = MakeGO("Icon", go.transform);
             var iconImg = iconGo.AddComponent<Image>();
-            iconImg.sprite         = Resources.Load<Sprite>($"UI/Icons/icons/{iconName}");
+            UiIcons.Apply(iconImg, $"UI/Icons/icons/{iconName}");
             iconImg.color          = TextSec;
             iconImg.preserveAspect = true;
             iconImg.raycastTarget  = false;

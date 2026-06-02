@@ -21,6 +21,7 @@ namespace TransportManager.Save
         public int goldIngots = 10;
         public int energyDrinks = 0;
         public int companyXp = 0;
+        public int reputation = 0;     // réputation (E4) : livraisons à l'heure ↑, accidents/retards ↓
 
         public DepotState depot = new DepotState();
         public FuelStationState fuelStation = new FuelStationState();
@@ -44,6 +45,8 @@ namespace TransportManager.Save
         public ShopState shop = new ShopState();
 
         public SkillTreeState skillTree = new SkillTreeState();
+
+        public DailyState daily = new DailyState();
     }
 
     [Serializable]

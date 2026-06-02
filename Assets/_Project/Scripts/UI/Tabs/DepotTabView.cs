@@ -324,8 +324,9 @@ namespace TransportManager.UI.Tabs
 
         private void OnOpenFuel()
         {
+            // Popup uniquement : on NE change PAS de page → on reste sur le Dépôt à la fermeture.
             GameEvents.RaiseFuelPanelOpened("depot");
-            GoToFuel();
+            FuelOrderPopupView.Show();
         }
 
         private void OnOpenHr()

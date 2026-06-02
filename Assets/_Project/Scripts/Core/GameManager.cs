@@ -80,11 +80,12 @@ namespace TransportManager.Core
             ServiceLocator.Register(new HrSystem(Save));
             ServiceLocator.Register(new XpSystem(Save));
             ServiceLocator.Register(new SkillTreeSystem(Save));
+            ServiceLocator.Register(new ReputationSystem(Save));
             var statTracker = new StatTrackerSystem(Save, ServiceLocator.Get<XpSystem>());
             if (seedFakeAnalytics) { statTracker.SeedFakeMonthData(); Debug.Log("[GameManager] Fake analytics data seeded."); }
             ServiceLocator.Register(statTracker);
 
-            if (seedFakeFleet) { SeedFakeFleetData(); Debug.Log("[GameManager] Fake fleet data seeded."); }
+            if (seedFakeFleet) { SeedFakeFleetData(); SeedUnlockMultiStop(); Debug.Log("[GameManager] Fake fleet data seeded."); }
             ServiceLocator.Register(new FuelSystem(Save, fuelStationConfig));
             ServiceLocator.Register(new ContractSystem(Save));
             ServiceLocator.Register(new ContractGenerator());
@@ -94,12 +95,26 @@ namespace TransportManager.Core
             ServiceLocator.Register(mapSystem);
             ServiceLocator.Register(new ShopSystem(Save));
 
+            // Le dépôt = la vraie position de l'entreprise (et non la ville-catalogue la plus
+            // proche). On l'enregistre comme entrée « maison » résolvable par tout le jeu.
+            EnsureHomeDepot(mapSystem);
+
+            // Défis quotidiens + récompense de connexion (rétention).
+            ServiceLocator.Register(new Systems.Daily.DailySystem(Save));
+
+            // Cours du carburant réel (identique pour tous) : récupération asynchrone, repli local si indispo.
+            Systems.Economy.RealFuelMarket.EnsureFresh();
+
             ServiceLocator.Get<HrSystem>().EnsureRecruitmentPool();
             ServiceLocator.Get<OfflineTimeService>().ApplyOfflineProgress();
 
             Tutorial = new TutorialSystem(Save);
             ServiceLocator.Register(Tutorial);
             _tutorialDriver = new TutorialDriver(Tutorial);
+
+            // Couche game feel (confettis, gerbe d'argent, toasts, sons). Créée APRÈS le
+            // traitement hors-ligne pour ne pas spammer d'effets au démarrage.
+            UI.Juice.JuiceOverlay.Ensure();
         }
 
         private TutorialDriver _tutorialDriver;
@@ -112,6 +127,61 @@ namespace TransportManager.Core
                 return new EuclideanFallbackProvider();
             }
             return new OpenRouteServiceProvider(orsConfig);
+        }
+
+        // Construit l'entrée « dépôt maison » depuis les coordonnées de l'entreprise.
+        // La ville-catalogue la plus proche ne sert qu'à déterminer le pays (portée des contrats).
+        private void EnsureHomeDepot(MapSystem map)
+        {
+            var c = Save?.company;
+            if (map?.Catalog == null) return;
+            if (c == null || !c.hasLocationCoordinates) { map.Catalog.SetHome(null); return; }
+
+            var nearest = map.GetNearestCity(c.locationLatitude, c.locationLongitude);
+            map.Catalog.SetHome(new Entities.Map.CityEntry
+            {
+                id          = "home_depot",
+                displayName = DepotName(c.location),
+                country     = nearest?.country ?? string.Empty,
+                location    = new Entities.Map.GeoPoint(c.locationLatitude, c.locationLongitude)
+            });
+        }
+
+        // Nom lisible du dépôt à partir de l'adresse (même logique que le header).
+        private static string DepotName(string location)
+        {
+            if (string.IsNullOrWhiteSpace(location)) return "Mon dépôt";
+            var parts = location.Split(',');
+            string first = parts[0].Trim();
+            if (parts.Length > 1 && first.Length > 0 && char.IsDigit(first[0]))
+                return first + " " + parts[1].Trim();
+            return first;
+        }
+
+        // Débloque d'office la chaîne de skills menant aux tournées multi-arrêts (jeu de test).
+        private void SeedUnlockMultiStop()
+        {
+            string[] chain = { "depot_root", "depot_a", "depot_a2", "depot_a2a", "depot_tour" };
+            var unlocked = Save.skillTree.unlockedNodeIds;
+            foreach (var id in chain)
+                if (!unlocked.Contains(id)) unlocked.Add(id);
+
+            // Sans localisation d'entreprise, le dépôt retombe sur une ville aléatoire :
+            // on fixe un dépôt déterministe (Paris) pour le jeu de test si aucun n'est défini.
+            if (Save.company != null && !Save.company.hasLocationCoordinates)
+            {
+                Save.company.locationLatitude       = 48.8566;
+                Save.company.locationLongitude      = 2.3522;
+                Save.company.hasLocationCoordinates = true;
+                Save.company.location               = "Paris";
+                Debug.Log("[GameManager] Dépôt de test fixé sur Paris.");
+            }
+
+            // Purge les contrats déjà listés (générés avant le passage au départ-dépôt) :
+            // ils seront régénérés, ancrés sur le dépôt.
+            Save.availableContracts.Clear();
+
+            Debug.Log("[GameManager] Skill « Tournées multi-arrêts » débloqué (seed de test).");
         }
 
         private void SeedFakeFleetData()
