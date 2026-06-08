@@ -50,7 +50,7 @@ namespace TransportManager.UI.Tabs
             canvas.renderMode = RenderMode.ScreenSpaceOverlay; canvas.sortingOrder = 540;
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1080, 1920); scaler.matchWidthOrHeight = 0.5f;
+            scaler.referenceResolution = new Vector2(1920, 1080); scaler.matchWidthOrHeight = 0.5f;
             gameObject.AddComponent<GraphicRaycaster>();
 
             var overlay = MakeImg("Overlay", transform, BgOverlay);
@@ -60,8 +60,8 @@ namespace TransportManager.UI.Tabs
             var panel = MakeGO("Panel", transform);
             var pImg = panel.AddComponent<Image>(); pImg.sprite = _r12; pImg.type = Image.Type.Sliced; pImg.color = BgPanel;
             var pRt = panel.GetComponent<RectTransform>();
-            pRt.anchorMin = new Vector2(0.07f, 0.18f); pRt.anchorMax = new Vector2(0.93f, 0.82f);
-            pRt.offsetMin = Vector2.zero; pRt.offsetMax = Vector2.zero;
+            pRt.anchorMin = new Vector2(0f, 0.18f); pRt.anchorMax = new Vector2(0.93f, 0.82f);
+            pRt.offsetMin = new Vector2(132f, 0f); pRt.offsetMax = Vector2.zero;   // dégage la sidebar
 
             PopupHeader.Build(panel.transform, "Ravitaillement", Close, TitleBarH, _r8);
 
@@ -97,11 +97,11 @@ namespace TransportManager.UI.Tabs
         // ── Graphe de fluctuation ────────────────────────────────────────────────────
         private void BuildChart(Transform parent)
         {
-            bool hist = _fuel.HasMarketHistory;
-            int forecastDays = _fuel.ForecastDays;
-            float pastHours = hist ? 72f : 6f;
-            float futHours  = forecastDays * 24f;
-            float total = pastHours + futHours;
+            // Cours réels → on n'affiche que le PASSÉ (pas de prévision). Profondeur = skills.
+            int histDays = _fuel.HistoryDaysVisible;
+            bool hist = histDays > 0;
+            float pastHours = hist ? histDays * 24f : 6f;
+            float total = pastHours;   // « maintenant » est le point le plus à droite
 
             // Conteneur à positionnement absolu (PAS de VerticalLayoutGroup).
             var card = MakeGO("ChartCard", parent);
@@ -139,9 +139,10 @@ namespace TransportManager.UI.Tabs
             var bRt2 = bot.rectTransform; bRt2.anchorMin = new Vector2(0, 0); bRt2.anchorMax = new Vector2(0, 0);
             bRt2.pivot = new Vector2(0, 0); bRt2.anchoredPosition = new Vector2(12, 6); bRt2.sizeDelta = new Vector2(80, 14);
 
-            string legend = !hist ? "Historique verrouillé — skill « Analyse de marché »"
-                          : forecastDays <= 0 ? "Historique 3 j · prévision verrouillée (skill « Prévision »)"
-                          : $"Historique 3 j  ·  prévision +{forecastDays} j";
+            string source = _fuel.UsesRealMarket ? "cours réel" : "simulé";
+            string legend = !hist
+                ? "Historique verrouillé — skill « Analyse de marché »"
+                : $"Historique {histDays} j  ·  {source}";
             var leg = Tmp(card.transform, legend, 10.5f, TextMuted, false);
             leg.alignment = TextAlignmentOptions.Center;
             var lRt = leg.rectTransform; lRt.anchorMin = new Vector2(0, 0); lRt.anchorMax = new Vector2(1, 0);

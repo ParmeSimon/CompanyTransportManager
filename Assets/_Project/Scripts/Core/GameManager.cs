@@ -102,6 +102,9 @@ namespace TransportManager.Core
             // Défis quotidiens + récompense de connexion (rétention).
             ServiceLocator.Register(new Systems.Daily.DailySystem(Save));
 
+            // Succès / achievements globaux (objectifs long terme — G1).
+            ServiceLocator.Register(new Systems.Achievements.AchievementSystem(Save));
+
             // Cours du carburant réel (identique pour tous) : récupération asynchrone, repli local si indispo.
             Systems.Economy.RealFuelMarket.EnsureFresh();
 

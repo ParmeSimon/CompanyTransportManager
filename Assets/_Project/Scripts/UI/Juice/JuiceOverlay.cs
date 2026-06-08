@@ -48,7 +48,7 @@ namespace TransportManager.UI.Juice
             canvas.sortingOrder = 7000;   // au-dessus des popups, sous le tutoriel/splash
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1080, 1920);
+            scaler.referenceResolution = new Vector2(1920, 1080);
             scaler.matchWidthOrHeight  = 0.5f;
             // Pas de GraphicRaycaster : la couche ne doit jamais intercepter les clics.
 
@@ -63,6 +63,7 @@ namespace TransportManager.UI.Juice
             GameEvents.OnSkillNodeUnlocked += OnSkillUnlocked;
             GameEvents.OnVehicleAdded      += OnVehicleAdded;
             GameEvents.OnReputationTierUp  += OnReputationTierUp;
+            GameEvents.OnAchievementUnlocked += OnAchievementUnlocked;
         }
 
         private void OnDisable()
@@ -72,6 +73,7 @@ namespace TransportManager.UI.Juice
             GameEvents.OnSkillNodeUnlocked -= OnSkillUnlocked;
             GameEvents.OnVehicleAdded      -= OnVehicleAdded;
             GameEvents.OnReputationTierUp  -= OnReputationTierUp;
+            GameEvents.OnAchievementUnlocked -= OnAchievementUnlocked;
         }
 
         // ── Handlers ───────────────────────────────────────────────────────────────
@@ -102,6 +104,15 @@ namespace TransportManager.UI.Juice
         {
             Toast("RÉPUTATION", $"Nouveau palier : {tierName}", Gold);
             SpawnConfetti(24);
+            Sfx.Success();
+            Haptics.Success();
+        }
+
+        private void OnAchievementUnlocked(Systems.Achievements.AchievementDef def)
+        {
+            if (def == null) return;
+            Toast("SUCCÈS DÉBLOQUÉ", def.title, Gold);
+            SpawnConfetti(28);
             Sfx.Success();
             Haptics.Success();
         }

@@ -64,7 +64,7 @@ namespace TransportManager.UI.Daily
             canvas.sortingOrder = 520;
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1080, 1920);
+            scaler.referenceResolution = new Vector2(1920, 1080);
             scaler.matchWidthOrHeight  = 0.5f;
             gameObject.AddComponent<GraphicRaycaster>();
 
@@ -76,8 +76,8 @@ namespace TransportManager.UI.Daily
             var pImg = panel.AddComponent<Image>();
             pImg.sprite = _r12; pImg.type = Image.Type.Sliced; pImg.color = BgPanel;
             var pRt = panel.GetComponent<RectTransform>();
-            pRt.anchorMin = new Vector2(0.08f, 0.08f); pRt.anchorMax = new Vector2(0.92f, 0.92f);
-            pRt.offsetMin = Vector2.zero; pRt.offsetMax = Vector2.zero;
+            pRt.anchorMin = new Vector2(0f, 0.08f); pRt.anchorMax = new Vector2(0.92f, 0.92f);
+            pRt.offsetMin = new Vector2(132f, 0f); pRt.offsetMax = Vector2.zero;   // dégage la sidebar
 
             PopupHeader.Build(panel.transform, "Quotidien", Close, TitleBarH, _r8);
             BuildScroll(panel.transform);

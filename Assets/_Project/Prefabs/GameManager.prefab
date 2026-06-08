@@ -50,5 +50,5 @@ MonoBehaviour:
   orsConfig: {fileID: 11400000, guid: 7e2a9c4b13d6f84e9a5c0b1d2e3f4a5b, type: 2}
   forceFallbackRouting: 0
   resetSaveOnStart: 0
-  seedFakeAnalytics: 1
-  seedFakeFleet: 1
+  seedFakeAnalytics: 0
+  seedFakeFleet: 0

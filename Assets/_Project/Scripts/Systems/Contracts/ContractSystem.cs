@@ -29,6 +29,58 @@ namespace TransportManager.Systems.Contracts
         public IReadOnlyList<ContractData> Available => _save.availableContracts;
         public IReadOnlyList<ContractInstance> Active => _save.activeContracts;
 
+        // Fatigue retirée au conducteur quand on lui donne une energy drink.
+        private const float EnergyDrinkFatigueRelief = 50f;
+
+        /// <summary>
+        /// Donne une energy drink à un conducteur : consomme 1 boisson du stock, réduit
+        /// fortement sa fatigue et, s'il est en mission, ANNULE l'accident programmé
+        /// (le conducteur dopé reste vigilant). Renvoie false si le stock est vide.
+        /// </summary>
+        public bool TryGiveEnergyDrinkToDriver(string driverInstanceId)
+        {
+            if (string.IsNullOrEmpty(driverInstanceId)) return false;
+            var driver = ServiceLocator.Get<HrSystem>()?.GetHired(driverInstanceId);
+            if (driver == null) return false;
+
+            var shop = ServiceLocator.Get<Systems.Shop.ShopSystem>();
+            if (shop == null || !shop.TryConsumeEnergyDrink()) return false;
+
+            driver.currentFatigue = Mathf.Max(0f, driver.currentFatigue - EnergyDrinkFatigueRelief);
+
+            // Annule l'accident programmé du contrat en cours de ce conducteur.
+            var fleet = ServiceLocator.Get<FleetSystem>();
+            foreach (var c in _save.activeContracts)
+            {
+                if (c.status != ContractStatus.InProgress) continue;
+                var v = fleet?.GetById(c.assignedVehicleInstanceId);
+                if (v == null || v.assignedDriverInstanceId != driverInstanceId) continue;
+                c.scheduledAccidentSeverity    = AccidentSeverity.None;
+                c.scheduledAccidentTimeTicks    = 0;
+                c.scheduledAccidentRepairCost   = 0;
+                c.scheduledAccidentDescription  = null;
+                c.energyDrinkUsed               = true;
+            }
+
+            GameEvents.RaiseDriverXpChanged(driver);   // rafraîchit les vues conducteur/flotte
+            GameManager.Instance?.SaveNow();
+            return true;
+        }
+
+        /// Vrai si ce conducteur a un contrat en cours déjà dopé à l'energy drink.
+        public bool DriverHasEnergyDrinkActive(string driverInstanceId)
+        {
+            if (string.IsNullOrEmpty(driverInstanceId)) return false;
+            var fleet = ServiceLocator.Get<FleetSystem>();
+            foreach (var c in _save.activeContracts)
+            {
+                if (!c.energyDrinkUsed || c.status != ContractStatus.InProgress) continue;
+                var v = fleet?.GetById(c.assignedVehicleInstanceId);
+                if (v != null && v.assignedDriverInstanceId == driverInstanceId) return true;
+            }
+            return false;
+        }
+
         public void AddToPool(ContractData def)
         {
             if (def != null && !_save.availableContracts.Contains(def))
@@ -44,6 +96,19 @@ namespace TransportManager.Systems.Contracts
             if (consumption <= 0f) return false;
             float maxRange = data.fuelTankCapacityLiters * 100f / consumption;
             return maxRange >= contract.distanceKm;
+        }
+
+        /// Carburant (litres) nécessaire pour réaliser ce contrat avec ce véhicule et
+        /// son conducteur assigné (mêmes facteurs que <see cref="StartContract"/>).
+        public float FuelNeededForContract(ContractData definition, VehicleInstance vehicle, VehicleData data)
+        {
+            if (definition == null || vehicle == null || data == null) return 0f;
+            float consumption = data.fuelConsumptionLPer100Km;
+            var driver = ServiceLocator.Get<HrSystem>()?.GetHired(vehicle.assignedDriverInstanceId);
+            if (driver != null) consumption *= driver.stats.FuelConsumptionMultiplier;
+            consumption *= (1f - (ServiceLocator.Get<SkillTreeSystem>()?.Pct(SkillEffectType.FuelConsumptionReduction) ?? 0f));
+            if (consumption <= 0f) return 0f;
+            return definition.distanceKm / 100f * consumption;
         }
 
         public ContractInstance StartContract(ContractData definition, VehicleInstance vehicle, VehicleData data)

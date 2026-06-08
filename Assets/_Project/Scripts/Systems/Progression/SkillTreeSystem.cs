@@ -49,10 +49,14 @@ namespace TransportManager.Systems.Progression
             var def = SkillTreeCatalog.GetById(nodeId);
             if (def == null) { reason = "Nœud inconnu."; return false; }
             if (IsUnlocked(nodeId)) { reason = "Déjà débloqué."; return false; }
-            if (!def.IsBranchRoot && !IsUnlocked(def.prerequisiteId))
+            // Tous les prérequis doivent être débloqués (les nœuds de convergence en ont plusieurs).
+            foreach (var prereq in def.AllPrerequisiteIds)
             {
-                reason = "Prérequis non débloqué.";
-                return false;
+                if (!IsUnlocked(prereq))
+                {
+                    reason = "Prérequis non débloqué.";
+                    return false;
+                }
             }
             if (State.availablePoints < def.cost)
             {

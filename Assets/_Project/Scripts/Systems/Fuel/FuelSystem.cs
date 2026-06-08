@@ -59,9 +59,18 @@ namespace TransportManager.Systems.Fuel
         // Vrai si le prix affiché provient du cours réel (vs repli local déterministe).
         public bool UsesRealMarket => RealFuelMarket.Available;
 
-        // Compétences de marché (arbre Essence).
-        public bool HasMarketHistory => (ServiceLocator.Get<SkillTreeSystem>()?.Flat(SkillEffectType.FuelMarketHistory) ?? 0) > 0;
-        public int  ForecastDays     => ServiceLocator.Get<SkillTreeSystem>()?.Flat(SkillEffectType.FuelMarketForecast) ?? 0;
+        // Compétences de marché (arbre Essence) : on dévoile l'historique RÉEL passé (pas de prévision).
+        // Nombre de jours d'historique débloqués par les skills, borné à l'historique réellement dispo.
+        public int HistoryDaysVisible
+        {
+            get
+            {
+                int skill = ServiceLocator.Get<SkillTreeSystem>()?.Flat(SkillEffectType.FuelMarketHistoryDays) ?? 0;
+                int cap = RealFuelMarket.Available ? RealFuelMarket.HistoryDays : 30; // repli local : ~30 j simulés
+                return Mathf.Clamp(skill, 0, cap);
+            }
+        }
+        public bool HasMarketHistory => HistoryDaysVisible > 0;
 
         public float MaxCapacityLiters
         {

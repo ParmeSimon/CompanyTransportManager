@@ -103,7 +103,7 @@ namespace TransportManager.UI.Skills
 
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1080, 1920);
+            scaler.referenceResolution = new Vector2(1920, 1080);
             scaler.matchWidthOrHeight  = 0.5f;
             gameObject.AddComponent<GraphicRaycaster>();
 
@@ -122,9 +122,9 @@ namespace TransportManager.UI.Skills
             panelShadow.effectColor    = new Color(0f, 0f, 0f, 0.5f);
             panelShadow.effectDistance = new Vector2(0f, -4f);
             var panelRt = panelGo.GetComponent<RectTransform>();
-            panelRt.anchorMin = new Vector2(0.03f, 0.05f);
+            panelRt.anchorMin = new Vector2(0f, 0.05f);
             panelRt.anchorMax = new Vector2(0.97f, 0.95f);
-            panelRt.offsetMin = Vector2.zero;
+            panelRt.offsetMin = new Vector2(132f, 0f);   // dégage la sidebar (navbar à gauche)
             panelRt.offsetMax = Vector2.zero;
             _panel = panelGo.transform;
 
@@ -219,6 +219,23 @@ namespace TransportManager.UI.Skills
                 foreach (var node in SkillTreeCatalog.InBranch(b.branch))
                 {
                     if (!_pos.ContainsKey(node.id)) continue;
+
+                    // Nœud de convergence : un lien vers CHAQUE extrémité reliée. Chaque
+                    // lien s'allume dès que son extrémité est débloquée (progression visible).
+                    if (node.IsConvergence)
+                    {
+                        foreach (var pid in node.AllPrerequisiteIds)
+                        {
+                            if (!_pos.ContainsKey(pid)) continue;
+                            bool prereqDone = _skills != null && _skills.IsUnlocked(pid);
+                            Color32 lc = prereqDone
+                                ? b.accent
+                                : new Color32(b.accent.r, b.accent.g, b.accent.b, 55);
+                            BuildLink(_pos[pid], _pos[node.id], lc, 3f);   // connecteurs fins (halo)
+                        }
+                        continue;
+                    }
+
                     Vector2 parent = node.IsBranchRoot || !_pos.ContainsKey(node.prerequisiteId)
                         ? Vector2.zero : _pos[node.prerequisiteId];
                     bool reached = _skills != null && _skills.IsUnlocked(node.id);
@@ -249,7 +266,10 @@ namespace TransportManager.UI.Skills
         // répartis angulairement selon leur nombre de feuilles → remplit tout le secteur.
         private void LayoutBranch(BranchDef b)
         {
-            var nodes = SkillTreeCatalog.InBranch(b.branch).ToList();
+            var all   = SkillTreeCatalog.InBranch(b.branch).ToList();
+            // Les nœuds de convergence (multi-parents) ne suivent pas la disposition en
+            // arbre : on les place à part pour ne pas fausser le compte des feuilles.
+            var nodes = all.Where(n => !n.IsConvergence).ToList();
             var children = new Dictionary<string, List<SkillNodeDefinition>>();
             var roots = new List<SkillNodeDefinition>();
             foreach (var n in nodes)
@@ -272,6 +292,27 @@ namespace TransportManager.UI.Skills
                 float span = full * leaves[r.id] / totalLeaves;
                 AssignNode(r.id, cursor, cursor + span, 1, children, leaves);
                 cursor += span;
+            }
+
+            // Nœud(s) de convergence : posés juste au-dessus du GROUPE d'extrémités
+            // (au centroïde des feuilles reliées, poussé un peu vers l'extérieur). Les
+            // connecteurs restent courts → pas de longue traversée de la branche.
+            foreach (var cn in all)
+            {
+                if (!cn.IsConvergence) continue;
+                Vector2 sum = Vector2.zero;
+                int count = 0, maxDepth = 1;
+                foreach (var p in cn.AllPrerequisiteIds)
+                    if (_pos.TryGetValue(p, out var lp))
+                    {
+                        sum += lp; count++;
+                        if (_depth.TryGetValue(p, out var d) && d > maxDepth) maxDepth = d;
+                    }
+                Vector2 axis = new Vector2(Mathf.Cos(b.angle * Mathf.Deg2Rad), Mathf.Sin(b.angle * Mathf.Deg2Rad));
+                Vector2 centroid = count > 0 ? sum / count : axis * StartDist;
+                Vector2 outward  = centroid.sqrMagnitude > 0.001f ? centroid.normalized : axis;
+                _pos[cn.id]   = centroid + outward * (NodeSize * 1.5f);
+                _depth[cn.id] = maxDepth + 1;
             }
         }
 
@@ -305,7 +346,7 @@ namespace TransportManager.UI.Skills
             }
         }
 
-        private void BuildLink(Vector2 a, Vector2 b, Color32 color)
+        private void BuildLink(Vector2 a, Vector2 b, Color32 color, float thickness = 5f)
         {
             var go = MakeImg("Link", _graph, color);
             go.raycastTarget = false;
@@ -314,7 +355,7 @@ namespace TransportManager.UI.Skills
             rt.pivot = new Vector2(0.5f, 0.5f);
             rt.anchoredPosition = (a + b) * 0.5f;
             float len = Vector2.Distance(a, b);
-            rt.sizeDelta = new Vector2(len, 5f);
+            rt.sizeDelta = new Vector2(len, thickness);
             float ang = Mathf.Atan2(b.y - a.y, b.x - a.x) * Mathf.Rad2Deg;
             rt.localRotation = Quaternion.Euler(0, 0, ang);
         }
@@ -445,7 +486,9 @@ namespace TransportManager.UI.Skills
             if (node == null) return;
 
             bool unlocked  = _skills.IsUnlocked(id);
-            bool prereqMet = node.IsBranchRoot || _skills.IsUnlocked(node.prerequisiteId);
+            bool prereqMet = true;
+            foreach (var pid in node.AllPrerequisiteIds)
+                if (!_skills.IsUnlocked(pid)) { prereqMet = false; break; }
             bool canUnlock = _skills.CanUnlock(id, out _);
             Color32 accent = AccentFor(node.branch);
 
@@ -475,7 +518,17 @@ namespace TransportManager.UI.Skills
             Color32 statusColor;
             if (unlocked)        { status = "✓ Débloqué";                 statusColor = accent; }
             else if (canUnlock)  { status = $"Coût : {node.cost} pt";     statusColor = TextPri; }
-            else if (!prereqMet) { status = "🔒 Débloque le nœud précédent"; statusColor = TextMuted; }
+            else if (!prereqMet)
+            {
+                if (node.IsConvergence)
+                {
+                    int total = 0, done = 0;
+                    foreach (var pid in node.AllPrerequisiteIds) { total++; if (_skills.IsUnlocked(pid)) done++; }
+                    status = $"🔒 Extrémités requises : {done}/{total}";
+                }
+                else status = "🔒 Débloque le nœud précédent";
+                statusColor = TextMuted;
+            }
             else                 { status = $"{node.cost} pt — points insuffisants"; statusColor = TextMuted; }
 
             var st = AddTMP("Status", row.transform, status, 13, FontStyles.Bold, statusColor);

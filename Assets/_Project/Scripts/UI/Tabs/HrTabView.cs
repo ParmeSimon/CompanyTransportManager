@@ -94,7 +94,7 @@ namespace TransportManager.UI.Tabs
             var panelRt = panel.GetComponent<RectTransform>();
             panelRt.anchorMin = Vector2.zero;
             panelRt.anchorMax = Vector2.one;
-            panelRt.offsetMin = new Vector2(SIDEBAR_RESERVE, BOTTOM_PADDING);
+            panelRt.offsetMin = new Vector2(SafeAreaUtil.SidebarReserve(GetComponentInParent<Canvas>()), BOTTOM_PADDING);
             panelRt.offsetMax = new Vector2(-RIGHT_PADDING, -TOP_RESERVE);
             var panelImg = panel.AddComponent<Image>();
             panelImg.sprite = _sprR16;

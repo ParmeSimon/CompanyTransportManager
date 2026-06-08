@@ -126,6 +126,14 @@ namespace TransportManager.Systems.Shop
 
         public int EnergyDrinkCount => _save.energyDrinks;
 
+        // Consomme une (ou plusieurs) energy drink du stock (false si stock insuffisant).
+        public bool TryConsumeEnergyDrink(int count = 1)
+        {
+            if (count <= 0 || _save.energyDrinks < count) return false;
+            _save.energyDrinks -= count;
+            return true;
+        }
+
         // ── Offres débutant (limitées dans le temps) ──────────────────────────
 
         public bool     IsStarterPackAvailable  => CheckPackAvailable(StarterPackDurationDays);

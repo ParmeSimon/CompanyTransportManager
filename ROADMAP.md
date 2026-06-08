@@ -94,9 +94,16 @@
 ## G. 🎯 Objectifs long terme
 *But : donner un horizon aux joueurs investis.*
 
-- [ ] **G1 — Succès / achievements** (100 contrats, 1er camion légendaire, 50 pays…).
+- [x] **G1 — Succès / achievements** : ~30 succès cumulés « à vie » (contrats, distance, pays, gains, flotte, tournées, contrats difficiles, niveau, réputation, véhicules d'exception). Compteurs persistants (`AchievementsState`), déblocage auto (toast + son via `JuiceOverlay`), récompense réclamable (dollars / lingots / point de skill). Popup **« Succès »** (`AchievementsPopupView`) via bouton ⭐ du header + badge « à réclamer ». (`AchievementSystem`, `AchievementCatalog`.)
 - [ ] **G2 — Multi-dépôts** : acheter des dépôts dans d'autres villes = hubs-relais (s'emboîte avec A. ports/aéroports).
-- [ ] **G3 — Prestige** : relancer en plus gros, pour les hardcore.
+  *Conception verrouillée (2026-06-04) — reste à implémenter :*
+  - **Rôles d'un dépôt** : (1) nouvelle origine de contrats, (2) relais régional, (3) +slots de flotte.
+  - **Relais = implicite** : un dépôt étend juste la zone d'où partent des contrats courts — **pas** de découpage réel de trajet (zéro refonte du pathfinding).
+  - **Économie** : achat en **lingots**, **illimité** avec **coût croissant** (courbe exponentielle, comme l'upgrade dépôt actuel). Implantable dans **n'importe quelle** ville du catalogue.
+  - **Flotte rattachée** : `VehicleInstance.homeDepotId` ; un camion ne sert que les contrats de son dépôt. **Transfert payant** = le camion *roule* vers le nouveau dépôt (coût **dollars** selon distance + **délai** d'indisponibilité).
+  - **Contrats / UI** : **sélecteur de dépôt actif** en haut → on voit/génère les contrats + la flotte de ce dépôt, carte recentrée dessus.
+  - **Données** : `DepotInstance { id, cityId, name, level }` + `List<DepotInstance> depots` (migration `DepotState` → `depots[0]` = dépôt maison gratuit) ; `VehicleInstance.homeDepotId` + état « en transfert » (migration → dépôt 0).
+  - **Tâches** : G2.1 données+migration · G2.2 `DepotSystem` multi (achat/upgrade/capacité) · G2.3 dépôt actif + `ContractGenerator` par origine · G2.4 rattachement flotte + transfert · G2.5 écran « Dépôts » · G2.6 marqueurs carte (+ lien A. ports).
 
 ---
 

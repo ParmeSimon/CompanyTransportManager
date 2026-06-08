@@ -31,10 +31,13 @@ namespace TransportManager.Systems.Contracts
 
         // maxDistanceKm bounds the route length so a contract never exceeds the range
         // of the available fleet. Pass float.MaxValue (default) for no cap.
+        // maxCargoTons bounds the required tonnage so a contract never exceeds the load
+        // capacity of the biggest available truck. Pass int.MaxValue (default) for no cap.
         public async Task<ContractData> GenerateAsync(
             VehicleRoutingProfile profile,
             ContractDifficulty difficulty,
-            float maxDistanceKm = float.MaxValue)
+            float maxDistanceKm = float.MaxValue,
+            int maxCargoTons = int.MaxValue)
         {
             var map = ServiceLocator.Get<Systems.Map.MapSystem>();
             if (map == null || !map.HasCities) return null;
@@ -52,17 +55,18 @@ namespace TransportManager.Systems.Contracts
                            && UnityEngine.Random.value < MultiStopChance;
             if (tryTour)
             {
-                var tour = await GenerateTour(map, allowed, depot, profile, difficulty, maxDistanceKm);
+                var tour = await GenerateTour(map, allowed, depot, profile, difficulty, maxDistanceKm, maxCargoTons);
                 if (tour != null) return tour;   // sinon, repli sur un contrat direct
             }
 
-            return await GenerateSingle(map, allowed, depot, profile, difficulty, maxDistanceKm);
+            return await GenerateSingle(map, allowed, depot, profile, difficulty, maxDistanceKm, maxCargoTons);
         }
 
         // Contrat direct : dépôt → ville (livraison) ou ville → dépôt (collecte).
         private async Task<ContractData> GenerateSingle(
             Systems.Map.MapSystem map, System.Collections.Generic.HashSet<string> allowed,
-            CityEntry depot, VehicleRoutingProfile profile, ContractDifficulty difficulty, float maxDistanceKm)
+            CityEntry depot, VehicleRoutingProfile profile, ContractDifficulty difficulty,
+            float maxDistanceKm, int maxCargoTons)
         {
             int attempts = maxDistanceKm >= float.MaxValue ? 1 : MaxPairAttempts;
             for (int i = 0; i < attempts; i++)
@@ -86,7 +90,7 @@ namespace TransportManager.Systems.Contracts
                 distance *= jit; duration *= jit;
                 if (distance > maxDistanceKm) continue;
 
-                return BuildContract(map, difficulty, from, to, distance, duration, null);
+                return BuildContract(map, difficulty, from, to, distance, duration, null, maxCargoTons);
             }
             return null;
         }
@@ -94,7 +98,8 @@ namespace TransportManager.Systems.Contracts
         // Tournée : dépôt → escale 1 → escale 2 → … (2 à 4 livraisons enchaînées).
         private async Task<ContractData> GenerateTour(
             Systems.Map.MapSystem map, System.Collections.Generic.HashSet<string> allowed,
-            CityEntry depot, VehicleRoutingProfile profile, ContractDifficulty difficulty, float maxDistanceKm)
+            CityEntry depot, VehicleRoutingProfile profile, ContractDifficulty difficulty,
+            float maxDistanceKm, int maxCargoTons)
         {
             int target = UnityEngine.Random.Range(2, MultiStopMaxStops + 1);   // 2..MaxStops
             var stops = new System.Collections.Generic.List<CityEntry>();
@@ -132,7 +137,7 @@ namespace TransportManager.Systems.Contracts
             var from = ordered[0];
             var to   = ordered[ordered.Count - 1];
             var via  = ordered.GetRange(1, ordered.Count - 2);   // escales intermédiaires
-            return BuildContract(map, difficulty, from, to, totalDist, totalDur, via);
+            return BuildContract(map, difficulty, from, to, totalDist, totalDur, via, maxCargoTons);
         }
 
         // Calcule une étape (route réelle ou repli grand-cercle).
@@ -152,9 +157,13 @@ namespace TransportManager.Systems.Contracts
         private ContractData BuildContract(
             Systems.Map.MapSystem map, ContractDifficulty difficulty,
             CityEntry from, CityEntry to, float distance, float duration,
-            System.Collections.Generic.List<CityEntry> via)
+            System.Collections.Generic.List<CityEntry> via, int maxCargoTons = int.MaxValue)
         {
+            // Plafonne le tonnage à la capacité du plus gros camion dispo : on ne propose
+            // jamais un contrat qu'aucun véhicule de la flotte ne peut charger.
             int cargoTons = CargoTonsFor(difficulty);
+            if (maxCargoTons < int.MaxValue)
+                cargoTons = Mathf.Clamp(cargoTons, 1, Mathf.Max(1, maxCargoTons));
             string cargoLabel = CargoGoods[UnityEngine.Random.Range(0, CargoGoods.Length)];
 
             bool multi = via != null && via.Count > 0;
@@ -210,13 +219,13 @@ namespace TransportManager.Systems.Contracts
 
         public async Task RefreshAvailablePool(
             List<ContractData> pool, int targetCount, VehicleRoutingProfile profile,
-            float maxDistanceKm = float.MaxValue)
+            float maxDistanceKm = float.MaxValue, int maxCargoTons = int.MaxValue)
         {
             if (pool == null) return;
             int safety = targetCount * 4;
             while (pool.Count < targetCount && safety-- > 0)
             {
-                var c = await GenerateAsync(profile, RandomDifficulty(), maxDistanceKm);
+                var c = await GenerateAsync(profile, RandomDifficulty(), maxDistanceKm, maxCargoTons);
                 if (c == null) break;
                 pool.Add(c);
             }

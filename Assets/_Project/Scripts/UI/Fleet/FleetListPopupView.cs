@@ -11,6 +11,7 @@ using TransportManager.Enums;
 using TransportManager.Events;
 using TransportManager.Systems.Contracts;
 using TransportManager.Systems.Fleet;
+using TransportManager.Systems.Fuel;
 using TransportManager.Systems.Hr;
 using TransportManager.Systems.Map;
 using TransportManager.Systems.Map.Visualization;
@@ -84,7 +85,7 @@ namespace TransportManager.UI.Fleet
 
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1080, 1920);
+            scaler.referenceResolution = new Vector2(1920, 1080);
             scaler.matchWidthOrHeight  = 0.5f;
             gameObject.AddComponent<GraphicRaycaster>();
 
@@ -103,9 +104,9 @@ namespace TransportManager.UI.Fleet
             panelShadow.effectColor    = new Color(0f, 0f, 0f, 0.5f);
             panelShadow.effectDistance = new Vector2(0f, -4f);
             var panelRt = panelGo.GetComponent<RectTransform>();
-            panelRt.anchorMin = new Vector2(0.04f, 0.06f);
+            panelRt.anchorMin = new Vector2(0f, 0.06f);
             panelRt.anchorMax = new Vector2(0.96f, 0.94f);
-            panelRt.offsetMin = Vector2.zero;
+            panelRt.offsetMin = new Vector2(132f, 0f);   // dégage la sidebar (navbar à gauche)
             panelRt.offsetMax = Vector2.zero;
 
             PopupHeader.Build(panelGo.transform, "Flotte", Close, TitleBarH, _sprRound8);
@@ -267,9 +268,147 @@ namespace TransportManager.UI.Fleet
             descLbl.overflowMode     = TextOverflowModes.Ellipsis;
             descLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 18;
 
+            // ── Jauge carburant + bouton « plein » ──
+            if (data != null) BuildFuelSection(card.transform, vehicle, data);
+
+            // ── Energy drink pour le conducteur (réduit fatigue + annule l'accident en mission) ──
+            if (!string.IsNullOrEmpty(vehicle.assignedDriverInstanceId))
+                BuildEnergyRow(card.transform, vehicle.assignedDriverInstanceId);
+
             // ── Contrat en cours ──
             BuildContractSection(card.transform, contract, mapSys);
         }
+
+        // Bouton « energy drink » : dope le conducteur (consomme 1 boisson du stock).
+        private void BuildEnergyRow(Transform card, string driverId)
+        {
+            var contracts = ServiceLocator.Get<ContractSystem>();
+            var shop      = ServiceLocator.Get<TransportManager.Systems.Shop.ShopSystem>();
+
+            var row = MakeRow(card, "Energy", 24);
+
+            var btnGo  = MakeGO("EnergyBtn", row.transform);
+            var btnImg = btnGo.AddComponent<Image>();
+            btnImg.sprite = _sprRound8;
+            btnImg.type   = Image.Type.Sliced;
+            var btnLe = btnGo.AddComponent<LayoutElement>();
+            btnLe.flexibleWidth = 1; btnLe.preferredHeight = 24;
+            var btn = btnGo.AddComponent<Button>();
+            btn.targetGraphic = btnImg;
+            var lbl = AddTMP("L", btnGo.transform, "", 11, FontStyles.Bold, Color.white);
+            lbl.alignment = TextAlignmentOptions.Center;
+            FillParent(lbl.GetComponent<RectTransform>());
+
+            void Render()
+            {
+                int count  = shop?.EnergyDrinkCount ?? 0;
+                bool doped = contracts != null && contracts.DriverHasEnergyDrinkActive(driverId);
+                if (doped)
+                {
+                    lbl.text = "⚡ Conducteur dopé ✓"; lbl.color = TextSec;
+                    btnImg.color = new Color32(0x3A, 0x3F, 0x4A, 255); btn.interactable = false;
+                }
+                else if (count <= 0)
+                {
+                    lbl.text = "⚡ Aucune energy drink"; lbl.color = TextMuted;
+                    btnImg.color = new Color32(0x3A, 0x3F, 0x4A, 255); btn.interactable = false;
+                }
+                else
+                {
+                    lbl.text = $"⚡ Energy drink  ({count})"; lbl.color = Color.white;
+                    btnImg.color = ColBlue; btn.interactable = true;
+                }
+            }
+            Render();
+
+            btn.onClick.AddListener(() =>
+            {
+                if (contracts != null && contracts.TryGiveEnergyDrinkToDriver(driverId)) Render();
+            });
+        }
+
+        // Affiche le niveau de carburant du camion et permet de refaire le plein
+        // depuis le stock de la station-service (gratuit : le carburant est déjà payé).
+        private void BuildFuelSection(Transform card, VehicleInstance vehicle, VehicleData data)
+        {
+            float tank  = data.fuelTankCapacityLiters;
+            float ratio = tank > 0f ? Mathf.Clamp01(vehicle.currentFuelLiters / tank) : 0f;
+
+            var row = MakeRow(card, "Fuel", 22);
+
+            // Jauge (track + remplissage)
+            var track    = MakeImg("Track", row.transform, new Color32(0xFF, 0xFF, 0xFF, 24));
+            track.sprite = _sprRound8;
+            track.type   = Image.Type.Sliced;
+            track.raycastTarget = false;
+            var trackLe = track.gameObject.AddComponent<LayoutElement>();
+            trackLe.flexibleWidth = 1; trackLe.preferredHeight = 8;
+
+            var fill    = MakeImg("Fill", track.transform, FuelColor(ratio));
+            fill.sprite = _sprRound8;
+            fill.type   = Image.Type.Sliced;
+            fill.raycastTarget = false;
+            var fillRt = fill.GetComponent<RectTransform>();
+            fillRt.anchorMin = new Vector2(0f, 0f);
+            fillRt.anchorMax = new Vector2(ratio, 1f);
+            fillRt.offsetMin = Vector2.zero;
+            fillRt.offsetMax = Vector2.zero;
+
+            var pctLbl = AddTMP("Pct", row.transform,
+                $"{vehicle.currentFuelLiters:0} / {tank:0} L", 11, FontStyles.Bold, FuelColor(ratio));
+            pctLbl.textWrappingMode = TextWrappingModes.NoWrap;
+            pctLbl.gameObject.AddComponent<LayoutElement>().preferredWidth = 96;
+
+            // Bouton « Plein »
+            var btnGo  = MakeGO("Refuel", row.transform);
+            var btnImg = btnGo.AddComponent<Image>();
+            btnImg.sprite = _sprRound8;
+            btnImg.type   = Image.Type.Sliced;
+            var btnLe = btnGo.AddComponent<LayoutElement>();
+            btnLe.preferredWidth = 66; btnLe.minWidth = 66; btnLe.preferredHeight = 22;
+            var btn = btnGo.AddComponent<Button>();
+            btn.targetGraphic = btnImg;
+            var btnLbl = AddTMP("L", btnGo.transform, "Plein", 11, FontStyles.Bold, TextPri);
+            btnLbl.alignment = TextAlignmentOptions.Center;
+            FillParent(btnLbl.GetComponent<RectTransform>());
+
+            void Render()
+            {
+                float r = tank > 0f ? Mathf.Clamp01(vehicle.currentFuelLiters / tank) : 0f;
+                fillRt.anchorMax = new Vector2(r, 1f);
+                fill.color   = FuelColor(r);
+                pctLbl.color = FuelColor(r);
+                pctLbl.text  = $"{vehicle.currentFuelLiters:0} / {tank:0} L";
+                bool full = r >= 0.999f;
+                btn.interactable = !full;
+                btnImg.color  = full ? new Color32(0x3A, 0x3F, 0x4A, 255) : ColGreen;
+                btnLbl.text   = full ? "Plein ✓" : "Plein";
+                btnLbl.color  = full ? (Color)TextMuted : Color.white;
+            }
+            Render();
+
+            btn.onClick.AddListener(() =>
+            {
+                var fuel = ServiceLocator.Get<FuelSystem>();
+                if (fuel == null) return;
+                float before = vehicle.currentFuelLiters;
+                fuel.TryFillVehicleTank(vehicle, data);
+                if (vehicle.currentFuelLiters > before + 0.01f)
+                {
+                    GameManager.Instance?.SaveNow();
+                    Render();
+                }
+                else
+                {
+                    // Rien transféré → la station est vide : on le signale brièvement.
+                    btnLbl.text  = "Vide";
+                    btnLbl.color = ColOrange;
+                }
+            });
+        }
+
+        private static Color32 FuelColor(float ratio) =>
+            ratio > 0.5f ? ColGreen : ratio > 0.2f ? ColOrange : ColRed;
 
         // ── Cartes conducteurs ────────────────────────────────────────────────
 

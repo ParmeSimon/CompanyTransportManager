@@ -147,7 +147,7 @@ namespace TransportManager.UI.Tabs
             var panelRt = panel.GetComponent<RectTransform>();
             panelRt.anchorMin = new Vector2(0, 0);
             panelRt.anchorMax = new Vector2(0.5f, 1);
-            panelRt.offsetMin = new Vector2(SIDEBAR_RESERVE, BOTTOM_PADDING);
+            panelRt.offsetMin = new Vector2(SafeAreaUtil.SidebarReserve(GetComponentInParent<Canvas>()), BOTTOM_PADDING);
             panelRt.offsetMax = new Vector2(-SPLIT_GAP * 0.5f, -TOP_RESERVE);
 
             // Rounded panel backdrop (même fond que le header #2C3038)
@@ -977,7 +977,7 @@ namespace TransportManager.UI.Tabs
             }
 
             for (int i = 0; i < owned.Count; i++)
-                BuildAssignRow(owned[i], owned.Count > 1 ? i + 1 : 0);
+                BuildAssignRow(owned[i], owned.Count > 1 ? i + 1 : 0, data);
         }
 
         private void AddAssignNote(string message)
@@ -996,7 +996,7 @@ namespace TransportManager.UI.Tabs
             tmp.alignment = TextAlignmentOptions.Center; tmp.raycastTarget = false;
         }
 
-        private void BuildAssignRow(VehicleInstance vehicle, int number)
+        private void BuildAssignRow(VehicleInstance vehicle, int number, VehicleData data)
         {
             var hr = ServiceLocator.Get<HrSystem>();
             var driver = (hr != null && !string.IsNullOrEmpty(vehicle.assignedDriverInstanceId))
@@ -1030,11 +1030,56 @@ namespace TransportManager.UI.Tabs
             drvTmp.textWrappingMode = TextWrappingModes.NoWrap; drvTmp.overflowMode = TextOverflowModes.Ellipsis;
             drvLine.AddComponent<LayoutElement>().preferredHeight = 16;
 
+            // Jauge carburant du camion (niveau actuel / réservoir)
+            if (data != null) BuildAssignFuelRow(card.transform, vehicle, data);
+
             var btn = MakeButton(card.transform,
                 driver != null ? "Changer / retirer" : "Affecter un conducteur",
                 driver != null ? new Color(0.30f, 0.34f, 0.42f) : AccentGreen, 0f, 32f);
             string vid = vehicle.instanceId;
             btn.onClick.AddListener(() => OpenDriverPicker(vid));
+        }
+
+        // Ligne « carburant » d'une carte camion : libellé + jauge proportionnelle.
+        private void BuildAssignFuelRow(Transform parent, VehicleInstance vehicle, VehicleData data)
+        {
+            float tank  = data.fuelTankCapacityLiters;
+            float ratio = tank > 0f ? Mathf.Clamp01(vehicle.currentFuelLiters / tank) : 0f;
+            Color col   = ratio > 0.5f ? AccentGreen : ratio > 0.2f
+                ? new Color(0.97f, 0.65f, 0.14f) : new Color(0.95f, 0.28f, 0.28f);
+
+            var row = new GameObject("Fuel", typeof(RectTransform));
+            row.transform.SetParent(parent, false);
+            var hlg = row.AddComponent<HorizontalLayoutGroup>();
+            hlg.spacing = 8; hlg.childAlignment = TextAnchor.MiddleLeft;
+            hlg.childForceExpandWidth = false; hlg.childControlWidth = true;
+            hlg.childForceExpandHeight = false; hlg.childControlHeight = true;
+            row.AddComponent<LayoutElement>().preferredHeight = 16;
+
+            var lbl = new GameObject("L", typeof(RectTransform));
+            lbl.transform.SetParent(row.transform, false);
+            var lblTmp = lbl.AddComponent<TextMeshProUGUI>();
+            lblTmp.text = $"<color=#7d8aa3>Carburant</color>  <b>{vehicle.currentFuelLiters:0}/{tank:0} L</b>";
+            lblTmp.fontSize = 11.5f; lblTmp.color = TextSecond; lblTmp.raycastTarget = false;
+            lblTmp.textWrappingMode = TextWrappingModes.NoWrap;
+            lbl.AddComponent<LayoutElement>().preferredWidth = 150;
+
+            var track = new GameObject("Track", typeof(RectTransform));
+            track.transform.SetParent(row.transform, false);
+            var trackImg = track.AddComponent<Image>();
+            trackImg.sprite = _sprR8; trackImg.type = Image.Type.Sliced;
+            trackImg.color = new Color(1f, 1f, 1f, 0.10f); trackImg.raycastTarget = false;
+            var trackLe = track.AddComponent<LayoutElement>();
+            trackLe.flexibleWidth = 1; trackLe.preferredHeight = 7;
+
+            var fill = new GameObject("Fill", typeof(RectTransform));
+            fill.transform.SetParent(track.transform, false);
+            var fillImg = fill.AddComponent<Image>();
+            fillImg.sprite = _sprR8; fillImg.type = Image.Type.Sliced;
+            fillImg.color = col; fillImg.raycastTarget = false;
+            var fRt = fill.GetComponent<RectTransform>();
+            fRt.anchorMin = new Vector2(0f, 0f); fRt.anchorMax = new Vector2(ratio, 1f);
+            fRt.offsetMin = Vector2.zero; fRt.offsetMax = Vector2.zero;
         }
 
         // ── Popup de sélection de conducteur ───────────────────────────────────────

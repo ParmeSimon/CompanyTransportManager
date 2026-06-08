@@ -30,7 +30,33 @@ namespace TransportManager.UI.Common
 
         private Sprite _sprR8, _sprR16;
 
-        private void Awake() => Build();
+        // Bouton Succès : badge « X récompenses à réclamer »
+        private static HeaderView _instance;
+        private GameObject _achBadge;
+        private TMP_Text   _achBadgeLabel;
+
+        private const float HeaderHeight = 58f;
+        private Rect _lastSafeArea;
+        private Canvas _canvas;
+
+        private void Awake() { _instance = this; Build(); }
+
+        // Décale la barre du haut sous la safe area (encoche/Dynamic Island + coins arrondis).
+        private void ApplySafeArea()
+        {
+            if (_canvas == null) _canvas = GetComponentInParent<Canvas>();
+            Vector4 ins = SafeAreaUtil.Insets(_canvas);
+            var rt = GetComponent<RectTransform>();
+            rt.offsetMax = new Vector2(-ins.y, -ins.z);                 // marge droite + haut
+            rt.offsetMin = new Vector2(ins.x, -ins.z - HeaderHeight);   // marge gauche + hauteur barre
+            _lastSafeArea = Screen.safeArea;
+        }
+
+        // Réapplique si la safe area change (rotation gauche/droite → l'encoche change de côté).
+        private void LateUpdate()
+        {
+            if (Screen.safeArea != _lastSafeArea) ApplySafeArea();
+        }
 
 #if UNITY_EDITOR
         [UnityEditor.MenuItem("CONTEXT/HeaderView/Build Header")]
@@ -73,8 +99,7 @@ namespace TransportManager.UI.Common
             rt.anchorMin = new Vector2(0, 1);
             rt.anchorMax = new Vector2(1, 1);
             rt.pivot     = new Vector2(0.5f, 1f);
-            rt.offsetMin = new Vector2(0, -58);
-            rt.offsetMax = new Vector2(0, 0);
+            ApplySafeArea();   // sous l'encoche + marges latérales (coins arrondis / Dynamic Island)
 
             // ===== LEFT SIDE =====
             var left = MakeGO("LeftSide", transform);
@@ -217,6 +242,9 @@ namespace TransportManager.UI.Common
             MakeDivider(right.transform);
             var skillsBtn    = MakeIconButton(right.transform, "BtnSkills",   "research");
             MakeDivider(right.transform);
+            var achBtn       = MakeIconButtonSprite(right.transform, "BtnAchievements", MakeTrophySprite());
+            _achBadge        = MakeBadge(achBtn.transform, out _achBadgeLabel);
+            MakeDivider(right.transform);
             var dailyBtn     = MakeIconButtonSprite(right.transform, "BtnDaily", MakeTargetSprite());
             MakeDivider(right.transform);
             var settingsBtn  = MakeIconButton(right.transform, "BtnSettings",  "settings");
@@ -225,8 +253,10 @@ namespace TransportManager.UI.Common
             listBtn.onClick.AddListener(FleetListPopupView.Show);
             friendsBtn.onClick.AddListener(FriendsPopupView.Show);
             skillsBtn.onClick.AddListener(SkillTreePopupView.Show);
+            achBtn.onClick.AddListener(UI.Achievements.AchievementsPopupView.Show);
             dailyBtn.onClick.AddListener(UI.Daily.DailyHubPopupView.Show);
             settingsBtn.onClick.AddListener(SettingsPopupView.Show);
+            RefreshAchievementsBadge();
         }
 
         // ── Helpers ──────────────────────────────────────────────────────────
@@ -384,6 +414,87 @@ namespace TransportManager.UI.Common
             return _targetSprite;
         }
 
+        // Icône « trophée/étoile » procédurale (succès) — étoile à 5 branches pleine.
+        private static Sprite _trophySprite;
+        private static Sprite MakeTrophySprite()
+        {
+            if (_trophySprite != null) return _trophySprite;
+            const int sz = 64;
+            var tex = new Texture2D(sz, sz, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            Vector2 c = new Vector2((sz - 1) / 2f, (sz - 1) / 2f);
+            float rOut = sz / 2f - 2f, rIn = rOut * 0.42f;
+
+            // Sommets de l'étoile (5 externes + 5 internes), pointe vers le haut.
+            var pts = new Vector2[10];
+            for (int i = 0; i < 10; i++)
+            {
+                float ang = Mathf.Deg2Rad * (90f + i * 36f);
+                float r = (i % 2 == 0) ? rOut : rIn;
+                pts[i] = c + new Vector2(Mathf.Cos(ang) * r, Mathf.Sin(ang) * r);
+            }
+
+            for (int y = 0; y < sz; y++)
+                for (int x = 0; x < sz; x++)
+                {
+                    bool inside = PointInPoly(new Vector2(x, y), pts);
+                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, inside ? 1f : 0f));
+                }
+            tex.Apply();
+            _trophySprite = Sprite.Create(tex, new Rect(0, 0, sz, sz), new Vector2(0.5f, 0.5f));
+            return _trophySprite;
+        }
+
+        private static bool PointInPoly(Vector2 p, Vector2[] poly)
+        {
+            bool inside = false;
+            for (int i = 0, j = poly.Length - 1; i < poly.Length; j = i++)
+            {
+                if (((poly[i].y > p.y) != (poly[j].y > p.y)) &&
+                    (p.x < (poly[j].x - poly[i].x) * (p.y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x))
+                    inside = !inside;
+            }
+            return inside;
+        }
+
+        // Petite pastille rouge (compteur) ancrée en haut-droite d'un bouton d'icône.
+        private GameObject MakeBadge(Transform parent, out TMP_Text label)
+        {
+            var go  = MakeGO("Badge", parent);
+            var img = go.AddComponent<Image>();
+            img.sprite        = _sprR8;
+            img.type          = Image.Type.Sliced;
+            img.color         = new Color32(0xE5, 0x3E, 0x3E, 255);
+            img.raycastTarget = false;
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin        = new Vector2(1f, 1f);
+            rt.anchorMax        = new Vector2(1f, 1f);
+            rt.pivot            = new Vector2(1f, 1f);
+            rt.anchoredPosition = new Vector2(-2f, -2f);
+            rt.sizeDelta        = new Vector2(18f, 18f);
+
+            label = MakeTMP("N", go.transform, "0", 11f, FontStyles.Bold, new Color32(0xFF, 0xFF, 0xFF, 255));
+            label.alignment       = TextAlignmentOptions.Center;
+            label.raycastTarget   = false;
+            var lrt = label.GetComponent<RectTransform>();
+            lrt.anchorMin = Vector2.zero; lrt.anchorMax = Vector2.one;
+            lrt.offsetMin = Vector2.zero; lrt.offsetMax = Vector2.zero;
+
+            go.SetActive(false);
+            return go;
+        }
+
+        /// Met à jour la pastille du bouton Succès (nb de récompenses à réclamer).
+        public void RefreshAchievementsBadge()
+        {
+            if (_achBadge == null) return;
+            int n = ServiceLocator.Get<TransportManager.Systems.Achievements.AchievementSystem>()?.ClaimableCount() ?? 0;
+            _achBadge.SetActive(n > 0);
+            if (n > 0 && _achBadgeLabel != null) _achBadgeLabel.text = n > 9 ? "9+" : n.ToString();
+        }
+
+        /// Appelé par la popup Succès après une réclamation pour rafraîchir la pastille.
+        public static void NotifyAchievementsChanged() => _instance?.RefreshAchievementsBadge();
+
         private static void MakeDivider(Transform parent)
         {
             var go  = MakeGO("Divider", parent);
@@ -405,6 +516,7 @@ namespace TransportManager.UI.Common
             GameEvents.OnCompanyXpChanged     += UpdateXp;
             GameEvents.OnCompanyProfileChanged += UpdateCompany;
             GameEvents.OnReputationChanged    += UpdateReputation;
+            GameEvents.OnAchievementUnlocked  += OnAchievementUnlocked;
         }
 
         private void OnDisable()
@@ -414,7 +526,10 @@ namespace TransportManager.UI.Common
             GameEvents.OnCompanyXpChanged     -= UpdateXp;
             GameEvents.OnCompanyProfileChanged -= UpdateCompany;
             GameEvents.OnReputationChanged    -= UpdateReputation;
+            GameEvents.OnAchievementUnlocked  -= OnAchievementUnlocked;
         }
+
+        private void OnAchievementUnlocked(TransportManager.Systems.Achievements.AchievementDef _) => RefreshAchievementsBadge();
 
         private void UpdateReputation(int reputation, int tier)
         {
@@ -481,6 +596,7 @@ namespace TransportManager.UI.Common
             var xp = ServiceLocator.Get<TransportManager.Systems.Progression.XpSystem>();
             if (xp != null) UpdateXp(xp.CompanyXp, xp.CompanyLevel);
             UpdateReputation(0, 0);
+            RefreshAchievementsBadge();
 
             // Auto-ouverture du hub quotidien au lancement (une fois, après l'onboarding)
             // s'il y a une récompense de connexion ou une mission à réclamer.

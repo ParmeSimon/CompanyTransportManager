@@ -6470,6 +6470,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a18bf5785e45014f8ba26a37a563877, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TransportManager.UI.Tabs.ShopTabView
+  safeTop: 140
+  safeLeft: 130
+  safeRight: 20
+  safeBottom: 20
+  _energyDrinkOffers:
+  - title: SOLO
+    quantity: 1
+    priceText: "0,99 \u20AC"
+    bonus: 
+    resourceImage: 
+  - title: DUO
+    quantity: 2
+    priceText: "1,79 \u20AC"
+    bonus: 
+    resourceImage: 
+  - title: PACK X3
+    quantity: 3
+    priceText: "2,49 \u20AC"
+    bonus: +1 offert
+    resourceImage: 
+  - title: STOCK
+    quantity: 5
+    priceText: "3,99 \u20AC"
+    bonus: +2 offerts
+    resourceImage: 
 --- !u!1 &2138372645
 GameObject:
   m_ObjectHideFlags: 0
@@ -6534,6 +6559,9 @@ MonoBehaviour:
   _xpLabel: {fileID: 1876148503}
   _dollarsLabel: {fileID: 518476303}
   _goldIngotsLabel: {fileID: 1667965066}
+  _logoBg: {fileID: 0}
+  _logoIcon: {fileID: 0}
+  _reputationLabel: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

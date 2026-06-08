@@ -146,7 +146,8 @@ namespace TransportManager.UI.Tabs
 #endif
             }
 
-            // Inset (évite header + sidebar)
+            // Inset (évite header + sidebar). La réserve gauche suit l'encoche (safe area).
+            safeLeft = Mathf.RoundToInt(SafeAreaUtil.SidebarReserve(GetComponentInParent<Canvas>()));
             var rt = GetComponent<RectTransform>();
             rt.anchorMin = Vector2.zero;
             rt.anchorMax = Vector2.one;

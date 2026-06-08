@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TransportManager.Core;
 using TransportManager.Entities.Contracts;
+using TransportManager.Entities.Progression;
 using TransportManager.Entities.Vehicles;
 using TransportManager.Enums;
 using TransportManager.Events;
@@ -58,7 +59,11 @@ namespace TransportManager.UI.Map
         private List<VehicleInstance> _selectableVehicles = new List<VehicleInstance>();
         private int                   _selectedVehicleIdx = -1;
         private List<Image>           _vehicleRowBgs      = new List<Image>();
+        private List<Image>           _rowFuelFillImgs    = new List<Image>();
+        private List<TMP_Text>        _rowFuelTxts        = new List<TMP_Text>();
         private Button                _startBtn;
+        private Button                _refuelBtn;
+        private TMP_Text              _refuelLbl;
 
         // Generation modal state
         private GameObject            _genModal;
@@ -73,6 +78,7 @@ namespace TransportManager.UI.Map
         private ContractDifficulty[]  _sessionDiffs    = new ContractDifficulty[3];
         private VehicleRoutingProfile _sessionProfile;
         private float                 _sessionMaxRangeKm = float.MaxValue;
+        private int                   _sessionMaxCapacityTons = int.MaxValue;
         private const float           FleetRangeSafetyFactor = 0.9f;   // marge 10% : routes > vol d'oiseau
         private int                   _genSessionId;
 
@@ -350,7 +356,7 @@ namespace TransportManager.UI.Map
             // Row 4 : distance · tonnage + reward
             var botRow = HRow(cardGo.transform, 16f);
             var distLbl = MakeTMP("D", botRow,
-                $"{def.distanceKm:F0} km   ·   {def.cargoTons} t",
+                $"{def.distanceKm:F0} km   ·   {def.cargoTons} t   ·   <color=#5A8EF5>+{XpCurve.CompanyXpReward(def.distanceKm, def.difficulty)} XP</color>",
                 11.5f, FontStyles.Normal, TextDim);
             distLbl.textWrappingMode = TextWrappingModes.NoWrap;
             Le(distLbl.gameObject, flexW: true, h: 16f);
@@ -446,7 +452,11 @@ namespace TransportManager.UI.Map
             _popupInst = inst;
             _selectedVehicleIdx = -1;
             _vehicleRowBgs.Clear();
+            _rowFuelFillImgs.Clear();
+            _rowFuelTxts.Clear();
             _selectableVehicles.Clear();
+            _refuelBtn = null;
+            _refuelLbl = null;
 
             bool isActive = inst != null;
             EnsureRoundedSprites();
@@ -637,6 +647,7 @@ namespace TransportManager.UI.Map
 
             RoundedStatCell(gridGo.transform, $"{d.distanceKm:F0} km", "DISTANCE");
             RoundedStatCell(gridGo.transform, $"+{d.baseReward:N0} $", "RÉCOMPENSE", AccentGreen);
+            RoundedStatCell(gridGo.transform, $"+{XpCurve.CompanyXpReward(d.distanceKm, d.difficulty)}", "EXP. GAGNÉE", AccentBlue);
             RoundedStatCell(gridGo.transform, $"{d.cargoTons} t", "CHARGEMENT");
             if (isActive)
                 RoundedStatCell(gridGo.transform, FormatRemaining(_popupInst), "RESTANT", AccentBlue);
@@ -701,11 +712,48 @@ namespace TransportManager.UI.Map
 
             if (!isActive)
             {
+                // Ravitaillement du camion sélectionné (n'apparaît que si nécessaire).
+                _refuelBtn = RoundedGhostBtn(footer.transform, "⛽ Faire le plein du camion", AccentAmber);
+                Le(_refuelBtn.gameObject, flexW: true, h: 42f);
+                _refuelLbl = _refuelBtn.GetComponentInChildren<TMP_Text>();
+                _refuelBtn.onClick.AddListener(OnRefuelSelected);
+                _refuelBtn.gameObject.SetActive(false);
+
                 _startBtn = RoundedSolidBtn(footer.transform, "Démarrer le trajet  →", AccentGreen);
                 Le(_startBtn.gameObject, flexW: true, h: 48f);
                 _startBtn.onClick.AddListener(OnStartContract);
                 _startBtn.interactable = false;
                 SetBtnEnabled(_startBtn, false);
+            }
+
+            // ── Energy drink : booste le conducteur en mission (réduit fatigue + annule l'accident) ──
+            if (isActive)
+            {
+                var fleetSys = ServiceLocator.Get<Systems.Fleet.FleetSystem>();
+                var veh      = fleetSys?.GetById(_popupInst.assignedVehicleInstanceId);
+                string drvId = veh?.assignedDriverInstanceId;
+                if (!string.IsNullOrEmpty(drvId))
+                {
+                    var shop      = ServiceLocator.Get<Systems.Shop.ShopSystem>();
+                    var contracts = ServiceLocator.Get<ContractSystem>();
+                    var eBtn = RoundedGhostBtn(footer.transform, "", AccentAmber);
+                    Le(eBtn.gameObject, flexW: true, h: 42f);
+                    var eLbl = eBtn.GetComponentInChildren<TMP_Text>();
+                    void RenderEnergy()
+                    {
+                        int count  = shop?.EnergyDrinkCount ?? 0;
+                        bool doped = contracts != null && contracts.DriverHasEnergyDrinkActive(drvId);
+                        if (doped)       eLbl.text = "⚡ Conducteur dopé — accident évité";
+                        else if (count <= 0) eLbl.text = "⚡ Aucune energy drink en stock";
+                        else             eLbl.text = $"⚡ Donner une energy drink  ({count})";
+                        eBtn.interactable = !doped && count > 0;
+                    }
+                    RenderEnergy();
+                    eBtn.onClick.AddListener(() =>
+                    {
+                        if (contracts != null && contracts.TryGiveEnergyDrinkToDriver(drvId)) RenderEnergy();
+                    });
+                }
             }
 
             var captureDef = _popupDef;
@@ -784,43 +832,94 @@ namespace TransportManager.UI.Map
                 var v    = _selectableVehicles[i];
                 var data = catalog?.GetById(v.vehicleDataId);
 
+                float tank      = data != null ? data.fuelTankCapacityLiters : 0f;
+                float fuelRatio = tank > 0f ? Mathf.Clamp01(v.currentFuelLiters / tank) : 0f;
+                float fullRange = data != null ? data.MaxRangeKm() : 0f;
+                bool  canReach  = fullRange >= def.distanceKm;
+                var   fuelCol   = fuelRatio > 0.5f ? AccentGreen : fuelRatio > 0.2f ? AccentAmber : DangerRed;
+
                 var rowGo  = MakeGO("VRow", parent);
                 var rowImg = rowGo.AddComponent<Image>();
                 rowImg.sprite = _sprR8;
                 rowImg.type   = Image.Type.Sliced;
                 rowImg.color  = BgElevated;
                 _vehicleRowBgs.Add(rowImg);
-                Le(rowGo, h: 40f);
+                Le(rowGo, h: 58f);
 
                 var rowBtn = rowGo.AddComponent<Button>();
                 rowBtn.targetGraphic = rowImg;
                 rowBtn.transition    = Selectable.Transition.None;
                 rowBtn.onClick.AddListener(() => SelectVehicle(idx));
 
-                var rowHlg = rowGo.AddComponent<HorizontalLayoutGroup>();
-                rowHlg.padding               = new RectOffset(14, 14, 0, 0);
-                rowHlg.spacing               = 8f;
-                rowHlg.childAlignment        = TextAnchor.MiddleLeft;
-                rowHlg.childForceExpandWidth  = false;
-                rowHlg.childForceExpandHeight = false;
-                rowHlg.childControlWidth      = true;
-                rowHlg.childControlHeight     = true;
+                var rowVlg = rowGo.AddComponent<VerticalLayoutGroup>();
+                rowVlg.padding               = new RectOffset(14, 14, 8, 8);
+                rowVlg.spacing               = 5f;
+                rowVlg.childAlignment        = TextAnchor.MiddleLeft;
+                rowVlg.childForceExpandWidth  = true;
+                rowVlg.childForceExpandHeight = false;
+                rowVlg.childControlWidth      = true;
+                rowVlg.childControlHeight     = true;
 
-                // Dot indicator
-                var dot = MakeGO("Dot", rowGo.transform);
+                // Ligne 1 : pastille + nom + capacité
+                var top = HRow(rowGo.transform, 18f);
+                var dot = MakeGO("Dot", top);
                 dot.AddComponent<Image>().color = BorderFaint;
                 Le(dot, w: 6f, h: 6f);
 
-                var nameLbl = MakeTMP("N", rowGo.transform,
-                    data?.displayName ?? v.vehicleDataId, 11f, FontStyles.Bold, TextPrime);
+                var nameLbl = MakeTMP("N", top,
+                    data?.displayName ?? v.vehicleDataId, 11.5f, FontStyles.Bold, TextPrime);
                 nameLbl.textWrappingMode = TextWrappingModes.NoWrap;
-                Le(nameLbl.gameObject, flexW: true, h: 38f);
+                nameLbl.overflowMode     = TextOverflowModes.Ellipsis;
+                Le(nameLbl.gameObject, flexW: true, h: 18f);
 
-                var capLbl = MakeTMP("C", rowGo.transform,
-                    $"{data?.capacity ?? 0} t", 10f, FontStyles.Bold, TextSecond);
+                var capLbl = MakeTMP("C", top, $"{data?.capacity ?? 0} t", 10.5f, FontStyles.Bold, TextSecond);
                 capLbl.alignment = TextAlignmentOptions.MidlineRight;
-                Le(capLbl.gameObject, w: 36f, h: 38f);
+                Le(capLbl.gameObject, w: 40f, h: 18f);
+
+                // Ligne 2 : jauge carburant + autonomie
+                var bot = HRow(rowGo.transform, 16f);
+                var fuelFill = BuildMiniFuelBar(bot, fuelRatio, fuelCol, 84f);
+                _rowFuelFillImgs.Add(fuelFill);
+
+                var fuelTxt = MakeTMP("F", bot, $"{Mathf.RoundToInt(fuelRatio * 100f)}%", 10f, FontStyles.Bold, fuelCol);
+                fuelTxt.textWrappingMode = TextWrappingModes.NoWrap;
+                Le(fuelTxt.gameObject, w: 34f, h: 16f);
+                _rowFuelTxts.Add(fuelTxt);
+
+                var rangeTxt = MakeTMP("R", bot,
+                    canReach ? $"autonomie {fullRange:F0} km" : $"⚠ {fullRange:F0} km < {def.distanceKm:F0} km",
+                    10f, FontStyles.Normal, canReach ? TextDim : DangerRed);
+                rangeTxt.textWrappingMode = TextWrappingModes.NoWrap;
+                rangeTxt.overflowMode     = TextOverflowModes.Ellipsis;
+                rangeTxt.alignment        = TextAlignmentOptions.MidlineRight;
+                Le(rangeTxt.gameObject, flexW: true, h: 16f);
             }
+        }
+
+        // Petite jauge carburant horizontale (fond + remplissage proportionnel).
+        // Renvoie l'Image de remplissage pour pouvoir la rafraîchir après ravitaillement.
+        private Image BuildMiniFuelBar(Transform parent, float ratio, Color fill, float width)
+        {
+            var track = MakeGO("FuelTrack", parent);
+            var trackImg = track.AddComponent<Image>();
+            trackImg.sprite        = _sprR8;
+            trackImg.type          = Image.Type.Sliced;
+            trackImg.color         = new Color(1f, 1f, 1f, 0.10f);
+            trackImg.raycastTarget = false;
+            Le(track, w: width, h: 7f);
+
+            var fillGo = MakeGO("Fill", track.transform);
+            var fillImg = fillGo.AddComponent<Image>();
+            fillImg.sprite        = _sprR8;
+            fillImg.type          = Image.Type.Sliced;
+            fillImg.color         = fill;
+            fillImg.raycastTarget = false;
+            var fRt = fillGo.GetComponent<RectTransform>();
+            fRt.anchorMin = new Vector2(0f, 0f);
+            fRt.anchorMax = new Vector2(Mathf.Clamp01(ratio), 1f);
+            fRt.offsetMin = Vector2.zero;
+            fRt.offsetMax = Vector2.zero;
+            return fillImg;
         }
 
         // Raison pour laquelle un camion n'est pas éligible à ce contrat (null = éligible).
@@ -846,7 +945,112 @@ namespace TransportManager.UI.Map
                 _vehicleRowBgs[i].color = i == idx
                     ? new Color(AccentGreen.r, AccentGreen.g, AccentGreen.b, 0.20f)
                     : BgElevated;
-            if (_startBtn != null) { _startBtn.interactable = true; SetBtnEnabled(_startBtn, true); }
+            UpdateStartState();
+        }
+
+        // Active le bouton « Démarrer » UNIQUEMENT si le camion sélectionné peut
+        // réellement faire le trajet (réservoir assez grand + carburant suffisant, en
+        // tenant compte du complément possible depuis la station). Sinon il reste grisé
+        // et le bouton de ravitaillement apparaît.
+        private void UpdateStartState()
+        {
+            if (_startBtn == null) return;
+
+            void Block()
+            {
+                _startBtn.interactable = false;
+                SetBtnEnabled(_startBtn, false);
+                if (_refuelBtn != null) _refuelBtn.gameObject.SetActive(false);
+            }
+
+            if (_selectedVehicleIdx < 0 || _selectedVehicleIdx >= _selectableVehicles.Count) { Block(); return; }
+
+            var catalog   = ServiceLocator.Get<VehicleCatalog>();
+            var contracts = ServiceLocator.Get<ContractSystem>();
+            var fuel      = ServiceLocator.Get<Systems.Fuel.FuelSystem>();
+            var v         = _selectableVehicles[_selectedVehicleIdx];
+            var data      = catalog?.GetById(v.vehicleDataId);
+            if (data == null || contracts == null || _popupDef == null) { Block(); return; }
+
+            float needed   = contracts.FuelNeededForContract(_popupDef, v, data);
+            float tankCap  = data.fuelTankCapacityLiters;
+            bool  tankOk   = tankCap >= needed;                                   // réservoir assez grand une fois plein
+            float headroom = Mathf.Max(0f, tankCap - v.currentFuelLiters);
+            float station  = fuel?.CurrentLiters ?? 0f;
+            float topUp    = Mathf.Min(headroom, station);
+            bool  hasNow   = v.currentFuelLiters >= needed;
+            bool  reachable = v.currentFuelLiters + topUp >= needed;             // après complément station auto
+
+            bool startable = tankOk && reachable;
+            _startBtn.interactable = startable;
+            SetBtnEnabled(_startBtn, startable);
+
+            // Le ravitaillement est proposé tant que le camion n'a pas déjà l'essence requise.
+            if (_refuelBtn != null)
+            {
+                bool showRefuel = tankOk && !hasNow;
+                _refuelBtn.gameObject.SetActive(showRefuel);
+                if (showRefuel && _refuelLbl != null)
+                {
+                    if (station <= 0.01f)
+                        _refuelLbl.text = "⛽ Station vide — commander du carburant";
+                    else if (!reachable)
+                        _refuelLbl.text = "⛽ Carburant station insuffisant — commander";
+                    else
+                        _refuelLbl.text = "⛽ Faire le plein du camion";
+                }
+            }
+        }
+
+        // Remplit le réservoir du camion sélectionné depuis le stock de la station
+        // (carburant déjà payé). Station vide → on ouvre la commande de carburant.
+        private void OnRefuelSelected()
+        {
+            if (_selectedVehicleIdx < 0 || _selectedVehicleIdx >= _selectableVehicles.Count) return;
+            var catalog = ServiceLocator.Get<VehicleCatalog>();
+            var fuel    = ServiceLocator.Get<Systems.Fuel.FuelSystem>();
+            var v       = _selectableVehicles[_selectedVehicleIdx];
+            var data    = catalog?.GetById(v.vehicleDataId);
+            if (fuel == null || data == null) return;
+
+            if (fuel.CurrentLiters <= 0.01f)
+            {
+                ClosePopup();
+                UI.Tabs.FuelOrderPopupView.Show();
+                return;
+            }
+
+            float before = v.currentFuelLiters;
+            fuel.TryFillVehicleTank(v, data);
+            if (v.currentFuelLiters > before + 0.01f)
+            {
+                GameManager.Instance?.SaveNow();
+                RefreshSelectedVehicleFuel();
+                UpdateStartState();
+            }
+        }
+
+        // Met à jour la jauge + le pourcentage de carburant de la ligne sélectionnée.
+        private void RefreshSelectedVehicleFuel()
+        {
+            int i = _selectedVehicleIdx;
+            if (i < 0 || i >= _selectableVehicles.Count) return;
+            var data = ServiceLocator.Get<VehicleCatalog>()?.GetById(_selectableVehicles[i].vehicleDataId);
+            float tank  = data != null ? data.fuelTankCapacityLiters : 0f;
+            float ratio = tank > 0f ? Mathf.Clamp01(_selectableVehicles[i].currentFuelLiters / tank) : 0f;
+            var col = ratio > 0.5f ? AccentGreen : ratio > 0.2f ? AccentAmber : DangerRed;
+
+            if (i < _rowFuelFillImgs.Count && _rowFuelFillImgs[i] != null)
+            {
+                var rt = _rowFuelFillImgs[i].GetComponent<RectTransform>();
+                rt.anchorMax = new Vector2(Mathf.Clamp01(ratio), 1f);
+                _rowFuelFillImgs[i].color = col;
+            }
+            if (i < _rowFuelTxts.Count && _rowFuelTxts[i] != null)
+            {
+                _rowFuelTxts[i].text  = $"{Mathf.RoundToInt(ratio * 100f)}%";
+                _rowFuelTxts[i].color = col;
+            }
         }
 
         private void OnStartContract()
@@ -886,6 +1090,11 @@ namespace TransportManager.UI.Map
             // d'oiseau, donc on ne cherche que des contrats sous portéeMax × 0.9.
             float rawRange = MaxFleetRangeKm(fleet);
             _sessionMaxRangeKm = rawRange > 0f ? rawRange * FleetRangeSafetyFactor : float.MaxValue;
+
+            // Capacité de charge du plus gros camion : on ne génère pas de contrat plus lourd.
+            int maxCap = 0;
+            foreach (var data in fleet) if (data.capacity > maxCap) maxCap = data.capacity;
+            _sessionMaxCapacityTons = maxCap > 0 ? maxCap : int.MaxValue;
 
             _genResults      = new ContractData[3];
             _genRouteLabels  = new TMP_Text[3];
@@ -1124,7 +1333,7 @@ namespace TransportManager.UI.Map
             var diff    = _sessionDiffs[slotIdx];
 
             ContractData result = null;
-            try { result = await gen.GenerateAsync(profile, diff, _sessionMaxRangeKm); }
+            try { result = await gen.GenerateAsync(profile, diff, _sessionMaxRangeKm, _sessionMaxCapacityTons); }
             catch (Exception e) { Debug.LogWarning($"[Contracts] gen slot {slotIdx} failed: {e.Message}"); }
 
             if (_genModal == null || _genSessionId != sessionId) return;
@@ -1451,6 +1660,7 @@ namespace TransportManager.UI.Map
             ClearChildren(host);
             Chip(host, $"{def.distanceKm:F0} km", TextSecond);
             Chip(host, $"{def.cargoTons} t", TextSecond);
+            Chip(host, $"+{XpCurve.CompanyXpReward(def.distanceKm, def.difficulty)} XP", AccentBlue);
             if (def.baseDurationSeconds > 0f)
                 Chip(host, FormatDuration(def.baseDurationSeconds), TextSecond);
         }

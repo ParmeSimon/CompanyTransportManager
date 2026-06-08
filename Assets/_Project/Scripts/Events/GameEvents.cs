@@ -113,6 +113,10 @@ namespace TransportManager.Events
         public static event Action OnDailyOfferClaimed;
         public static void RaiseDailyOfferClaimed() => OnDailyOfferClaimed?.Invoke();
 
+        // Succès / achievements (G1) — un succès vient d'être débloqué
+        public static event Action<Systems.Achievements.AchievementDef> OnAchievementUnlocked;
+        public static void RaiseAchievementUnlocked(Systems.Achievements.AchievementDef def) => OnAchievementUnlocked?.Invoke(def);
+
         // Social / Friends
         public static event Action<string> OnFriendRoutesRequested;
         public static event Action<string> OnFriendDepotRequested;

@@ -21,6 +21,9 @@ namespace TransportManager.Entities.Contracts
         public int              scheduledAccidentRepairCost;
         public string           scheduledAccidentDescription;
 
+        // Energy drink donnée au conducteur pour ce trajet (vigilance accrue : annule l'accident).
+        public bool             energyDrinkUsed;
+
         public DateTime StartTimeUtc      => new DateTime(startTimeUtcTicks,      DateTimeKind.Utc);
         public DateTime CompletionTimeUtc => new DateTime(completionTimeUtcTicks, DateTimeKind.Utc);
 

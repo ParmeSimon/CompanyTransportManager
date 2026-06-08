@@ -47,6 +47,8 @@ namespace TransportManager.Save
         public SkillTreeState skillTree = new SkillTreeState();
 
         public DailyState daily = new DailyState();
+
+        public AchievementsState achievements = new AchievementsState();
     }
 
     [Serializable]

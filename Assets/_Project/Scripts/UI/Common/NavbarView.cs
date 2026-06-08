@@ -1,6 +1,7 @@
 ﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using TransportManager.Core;
 using TransportManager.Enums;
 using TransportManager.Events;
 
@@ -24,7 +25,26 @@ namespace TransportManager.UI.Common
 
         private Sprite _sprR8, _sprR16;
 
+        private const float NavbarBaseX = 12f;
+        private Rect _lastSafeArea;
+        private Canvas _canvas;
+
         private void Awake() => Build();
+
+        // Décale la sidebar pour ne pas passer sous l'encoche / Dynamic Island (côté gauche en paysage).
+        private void ApplySafeArea()
+        {
+            if (_canvas == null) _canvas = GetComponentInParent<Canvas>();
+            Vector4 ins = SafeAreaUtil.Insets(_canvas);
+            var rt = GetComponent<RectTransform>();
+            rt.anchoredPosition = new Vector2(NavbarBaseX + ins.x, 0f);   // + marge gauche
+            _lastSafeArea = Screen.safeArea;
+        }
+
+        private void LateUpdate()
+        {
+            if (Screen.safeArea != _lastSafeArea) ApplySafeArea();
+        }
 
 #if UNITY_EDITOR
         [UnityEditor.MenuItem("CONTEXT/NavbarView/Build Navbar")]
@@ -72,8 +92,8 @@ namespace TransportManager.UI.Common
             rt.anchorMin        = new Vector2(0, 0.5f);
             rt.anchorMax        = new Vector2(0, 0.5f);
             rt.pivot            = new Vector2(0, 0.5f);
-            rt.anchoredPosition = new Vector2(12, 0);
             rt.sizeDelta        = new Vector2(110, 0);
+            ApplySafeArea();   // décale la barre vers la droite si l'encoche est à gauche (paysage)
 
             // Rounded background + drop shadow
             var bg = GetComponent<Image>();

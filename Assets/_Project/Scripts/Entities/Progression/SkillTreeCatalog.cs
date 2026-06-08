@@ -96,7 +96,7 @@ namespace TransportManager.Entities.Progression
             var R = SkillEffectType.RepairCostReduction;
             var W = SkillEffectType.ContractRewardBonus;
             var G = SkillEffectType.ContractCountryReach;
-            return new List<SkillNodeDefinition>
+            var list = new List<SkillNodeDefinition>
             {
                 Node("depot_root", B, "Quai supplémentaire", "+1 emplacement de véhicule au dépôt.",          null,        E, 1f,    1),
                 // split 2
@@ -139,6 +139,38 @@ namespace TransportManager.Entities.Progression
                     "Débloque les contrats vers le monde entier, tous continents confondus.",
                     "depot_geo2", SkillEffectType.ContractCountryReach),
             };
+
+            // ── Nœud de CONVERGENCE « ultime » ───────────────────────────────────────
+            // Récompense finale de la branche Dépôt : +3 emplacements de véhicule. Il ne
+            // se débloque qu'une fois TOUTES les extrémités (feuilles) de la branche
+            // obtenues — il leur est relié à toutes. Les extrémités sont détectées
+            // automatiquement (robuste si on édite l'arbre plus tard).
+            var leaves = LeafIds(list);
+            if (leaves.Count > 0)
+            {
+                string primary = leaves[0];
+                string[] extras = leaves.Count > 1 ? leaves.GetRange(1, leaves.Count - 1).ToArray() : null;
+                list.Add(new SkillNodeDefinition(
+                    "depot_master", B, "Méga-plateforme logistique",
+                    "Récompense ultime de la branche Dépôt : +3 emplacements de véhicule. " +
+                    "Ne se débloque qu'une fois TOUTES les extrémités de la branche Dépôt obtenues.",
+                    8, primary, SkillEffectType.ExtraVehicleSlots, 3f, 7, NodeShape.Diamond, extras));
+            }
+
+            return list;
+        }
+
+        // Renvoie les « feuilles » d'un ensemble de nœuds : ceux qui ne sont prérequis
+        // d'aucun autre (les extrémités de l'arbre).
+        private static List<string> LeafIds(List<SkillNodeDefinition> nodes)
+        {
+            var referenced = new HashSet<string>();
+            foreach (var n in nodes)
+                if (!string.IsNullOrEmpty(n.prerequisiteId)) referenced.Add(n.prerequisiteId);
+            var leaves = new List<string>();
+            foreach (var n in nodes)
+                if (!referenced.Contains(n.id)) leaves.Add(n.id);
+            return leaves;
         }
 
         // ── Branche RH ──────────────────────────────────────────────────────────────
@@ -225,15 +257,16 @@ namespace TransportManager.Entities.Progression
                 Node("fuel_a1",   B, "Conduite souple",     "-8 % supplémentaires de consommation.",         "fuel_a",  Co, 0.08f, 3),
                 Node("fuel_a2",   B, "Moteurs optimisés",   "+5 % de vitesse sur les trajets.",              "fuel_a",  Sp, 0.05f, 3),
                 Node("fuel_a3",   B, "Contrat grossiste",   "-10 % supplémentaires sur le prix.",            "fuel_a",  Pr, 0.10f, 3),
-                // ── Sous-branche MARCHÉ (historique + prévision du prix du carburant) ──
+                // ── Sous-branche MARCHÉ (historique RÉEL du prix du carburant) ──
+                // Les cours sont réels : on ne peut pas prédire le futur → on dévoile le PASSÉ.
                 Node("fuel_market1", B, "Analyse de marché",
-                    "Débloque l'historique du prix du carburant dans la popup de ravitaillement.",          "fuel_a3", SkillEffectType.FuelMarketHistory,  1f, 4),
-                Node("fuel_market2", B, "Prévision J+1",
-                    "Affiche la prévision du prix du carburant à +1 jour.",                                 "fuel_market1", SkillEffectType.FuelMarketForecast, 1f, 5),
-                Node("fuel_market3", B, "Prévision J+2",
-                    "Étend la prévision du prix à +2 jours.",                                               "fuel_market2", SkillEffectType.FuelMarketForecast, 1f, 5),
-                Node("fuel_market4", B, "Prévision J+3",
-                    "Étend la prévision du prix à +3 jours.",                                               "fuel_market3", SkillEffectType.FuelMarketForecast, 1f, 6),
+                    "Débloque l'historique du prix du carburant : 7 derniers jours.",                       "fuel_a3", SkillEffectType.FuelMarketHistoryDays,  7f, 4),
+                Node("fuel_market2", B, "Mémoire de marché",
+                    "Étend l'historique du prix à 30 jours.",                                               "fuel_market1", SkillEffectType.FuelMarketHistoryDays, 23f, 5),
+                Node("fuel_market3", B, "Archives de marché",
+                    "Étend l'historique du prix à 60 jours.",                                               "fuel_market2", SkillEffectType.FuelMarketHistoryDays, 30f, 5),
+                Node("fuel_market4", B, "Historique complet",
+                    "Étend l'historique du prix à 90 jours (maximum).",                                     "fuel_market3", SkillEffectType.FuelMarketHistoryDays, 30f, 6),
                 // fuel_b split 2
                 Node("fuel_b1",   B, "Double cuve",         "+25 % supplémentaires de capacité.",            "fuel_b",  Ca, 0.25f, 3),
                 Node("fuel_b2",   B, "Pompe rapide",        "+20 % de vitesse de remplissage.",              "fuel_b",  Re, 0.20f, 3),

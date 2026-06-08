@@ -79,7 +79,7 @@ namespace TransportManager.UI.Analytics
 
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1080, 1920);
+            scaler.referenceResolution = new Vector2(1920, 1080);
             scaler.matchWidthOrHeight  = 0.5f;
             gameObject.AddComponent<GraphicRaycaster>();
 
@@ -98,9 +98,9 @@ namespace TransportManager.UI.Analytics
             panelShadow.effectColor    = new Color(0f, 0f, 0f, 0.5f);
             panelShadow.effectDistance = new Vector2(0f, -4f);
             var panelRt = panelGo.GetComponent<RectTransform>();
-            panelRt.anchorMin = new Vector2(0.04f, 0.06f);
+            panelRt.anchorMin = new Vector2(0f, 0.06f);
             panelRt.anchorMax = new Vector2(0.96f, 0.94f);
-            panelRt.offsetMin = Vector2.zero;
+            panelRt.offsetMin = new Vector2(132f, 0f);   // dégage la sidebar (navbar à gauche)
             panelRt.offsetMax = Vector2.zero;
 
             PopupHeader.Build(panelGo.transform, "Statistiques", Close, TitleBarH, _sprRound8);

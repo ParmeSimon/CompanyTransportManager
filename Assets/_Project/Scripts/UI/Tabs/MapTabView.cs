@@ -2,7 +2,9 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.EnhancedTouch;
 using UnityEngine.UI;
+using ETouch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 using TransportManager.Core;
 using TransportManager.Entities.Contracts;
 using TransportManager.Enums;
@@ -35,16 +37,37 @@ namespace TransportManager.UI.Tabs
         private ContractData _previewedContract;
         private Sprite       _sprR12;
 
+        private float _pinchPrevDist;
+
         private void OnEnable()
         {
             GameEvents.OnShowContractRoute += HandleShowContractRoute;
             GameEvents.OnContractStarted   += HandleContractStarted;
+            EnhancedTouchSupport.Enable();   // active la lecture multi-touch (pinch)
         }
 
         private void OnDisable()
         {
             GameEvents.OnShowContractRoute -= HandleShowContractRoute;
             GameEvents.OnContractStarted   -= HandleContractStarted;
+            EnhancedTouchSupport.Disable();
+        }
+
+        // Pinch à deux doigts → zoom carte (le scroll/molette ne marche que sur desktop).
+        private void Update()
+        {
+            if (mapView == null) return;
+
+            var touches = ETouch.activeTouches;
+            if (touches.Count < 2) { _pinchPrevDist = 0f; return; }
+
+            float dist = Vector2.Distance(touches[0].screenPosition, touches[1].screenPosition);
+            if (_pinchPrevDist <= 0f) { _pinchPrevDist = dist; return; }
+
+            const float step = 80f;   // pixels d'écart avant un cran de zoom
+            float delta = dist - _pinchPrevDist;
+            if (delta >  step) { mapView.ZoomIn();  _pinchPrevDist = dist; }
+            else if (delta < -step) { mapView.ZoomOut(); _pinchPrevDist = dist; }
         }
 
         private void Start()
@@ -352,6 +375,7 @@ namespace TransportManager.UI.Tabs
         public void OnDrag(PointerEventData eventData)
         {
             if (mapView == null) return;
+            if (ETouch.activeTouches.Count >= 2) return;   // pinch en cours → pas de pan
 
             float metersPerPixel = MetersPerPixel(mapView.CenterLatitude, mapView.Zoom, _tileSize);
             double deltaLon = -eventData.delta.x * metersPerPixel / (111320.0 * System.Math.Cos(mapView.CenterLatitude * System.Math.PI / 180.0));

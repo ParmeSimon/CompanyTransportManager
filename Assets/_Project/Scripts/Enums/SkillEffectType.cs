@@ -34,7 +34,8 @@ namespace TransportManager.Enums
         RefillSpeedBonus,           // pct  : accélération du remplissage de la station
         TripSpeedBonus,             // pct  : bonus de vitesse sur les trajets (durée réduite)
         FuelMarketHistory,          // flag : débloque l'historique du prix du carburant
-        FuelMarketForecast,         // flat : nombre de jours de prévision du prix (cumulatif)
-        AutoStationRefill           // flag : remplissage automatique et gratuit de la station (capstone Essence)
+        FuelMarketForecast,         // flat : (obsolète — plus de prévision possible avec les cours réels)
+        AutoStationRefill,          // flag : remplissage automatique et gratuit de la station (capstone Essence)
+        FuelMarketHistoryDays       // flat : nb de jours d'historique réel visibles dans le graphe (cumulatif)
     }
 }
