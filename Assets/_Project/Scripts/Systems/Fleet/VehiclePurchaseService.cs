@@ -32,15 +32,15 @@ namespace TransportManager.Systems.Fleet
             }
 
             if (!depot.HasRoomForOneMore()) { error = PurchaseError.DepotFull; return false; }
-            if (!wallet.CanAfford(CurrencyType.Dollar, data.purchasePrice)) { error = PurchaseError.NotEnoughMoney; return false; }
-            if (!wallet.TrySpend(CurrencyType.Dollar, data.purchasePrice)) { error = PurchaseError.NotEnoughMoney; return false; }
+            if (!wallet.CanAfford(CurrencyType.Dollar, data.EffectivePrice)) { error = PurchaseError.NotEnoughMoney; return false; }
+            if (!wallet.TrySpend(CurrencyType.Dollar, data.EffectivePrice)) { error = PurchaseError.NotEnoughMoney; return false; }
 
             instance = new VehicleInstance
             {
                 instanceId = Guid.NewGuid().ToString(),
                 vehicleDataId = data.id,
                 totalKilometers = 0,
-                currentFuelLiters = data.fuelTankCapacityLiters,
+                currentFuelLiters = data.TankCapacity,
                 status = VehicleStatus.Idle
             };
             fleet.Add(instance);

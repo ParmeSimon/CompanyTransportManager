@@ -1,10 +1,11 @@
 namespace TransportManager.Enums
 {
-    /// <summary>Les trois branches principales de l'arbre de compétences.</summary>
+    /// <summary>Les quatre branches principales de l'arbre de compétences.</summary>
     public enum SkillBranch
     {
-        Depot,   // Logistique / dépôt
-        Hr,      // Ressources humaines
-        Fuel     // Essence / carburant
+        Depot,      // Logistique / dépôt / flotte
+        Hr,         // Ressources humaines / sécurité
+        Fuel,       // Essence / carburant
+        Commercial  // Contrats / réputation (toujours ajouter à la fin)
     }
 }

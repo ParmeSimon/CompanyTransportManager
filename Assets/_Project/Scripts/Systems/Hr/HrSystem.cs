@@ -23,7 +23,16 @@ namespace TransportManager.Systems.Hr
 
         private readonly GameSaveData _save;
 
-        public HrSystem(GameSaveData save) { _save = save; }
+        public HrSystem(GameSaveData save)
+        {
+            _save = save;
+            // Nouvelle partie : le vivier a été tiré avant que le joueur choisisse l'adresse de
+            // son entreprise. Dès qu'elle est créée, on le régénère avec des pilotes de sa région.
+            GameEvents.OnCompanyCreated += () =>
+            {
+                if (_save.hiredDrivers.Count == 0) RefreshRecruitmentPool();
+            };
+        }
 
         public IReadOnlyList<DriverInstance> HiredDrivers => _save.hiredDrivers;
         public IReadOnlyList<DriverInstance> RecruitmentPool => _save.recruitmentPool;
@@ -52,6 +61,10 @@ namespace TransportManager.Systems.Hr
         // ── Vivier ─────────────────────────────────────────────────────────────────
         public void EnsureRecruitmentPool()
         {
+            // Anciennes sauvegardes : genre + origine déduits du prénom (portrait cohérent).
+            foreach (var d in _save.hiredDrivers) DriverOrigins.EnsureIdentity(d);
+            foreach (var d in _save.recruitmentPool) DriverOrigins.EnsureIdentity(d);
+
             // Réduit le vivier s'il dépasse la taille courante (ancienne sauvegarde à 8,
             // ou plafond abaissé). On retire les candidats en trop par la fin.
             if (_save.recruitmentPool.Count > CurrentPoolSize)
@@ -243,8 +256,126 @@ namespace TransportManager.Systems.Hr
             var driver = GetHired(driverInstanceId);
             if (driver == null || wagePerContract < 0) return false;
             driver.assignedWagePerContract = wagePerContract;
+            // Salaire relevé à un niveau qui le satisfait → la demande en cours est réglée.
+            if (HasRaiseRequest(driver) && wagePerContract >= driver.raiseRequestedWage) ClearRaiseRequest(driver, resetRefusals: true);
             GameEvents.RaiseDriverWageChanged(driver);
             return true;
+        }
+
+        // ── Demandes d'augmentation ───────────────────────────────────────────────
+        // Un conducteur mal payé (< 70 % de sa demande) ne part plus d'un coup : il DEMANDE une
+        // augmentation. Le joueur a 24 h pour répondre ; 3 refus (ou pas de réponse) = départ.
+        public const float SatisfiedRatio     = 0.7f;
+        public const int   RaiseDeadlineHours = 24;
+        public const int   MaxRaiseRefusals   = 3;
+        public const int   RaiseCooldownHours = 12;   // délai avant une nouvelle demande après un refus
+
+        public static float Satisfaction(DriverInstance d)
+            => d.assignedWagePerContract / (float)Mathf.Max(1, d.desiredWagePerContract);
+        public static bool HasRaiseRequest(DriverInstance d) => d != null && d.raiseRequestDeadlineTicks > 0;
+        public static int  RefusalsLeft(DriverInstance d) => Mathf.Max(0, MaxRaiseRefusals - d.raiseRefusals);
+
+        private static long Now
+        {
+            get
+            {
+                long ctx = Notifications.NotificationSystem.ContextTicks;
+                return ctx > 0 ? ctx : DateTime.UtcNow.Ticks;
+            }
+        }
+
+        private static string Pronoun(DriverInstance d) => d.gender == "f" ? "elle" : "il";
+
+        private void OpenRaiseRequest(DriverInstance d)
+        {
+            long now = Now;
+            d.raiseRequestedWage        = Mathf.Max(d.desiredWagePerContract, d.assignedWagePerContract + 1);
+            d.raiseRequestDeadlineTicks = now + TimeSpan.FromHours(RaiseDeadlineHours).Ticks;
+            var limit = new DateTime(d.raiseRequestDeadlineTicks, DateTimeKind.Utc).ToLocalTime();
+            Notifications.NotificationSystem.Push(TransportManager.Save.NotificationKind.Raise,
+                $"{d.FullName} demande une augmentation",
+                $"{char.ToUpper(Pronoun(d)[0]) + Pronoun(d).Substring(1)} touche {d.assignedWagePerContract:N0} $ par contrat et en demande {d.raiseRequestedWage:N0} $. " +
+                $"Réponds avant le {limit:dd/MM à HH:mm} dans l'onglet Pilote, sinon {Pronoun(d)} partira. " +
+                $"Refus possibles : {RefusalsLeft(d) - 1} avant départ.", now);
+            GameEvents.RaiseDriverWageChanged(d);
+        }
+
+        private static void ClearRaiseRequest(DriverInstance d, bool resetRefusals)
+        {
+            d.raiseRequestDeadlineTicks = 0;
+            d.raiseRequestedWage = 0;
+            if (resetRefusals) d.raiseRefusals = 0;
+        }
+
+        public bool AcceptRaise(string driverInstanceId)
+        {
+            var d = GetHired(driverInstanceId);
+            if (!HasRaiseRequest(d)) return false;
+            d.assignedWagePerContract = Mathf.Max(d.assignedWagePerContract, d.raiseRequestedWage);
+            ClearRaiseRequest(d, resetRefusals: true);
+            GameEvents.RaiseDriverWageChanged(d);
+            return true;
+        }
+
+        public bool RefuseRaise(string driverInstanceId)
+        {
+            var d = GetHired(driverInstanceId);
+            if (!HasRaiseRequest(d)) return false;
+            d.raiseRefusals++;
+            ClearRaiseRequest(d, resetRefusals: false);
+            if (d.raiseRefusals >= MaxRaiseRefusals)
+                LeaveOrSchedule(d, $"Après {MaxRaiseRefusals} refus d'augmentation, {Pronoun(d)} a quitté l'entreprise.");
+            else
+            {
+                d.raiseNextAllowedTicks = Now + TimeSpan.FromHours(RaiseCooldownHours).Ticks;
+                GameEvents.RaiseDriverWageChanged(d);
+            }
+            return true;
+        }
+
+        /// Délais de réponse expirés → départ (immédiat, ou à la fin de la livraison en cours).
+        public void TickRaiseDeadlines()
+        {
+            long now = DateTime.UtcNow.Ticks;
+            foreach (var d in _save.hiredDrivers.ToArray())
+            {
+                if (!HasRaiseRequest(d) || now < d.raiseRequestDeadlineTicks) continue;
+                long deadline = d.raiseRequestDeadlineTicks;
+                ClearRaiseRequest(d, resetRefusals: false);
+                Notifications.NotificationSystem.ContextTicks = deadline;
+                try { LeaveOrSchedule(d, $"Sans réponse à sa demande d'augmentation sous {RaiseDeadlineHours} h, {Pronoun(d)} a quitté l'entreprise."); }
+                finally { Notifications.NotificationSystem.ContextTicks = 0; }
+            }
+        }
+
+        private bool IsOnTrip(DriverInstance d)
+        {
+            var v = ServiceLocator.Get<FleetSystem>()?.GetById(d.assignedVehicleInstanceId);
+            return v != null && !string.IsNullOrEmpty(v.activeContractInstanceId);
+        }
+
+        private readonly System.Collections.Generic.Dictionary<string, string> _pendingQuitReasons = new System.Collections.Generic.Dictionary<string, string>();
+
+        private void LeaveOrSchedule(DriverInstance d, string reason)
+        {
+            if (IsOnTrip(d))
+            {
+                d.quitPending = true;   // termine sa livraison, puis part (cf. ProcessPostContract)
+                _pendingQuitReasons[d.instanceId] = reason;
+                Notifications.NotificationSystem.Push(TransportManager.Save.NotificationKind.Resigned,
+                    $"{d.FullName} va démissionner",
+                    $"{reason.Replace("a quitté l'entreprise", "partira")} à la fin de sa livraison en cours.");
+                GameEvents.RaiseDriverWageChanged(d);
+                return;
+            }
+            Resign(d, reason);
+        }
+
+        private void Resign(DriverInstance d, string reason)
+        {
+            Notifications.NotificationSystem.Push(TransportManager.Save.NotificationKind.Resigned, $"{d.FullName} a démissionné", reason);
+            GameEvents.RaiseDriverResigned(d);
+            RemoveFromPayroll(d);
         }
 
         // Called by ContractSystem when a contract is finalised.
@@ -275,20 +406,22 @@ namespace TransportManager.Systems.Hr
             driver.desiredWagePerContract = DriverGenerator.ComputeDesiredWage(newLevel, driver.stats);
 
             GameEvents.RaiseDriverXpChanged(driver);
-            return RollResignation(driver);
+            return AfterContractMood(driver);
         }
 
-        private bool RollResignation(DriverInstance driver)
+        // Après une livraison : départ programmé, ou demande d'augmentation si mal payé.
+        private bool AfterContractMood(DriverInstance driver)
         {
-            float satisfaction = driver.assignedWagePerContract / (float)Mathf.Max(1, driver.desiredWagePerContract);
-            if (satisfaction >= 0.7f) return false;
-
-            float chance = (1f - satisfaction) * 0.5f;
-            if (UnityEngine.Random.value > chance) return false;
-
-            GameEvents.RaiseDriverResigned(driver);
-            RemoveFromPayroll(driver);
-            return true;
+            if (driver.quitPending)
+            {
+                driver.quitPending = false;
+                Resign(driver, _pendingQuitReasons.TryGetValue(driver.instanceId, out var why) ? why : $"{char.ToUpper(Pronoun(driver)[0]) + Pronoun(driver).Substring(1)} a quitté l'entreprise après sa livraison.");
+                return true;
+            }
+            if (Satisfaction(driver) >= SatisfiedRatio || HasRaiseRequest(driver)) return false;
+            if (Now < driver.raiseNextAllowedTicks) return false;
+            OpenRaiseRequest(driver);
+            return false;
         }
 
         /// <summary>Supprime définitivement un conducteur suite à un accident mortel.</summary>

@@ -36,6 +36,31 @@ namespace TransportManager.Enums
         FuelMarketHistory,          // flag : débloque l'historique du prix du carburant
         FuelMarketForecast,         // flat : (obsolète — plus de prévision possible avec les cours réels)
         AutoStationRefill,          // flag : remplissage automatique et gratuit de la station (capstone Essence)
-        FuelMarketHistoryDays       // flat : nb de jours d'historique réel visibles dans le graphe (cumulatif)
+        FuelMarketHistoryDays,      // flat : nb de jours d'historique réel visibles dans le graphe (cumulatif)
+
+        // ⚠️ Toujours AJOUTER à la fin (ne pas réordonner).
+
+        // ── Commercial ──
+        DeadlineTimeBonus,          // pct  : délai de livraison allongé avant la pénalité de retard
+        OnTimeBonusIncrease,        // pct  : s'ajoute au bonus de ponctualité (+15 % de base)
+        ReputationGainBonus,        // pct  : réputation gagnée par livraison
+        ReputationLossReduction,    // pct  : réduction de la réputation perdue (accidents)
+        ExtraTourStops,             // flat : escales supplémentaires possibles dans une tournée
+        LiveEventBonus,             // pct  : amplifie le bonus de l'événement du jour (+50 % → bonus ×1,5)
+        DailyMissionRewardBonus,    // pct  : récompenses ($ / lingots) des missions quotidiennes
+        ExtraContractChoices,       // flat : contrats proposés en plus à chaque génération
+
+        // ── Sécurité (RH) ──
+        AccidentChanceReduction,    // pct  : réduction du risque d'accident
+        FatalAccidentReduction,     // pct  : réduction du risque qu'un accident soit mortel
+        EnergyDrinkBoost,           // pct  : efficacité des energy drinks (fatigue retirée)
+
+        // ── Flotte (Dépôt) ──
+        VehiclePriceReduction,      // pct  : réduction du prix d'achat des véhicules
+        WearReduction,              // pct  : usure plus lente (maintenance obligatoire plus tard)
+        MaintenanceThresholdBonus,  // pct  : relève le seuil d'usure de la maintenance obligatoire (80 % de base)
+
+        // ── Essence ──
+        VehicleTankBonus            // pct  : capacité des réservoirs des véhicules
     }
 }

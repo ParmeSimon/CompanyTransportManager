@@ -50,7 +50,7 @@ namespace TransportManager.UI.Achievements
             canvas.renderMode = RenderMode.ScreenSpaceOverlay; canvas.sortingOrder = 525;
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080); scaler.matchWidthOrHeight = 0.5f;
+            TransportManager.Core.UiScale.Configure(scaler);
             gameObject.AddComponent<GraphicRaycaster>();
 
             var overlay = MakeImg("Overlay", transform, BgOverlay);
@@ -161,7 +161,7 @@ namespace TransportManager.UI.Achievements
 
             if (claimed)
             {
-                Tmp(bottom, "✓ Réclamé", 12, Green, true).alignment = TextAlignmentOptions.MidlineRight;
+                Tmp(bottom, "Réclamé", 12, Green, true).alignment = TextAlignmentOptions.MidlineRight;
             }
             else if (toClaim)
             {
@@ -179,7 +179,7 @@ namespace TransportManager.UI.Achievements
             }
             else
             {
-                Tmp(bottom, "🔒 Verrouillé", 11.5f, TextMuted, false).alignment = TextAlignmentOptions.MidlineRight;
+                Tmp(bottom, "Verrouillé", 11.5f, TextMuted, false).alignment = TextAlignmentOptions.MidlineRight;
             }
         }
 

@@ -84,8 +84,7 @@ namespace TransportManager.UI.Settings
 
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-            scaler.matchWidthOrHeight  = 0.5f;
+            TransportManager.Core.UiScale.Configure(scaler);
             gameObject.AddComponent<GraphicRaycaster>();
 
             // Fond dim — clic = fermer
@@ -787,7 +786,7 @@ namespace TransportManager.UI.Settings
         }
 
         private void Close()      { PersistPrefs(); Destroy(gameObject); }
-        private void OnCredits()  => Debug.Log("[Settings] Crédits — à implémenter");
+        private void OnCredits()  => Debug.Log("[Settings] Crédits · à implémenter");
         private void OnPrivacy()  => Application.OpenURL("https://votresite.com/privacy");
 
         // ── Helpers ───────────────────────────────────────────────────────────

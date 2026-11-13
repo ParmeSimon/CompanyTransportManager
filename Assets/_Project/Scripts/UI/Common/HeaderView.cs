@@ -35,7 +35,7 @@ namespace TransportManager.UI.Common
         private GameObject _achBadge;
         private TMP_Text   _achBadgeLabel;
 
-        private const float HeaderHeight = 58f;
+        public const float HeaderHeight = 64f;   // barre collée au bord haut (cf. SafeAreaUtil.HudTopHeight)
         private Rect _lastSafeArea;
         private Canvas _canvas;
 
@@ -101,162 +101,401 @@ namespace TransportManager.UI.Common
             rt.pivot     = new Vector2(0.5f, 1f);
             ApplySafeArea();   // sous l'encoche + marges latérales (coins arrondis / Dynamic Island)
 
-            // ===== LEFT SIDE =====
-            var left = MakeGO("LeftSide", transform);
-            var leftRt = left.GetComponent<RectTransform>();
-            leftRt.anchorMin = new Vector2(0, 0);
-            leftRt.anchorMax = new Vector2(0, 1);
-            leftRt.pivot     = new Vector2(0, 0.5f);
-            leftRt.offsetMin = new Vector2(10, -80);
-            leftRt.offsetMax = new Vector2(0, -10);
+            // ===== BARRE DU HAUT (pleine largeur) =====
+            // [Profil : logo · nom · niveau + XP]  ……  [$ +] [lingots +]  ……  [Réglages]
+            Vector4 insets = SafeAreaUtil.Insets(GetComponentInParent<Canvas>());
+            var bar = MakeGO("Bar", transform);
+            var barRt = bar.GetComponent<RectTransform>();
+            barRt.anchorMin = Vector2.zero; barRt.anchorMax = Vector2.one;
+            barRt.offsetMin = new Vector2(-insets.x, 0); barRt.offsetMax = new Vector2(insets.y, insets.z);
+            var barBg = bar.AddComponent<Image>();
+            barBg.color = new Color32(0x22, 0x26, 0x2E, 255);
+            barBg.raycastTarget = true;
+            // Pas d ombre portée (effet dur) : un simple filet clair en bas (Hairline).
 
-            var leftBg = left.AddComponent<Image>();
-            leftBg.sprite        = _sprR16;
-            leftBg.type          = Image.Type.Sliced;
-            leftBg.color         = new Color32(0x2C, 0x30, 0x38, 255);
-            leftBg.raycastTarget = false;
-            var leftShadow = left.AddComponent<Shadow>();
-            leftShadow.effectColor    = new Color(0f, 0f, 0f, 0.5f);
-            leftShadow.effectDistance = new Vector2(0f, -4f);
+            var hair = MakeGO("Hairline", bar.transform);
+            var hairImg = hair.AddComponent<Image>();
+            hairImg.color = new Color(1f, 1f, 1f, 0.06f); hairImg.raycastTarget = false;
+            var hairRt = hair.GetComponent<RectTransform>();
+            hairRt.anchorMin = new Vector2(0, 0); hairRt.anchorMax = new Vector2(1, 0);
+            hairRt.pivot = new Vector2(0.5f, 0f); hairRt.sizeDelta = new Vector2(0, 1);
+            hair.AddComponent<LayoutElement>().ignoreLayout = true;
 
-            // LeftSide = Logo | ColonneInfo côte à côte
-            var leftHlg = left.AddComponent<HorizontalLayoutGroup>();
-            leftHlg.childAlignment        = TextAnchor.MiddleCenter;
-            leftHlg.spacing               = 8;
-            leftHlg.padding               = new RectOffset(8, 12, 5, 5);
-            leftHlg.childForceExpandWidth  = false;
-            leftHlg.childForceExpandHeight = false;
-            leftHlg.childControlWidth      = false;
-            leftHlg.childControlHeight     = false;
+            var row = bar.AddComponent<HorizontalLayoutGroup>();
+            row.padding = new RectOffset((int)insets.x + 10, (int)insets.y + 10, (int)insets.z + 6, 6);
+            row.spacing = 14;
+            row.childAlignment = TextAnchor.MiddleLeft;
+            row.childForceExpandWidth = false; row.childForceExpandHeight = false;
+            row.childControlWidth = true; row.childControlHeight = true;
 
-            var leftFitter = left.AddComponent<ContentSizeFitter>();
-            leftFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-            leftFitter.verticalFit   = ContentSizeFitter.FitMode.Unconstrained;
+            // 1 — Profil (bouton : ouvre le menu Stats / Flotte / Compétences / Objectifs / Succès / Amis)
+            var profile = MakeGO("Profile", bar.transform);
+            var profImg = profile.AddComponent<Image>();
+            profImg.sprite = _sprR8; profImg.type = Image.Type.Sliced;
+            profImg.color = new Color(1f, 1f, 1f, 0.04f);
+            var profBtn = profile.AddComponent<Button>();
+            profBtn.targetGraphic = profImg;
+            profBtn.onClick.AddListener(ToggleProfileMenu);
+            var profHlg = profile.AddComponent<HorizontalLayoutGroup>();
+            profHlg.padding = new RectOffset(4, 12, 2, 2);
+            profHlg.spacing = 10;
+            profHlg.childAlignment = TextAnchor.MiddleLeft;
+            profHlg.childForceExpandWidth = false; profHlg.childForceExpandHeight = false;
+            profHlg.childControlWidth = true; profHlg.childControlHeight = true;
+            var profLe = profile.AddComponent<LayoutElement>();
+            profLe.preferredWidth = 310; profLe.minWidth = 260; profLe.minHeight = 52;
 
-            // Logo d'entreprise (cadre arrondi masqué : photo importée OU symbole+couleur)
-            var logoGo  = MakeGO("Logo", left.transform);
+            var logoGo = MakeGO("Logo", profile.transform);
             _logoBg = logoGo.AddComponent<Image>();
-            _logoBg.sprite        = _sprR16;
-            _logoBg.type          = Image.Type.Sliced;
-            _logoBg.color         = new Color32(0x1A, 0x1D, 0x24, 255);
+            _logoBg.sprite = _sprR16; _logoBg.type = Image.Type.Sliced;
+            _logoBg.color = new Color32(0x1A, 0x1D, 0x24, 255);
             _logoBg.raycastTarget = false;
-            var logoMask = logoGo.AddComponent<Mask>();   // coins arrondis pour la photo
+            var logoMask = logoGo.AddComponent<Mask>();
             logoMask.showMaskGraphic = true;
-            SetLayout(logoGo, 48, 48);
-
-            var logoIconGo  = MakeGO("Icon", logoGo.transform);
+            var logoLe = logoGo.AddComponent<LayoutElement>();
+            logoLe.preferredWidth = 48; logoLe.preferredHeight = 48; logoLe.minWidth = 48;
+            var logoIconGo = MakeGO("Icon", logoGo.transform);
             _logoIcon = logoIconGo.AddComponent<Image>();
-            _logoIcon.color          = Color.white;
-            _logoIcon.preserveAspect = true;
-            _logoIcon.raycastTarget  = false;
-            var logoIconRt = logoIconGo.GetComponent<RectTransform>();
-            logoIconRt.pivot = new Vector2(0.5f, 0.5f);
-
-            // État initial (sera rafraîchi par UpdateCompany)
+            _logoIcon.color = Color.white; _logoIcon.preserveAspect = true; _logoIcon.raycastTarget = false;
+            logoIconGo.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0.5f);
             CompanyLogo.ApplyTo(_logoBg, _logoIcon, GameManager.Instance?.Save?.company);
 
-            // Colonne droite du logo : Name / PillsRow / Location
-            var col    = MakeGO("InfoCol", left.transform);
+
+            var col = MakeGO("InfoCol", profile.transform);
             var colVlg = col.AddComponent<VerticalLayoutGroup>();
-            colVlg.childAlignment        = TextAnchor.MiddleCenter;
-            colVlg.spacing               = 0;
-            colVlg.childForceExpandWidth  = false;
-            colVlg.childForceExpandHeight = false;
-            colVlg.childControlWidth      = false;
-            colVlg.childControlHeight     = false;
+            colVlg.spacing = 3;
+            colVlg.childAlignment = TextAnchor.MiddleLeft;
+            colVlg.childForceExpandWidth = true; colVlg.childForceExpandHeight = false;
+            colVlg.childControlWidth = true; colVlg.childControlHeight = true;
+            col.AddComponent<LayoutElement>().flexibleWidth = 1;
 
-            var colFitter = col.AddComponent<ContentSizeFitter>();
-            colFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-            colFitter.verticalFit   = ContentSizeFitter.FitMode.PreferredSize;
-
-            // Ligne 1 : Name
-            _companyNameLabel = MakeTMP("Name", col.transform, "Mon Entreprise", 20, FontStyles.Bold, new Color32(0xEC, 0xEE, 0xF5, 255));
+            _companyNameLabel = MakeTMP("Name", col.transform, "Mon Entreprise", 16, FontStyles.Bold, new Color32(0xEC, 0xEE, 0xF5, 255));
             _companyNameLabel.textWrappingMode = TextWrappingModes.NoWrap;
-            _companyNameLabel.overflowMode       = TextOverflowModes.Ellipsis;
-            _companyNameLabel.alignment          = TextAlignmentOptions.Center;
-            SetLayout(_companyNameLabel.gameObject, 160, 16);
+            _companyNameLabel.overflowMode = TextOverflowModes.Ellipsis;
+            var nameLe = _companyNameLabel.gameObject.AddComponent<LayoutElement>();
+            nameLe.preferredHeight = 22; nameLe.minHeight = 22;
 
-            // Ligne 1bis : Réputation (étoiles à remplissage partiel, ou texte en repli)
-            BuildReputationStars(col.transform);
+            // Niveau + réputation (petites étoiles) sur une ligne, barre d'XP dessous.
+            var lvlRow = MakeGO("LevelRow", col.transform);
+            var lvlHlg = lvlRow.AddComponent<HorizontalLayoutGroup>();
+            lvlHlg.spacing = 8; lvlHlg.childAlignment = TextAnchor.MiddleLeft;
+            lvlHlg.childForceExpandWidth = false; lvlHlg.childForceExpandHeight = false;
+            lvlHlg.childControlWidth = true; lvlHlg.childControlHeight = true;
+            var lvlLe = lvlRow.AddComponent<LayoutElement>();
+            lvlLe.preferredHeight = 16; lvlLe.minHeight = 16;
+            _levelLabel = MakeTMP("Level", lvlRow.transform, "Niv. 1", 11, FontStyles.Bold, new Color32(0x5A, 0x8E, 0xF5, 255));
+            _levelLabel.textWrappingMode = TextWrappingModes.NoWrap;
+            BuildReputationStars(lvlRow.transform);
+            var starsRow = lvlRow.transform.Find("Reputation");
+            if (starsRow != null)
+            {
+                var sLe = starsRow.gameObject.AddComponent<LayoutElement>();
+                sLe.preferredWidth = 5 * 13 + 4 * 2; sLe.preferredHeight = 13; sLe.minWidth = sLe.preferredWidth;
+            }
 
-            // Ligne 2 : Pills ($, G, XP) en ligne
-            var pillsRow    = MakeGO("PillsRow", col.transform);
-            var pillsHlg    = pillsRow.AddComponent<HorizontalLayoutGroup>();
-            pillsHlg.childAlignment        = TextAnchor.MiddleCenter;
-            pillsHlg.spacing               = 4;
-            pillsHlg.childForceExpandWidth  = false;
-            pillsHlg.childForceExpandHeight = false;
-            pillsHlg.childControlWidth      = false;
-            pillsHlg.childControlHeight     = false;
-            var pillsFitter = pillsRow.AddComponent<ContentSizeFitter>();
-            pillsFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-            pillsFitter.verticalFit   = ContentSizeFitter.FitMode.PreferredSize;
+            var xpTrack = MakeGO("XpTrack", col.transform);
+            var xtImg = xpTrack.AddComponent<Image>();
+            xtImg.sprite = _sprR8; xtImg.type = Image.Type.Sliced;
+            xtImg.color = new Color(1f, 1f, 1f, 0.10f); xtImg.raycastTarget = false;
+            var xtLe = xpTrack.AddComponent<LayoutElement>();
+            xtLe.preferredHeight = 6; xtLe.minHeight = 6;
+            var xpFillGo = MakeGO("Fill", xpTrack.transform);
+            var xfImg = xpFillGo.AddComponent<Image>();
+            xfImg.sprite = _sprR8; xfImg.type = Image.Type.Sliced;
+            xfImg.color = new Color32(0x5A, 0x8E, 0xF5, 255); xfImg.raycastTarget = false;
+            _xpFill = xpFillGo.GetComponent<RectTransform>();
+            _xpFill.anchorMin = Vector2.zero; _xpFill.anchorMax = new Vector2(0f, 1f);
+            _xpFill.offsetMin = Vector2.zero; _xpFill.offsetMax = Vector2.zero;
 
-            _dollarsLabel    = MakePill(pillsRow.transform, "PillDollars", "dollars", new Color32(0x3D, 0xC9, 0x6E, 255));
-            _goldIngotsLabel = MakePill(pillsRow.transform, "PillGold",    "gold",   new Color32(0xF2, 0xD9, 0x66, 255));
-            _xpLabel         = MakePill(pillsRow.transform, "PillXP",      "xp",     new Color32(0xFA, 0xC0, 0x24, 255));
+            // Affordance : icône « menu » (3 traits) — on comprend que le profil s'ouvre.
+            var burger = MakeGO("MenuIcon", profile.transform);
+            var bLe = burger.AddComponent<LayoutElement>();
+            bLe.preferredWidth = 22; bLe.minWidth = 22; bLe.preferredHeight = 18;
+            for (int i = 0; i < 3; i++)
+            {
+                var line = MakeGO("L" + i, burger.transform);
+                var lImg = line.AddComponent<Image>();
+                lImg.sprite = _sprR8; lImg.type = Image.Type.Sliced;
+                lImg.color = new Color32(0xC8, 0xD0, 0xE0, 255); lImg.raycastTarget = false;
+                var lRt = line.GetComponent<RectTransform>();
+                lRt.anchorMin = new Vector2(0, 0.5f); lRt.anchorMax = new Vector2(1, 0.5f);
+                lRt.sizeDelta = new Vector2(0, 3); lRt.anchoredPosition = new Vector2(0, 7 - i * 7);
+            }
+            _profileDot = MakeDot(burger.GetComponent<RectTransform>(), new Vector2(1f, 1f), new Vector2(2f, 2f));
 
-            // Ligne 3 : Location (ville uniquement)
-            _locationLabel = MakeTMP("Location", col.transform, "—", 11, FontStyles.Normal, new Color32(0x7A, 0x8F, 0xA6, 255));
-            _locationLabel.textWrappingMode = TextWrappingModes.NoWrap;
-            _locationLabel.overflowMode     = TextOverflowModes.Ellipsis;
-            _locationLabel.alignment        = TextAlignmentOptions.Center;
-            SetLayout(_locationLabel.gameObject, 160, 13);
+            // 2 — Monnaies au centre, chacune avec « + » → Shop
+            Spacer(bar.transform);
+            _dollarsLabel    = MakePill(bar.transform, "PillDollars", "dollars", new Color32(0x3D, 0xC9, 0x6E, 255));
+            _goldIngotsLabel = MakePill(bar.transform, "PillGold",    "gold",    new Color32(0xF2, 0xD9, 0x66, 255));
+            Spacer(bar.transform);
 
-            // ===== RIGHT SIDE =====
-            var right   = MakeGO("RightSide", transform);
-            var rightRt = right.GetComponent<RectTransform>();
-            rightRt.anchorMin = new Vector2(1, 0);
-            rightRt.anchorMax = new Vector2(1, 1);
-            rightRt.pivot     = new Vector2(1, 0.5f);
-            rightRt.offsetMin = new Vector2(0, -10);
-            rightRt.offsetMax = new Vector2(-10, -10);
+            // 3 — Réglages seul à droite
+            // Cloche : journal des notifications (livraisons, accidents, démissions…) + compteur non lus.
+            var bellBtn = MakeIconButtonSprite(bar.transform, "BtnNotifications", MakeBellSprite());
+            bellBtn.onClick.AddListener(TransportManager.UI.Notifications.NotificationsPopupView.Show);
+            _bellBadge = MakeCountBadge(bellBtn.transform, out _bellBadgeLbl, inLayout: false);
+            var bellRt = _bellBadge.GetComponent<RectTransform>();
+            bellRt.anchoredPosition = new Vector2(-2f, -2f);
 
-            var rightBg = right.AddComponent<Image>();
-            rightBg.sprite        = _sprR16;
-            rightBg.type          = Image.Type.Sliced;
-            rightBg.color         = new Color32(0x2C, 0x30, 0x38, 255);
-            rightBg.raycastTarget = false;
-            var rightShadow = right.AddComponent<Shadow>();
-            rightShadow.effectColor    = new Color(0f, 0f, 0f, 0.5f);
-            rightShadow.effectDistance = new Vector2(0f, -4f);
-
-            var rightFitter = right.AddComponent<ContentSizeFitter>();
-            rightFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-            rightFitter.verticalFit   = ContentSizeFitter.FitMode.Unconstrained;
-
-            var rightHlg = right.AddComponent<HorizontalLayoutGroup>();
-            rightHlg.childAlignment        = TextAnchor.MiddleCenter;
-            rightHlg.spacing               = 10;
-            rightHlg.padding               = new RectOffset(10, 10, 9, 9);
-            rightHlg.childForceExpandWidth  = false;
-            rightHlg.childForceExpandHeight = false;
-            rightHlg.childControlWidth      = false;
-            rightHlg.childControlHeight     = false;
-
-            var analyticsBtn = MakeIconButton(right.transform, "BtnAnalytics", "chart");
-            MakeDivider(right.transform);
-            var listBtn      = MakeIconButton(right.transform, "btnList",      "list");
-            MakeDivider(right.transform);
-            var friendsBtn   = MakeIconButton(right.transform, "BtnFriends",   "users");
-            MakeDivider(right.transform);
-            var skillsBtn    = MakeIconButton(right.transform, "BtnSkills",   "research");
-            MakeDivider(right.transform);
-            var achBtn       = MakeIconButtonSprite(right.transform, "BtnAchievements", MakeTrophySprite());
-            _achBadge        = MakeBadge(achBtn.transform, out _achBadgeLabel);
-            MakeDivider(right.transform);
-            var dailyBtn     = MakeIconButtonSprite(right.transform, "BtnDaily", MakeTargetSprite());
-            MakeDivider(right.transform);
-            var settingsBtn  = MakeIconButton(right.transform, "BtnSettings",  "settings");
-
-            analyticsBtn.onClick.AddListener(AnalyticsPopupView.Show);
-            listBtn.onClick.AddListener(FleetListPopupView.Show);
-            friendsBtn.onClick.AddListener(FriendsPopupView.Show);
-            skillsBtn.onClick.AddListener(SkillTreePopupView.Show);
-            achBtn.onClick.AddListener(UI.Achievements.AchievementsPopupView.Show);
-            dailyBtn.onClick.AddListener(UI.Daily.DailyHubPopupView.Show);
+            var settingsBtn = MakeIconButton(bar.transform, "BtnSettings", "settings");
             settingsBtn.onClick.AddListener(SettingsPopupView.Show);
-            RefreshAchievementsBadge();
+
+            // Menu et dock vivent à la racine du canvas : en jeu uniquement (pas dans la scène sauvegardée).
+            if (Application.isPlaying) BuildProfileMenu();
+            GameEvents.OnTabChanged -= OnTabChangedCloseMenu;
+            GameEvents.OnTabChanged += OnTabChangedCloseMenu;
+            TransportManager.Systems.Notifications.NotificationSystem.Changed -= RefreshBell;
+            TransportManager.Systems.Notifications.NotificationSystem.Changed += RefreshBell;
+            RefreshBell();
+            RefreshBadges();
+        }
+
+        // ── Nouvelles pièces du HUD ──────────────────────────────────────────
+
+        private TMP_Text      _levelLabel;
+        private RectTransform _xpFill;
+        private GameObject    _profileDot;
+        private GameObject    _menuBlocker;
+        private TMP_Text      _menuAchLbl, _menuDailyLbl, _menuSkillsLbl;
+        private GameObject    _menuAchBadge, _menuDailyBadge, _menuSkillsBadge;
+        private float         _nextBadgeRefresh;
+
+        private static void Spacer(Transform parent)
+        {
+            var go = MakeGO("Spacer", parent);
+            go.AddComponent<LayoutElement>().flexibleWidth = 1;
+        }
+
+        // Petit point rouge en haut à droite d'un élément.
+        private GameObject MakeDot(RectTransform target, Vector2 anchor, Vector2 pos)
+        {
+            var go = MakeGO("Dot", target);
+            var img = go.AddComponent<Image>();
+            img.sprite = _sprR8; img.type = Image.Type.Sliced;
+            img.color = new Color32(0xE5, 0x3E, 0x3E, 255); img.raycastTarget = false;
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = rt.anchorMax = anchor;
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = new Vector2(14f, 14f);
+            go.AddComponent<LayoutElement>().ignoreLayout = true;
+            go.SetActive(false);
+            return go;
+        }
+
+        // Ouvre l'onglet Shop (bouton « + » des monnaies).
+        private static void OpenShop() => GameEvents.RaiseTabChanged(TransportManager.Enums.TabType.Shop);
+
+        // ── Menu profil : toutes les fonctions secondaires, avec libellés ─────
+        private void BuildProfileMenu()
+        {
+            var canvas = GetComponentInParent<Canvas>();
+            if (canvas == null) return;
+
+            _menuBlocker = MakeGO("ProfileMenu", canvas.transform);
+            var bRt = _menuBlocker.GetComponent<RectTransform>();
+            bRt.anchorMin = Vector2.zero; bRt.anchorMax = Vector2.one;
+            bRt.offsetMin = Vector2.zero; bRt.offsetMax = Vector2.zero;
+            var blockImg = _menuBlocker.AddComponent<Image>();
+            blockImg.color = new Color(0f, 0f, 0f, 0.35f);
+            var blockBtn = _menuBlocker.AddComponent<Button>();
+            blockBtn.transition = Selectable.Transition.None;
+            blockBtn.onClick.AddListener(CloseProfileMenu);
+
+            var menu = MakeGO("Menu", _menuBlocker.transform);
+            var mRt = menu.GetComponent<RectTransform>();
+            mRt.anchorMin = mRt.anchorMax = new Vector2(0f, 1f);
+            mRt.pivot = new Vector2(0f, 1f);
+            Vector4 ins = SafeAreaUtil.Insets(canvas);
+            mRt.anchoredPosition = new Vector2(ins.x + 10f, -(ins.z + HeaderHeight + 6f));
+            mRt.sizeDelta = new Vector2(320f, 0f);
+            var mImg = menu.AddComponent<Image>();
+            mImg.sprite = _sprR16; mImg.type = Image.Type.Sliced;
+            mImg.color = new Color32(0x2C, 0x30, 0x38, 255);
+            var mSh = menu.AddComponent<Shadow>();
+            mSh.effectColor = new Color(0f, 0f, 0f, 0.55f); mSh.effectDistance = new Vector2(0f, -6f);
+            var mVlg = menu.AddComponent<VerticalLayoutGroup>();
+            mVlg.padding = new RectOffset(8, 8, 8, 8);
+            mVlg.spacing = 4;
+            mVlg.childForceExpandWidth = true; mVlg.childForceExpandHeight = false;
+            mVlg.childControlWidth = true; mVlg.childControlHeight = true;
+            menu.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            MenuRow(menu.transform, "chart",    null,               "Statistiques",     AnalyticsPopupView.Show, out _, out _);
+            MenuRow(menu.transform, "list",     null,               "Ma flotte",        FleetListPopupView.Show, out _, out _);
+            MenuRow(menu.transform, "research", null,               "Compétences",      SkillTreePopupView.Show, out _menuSkillsBadge, out _menuSkillsLbl);
+            MenuRow(menu.transform, null,       MakeTargetSprite(), "Objectifs du jour", UI.Daily.DailyHubPopupView.Show, out _menuDailyBadge, out _menuDailyLbl);
+            MenuRow(menu.transform, null,       MakeTrophySprite(), "Succès",           UI.Achievements.AchievementsPopupView.Show, out _menuAchBadge, out _menuAchLbl);
+            MenuRow(menu.transform, "users",    null,               "Amis",             FriendsPopupView.Show, out _, out _);
+
+            _menuBlocker.SetActive(false);
+        }
+
+        private void MenuRow(Transform parent, string iconName, Sprite sprite, string label,
+                             UnityEngine.Events.UnityAction open, out GameObject badge, out TMP_Text badgeLbl)
+        {
+            var go = MakeGO("Row_" + label, parent);
+            var img = go.AddComponent<Image>();
+            img.sprite = _sprR8; img.type = Image.Type.Sliced;
+            img.color = new Color(1f, 1f, 1f, 0.04f);
+            var btn = go.AddComponent<Button>();
+            btn.targetGraphic = img;
+            btn.onClick.AddListener(() => { CloseProfileMenu(); open(); });
+            var hlg = go.AddComponent<HorizontalLayoutGroup>();
+            hlg.padding = new RectOffset(12, 12, 0, 0);
+            hlg.spacing = 12;
+            hlg.childAlignment = TextAnchor.MiddleLeft;
+            hlg.childForceExpandWidth = false; hlg.childForceExpandHeight = false;
+            hlg.childControlWidth = true; hlg.childControlHeight = true;
+            var le = go.AddComponent<LayoutElement>();
+            le.preferredHeight = 52; le.minHeight = 52;   // cible tactile ≥ 44 pt
+
+            var icon = MakeGO("Icon", go.transform);
+            var iImg = icon.AddComponent<Image>();
+            if (sprite != null) iImg.sprite = sprite; else UiIcons.Apply(iImg, $"UI/Icons/icons/{iconName}");
+            iImg.color = new Color32(0xC8, 0xD0, 0xE0, 255);
+            iImg.preserveAspect = true; iImg.raycastTarget = false;
+            var iLe = icon.AddComponent<LayoutElement>();
+            iLe.preferredWidth = 24; iLe.preferredHeight = 24; iLe.minWidth = 24;
+
+            var lbl = MakeTMP("Label", go.transform, label, 14, FontStyles.Bold, new Color32(0xEC, 0xEE, 0xF5, 255));
+            lbl.textWrappingMode = TextWrappingModes.NoWrap;
+            lbl.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
+
+            badge = MakeCountBadge(go.transform, out badgeLbl, inLayout: true);
+        }
+
+        // Compteur rouge (dans une rangée, ou posé en coin d'un bouton).
+        private GameObject MakeCountBadge(Transform parent, out TMP_Text label, bool inLayout)
+        {
+            var go = MakeGO("Badge", parent);
+            var img = go.AddComponent<Image>();
+            img.sprite = _sprR8; img.type = Image.Type.Sliced;
+            img.color = new Color32(0xE5, 0x3E, 0x3E, 255); img.raycastTarget = false;
+            var le = go.AddComponent<LayoutElement>();
+            if (inLayout) { le.preferredWidth = 26; le.preferredHeight = 22; le.minWidth = 26; }
+            else
+            {
+                le.ignoreLayout = true;
+                var rt = go.GetComponent<RectTransform>();
+                rt.anchorMin = rt.anchorMax = new Vector2(1f, 1f);
+                rt.pivot = new Vector2(0.5f, 0.5f);
+                rt.anchoredPosition = new Vector2(-6f, -6f);
+                rt.sizeDelta = new Vector2(26f, 22f);
+            }
+            label = MakeTMP("N", go.transform, "0", 11, FontStyles.Bold, new Color32(0xFF, 0xFF, 0xFF, 255));
+            label.alignment = TextAlignmentOptions.Center;
+            var lrt = label.GetComponent<RectTransform>();
+            lrt.anchorMin = Vector2.zero; lrt.anchorMax = Vector2.one;
+            lrt.offsetMin = Vector2.zero; lrt.offsetMax = Vector2.zero;
+            go.SetActive(false);
+            return go;
+        }
+
+        private void ToggleProfileMenu()
+        {
+            if (_menuBlocker == null) return;
+            bool open = !_menuBlocker.activeSelf;
+            _menuBlocker.SetActive(open);
+            if (open) { _menuBlocker.transform.SetAsLastSibling(); RefreshBadges(); }
+        }
+
+        private void CloseProfileMenu() { if (_menuBlocker != null) _menuBlocker.SetActive(false); }
+
+        private void OnTabChangedCloseMenu(TransportManager.Enums.TabType _) => CloseProfileMenu();
+
+        // Compteurs partagés (menu profil + rail) : « quelque chose à faire ».
+        public static int DailyPendingCount()
+        {
+            int daily = 0;
+            var d = ServiceLocator.Get<TransportManager.Systems.Daily.DailySystem>();
+            if (d == null) return 0;
+            if (d.LoginPending) daily++;
+            if (d.LeaguePending) daily++;
+            foreach (var m in d.Missions)
+                if (!m.claimed && TransportManager.Systems.Daily.DailySystem.IsComplete(m)) daily++;
+            return daily;
+        }
+        public static int SkillPointsCount()
+            => ServiceLocator.Get<TransportManager.Systems.Progression.SkillTreeSystem>()?.AvailablePoints ?? 0;
+        public static int AchievementsClaimableCount()
+            => ServiceLocator.Get<TransportManager.Systems.Achievements.AchievementSystem>()?.ClaimableCount() ?? 0;
+
+        private void RefreshBadges()
+        {
+            int daily = DailyPendingCount(), skills = SkillPointsCount(), ach = AchievementsClaimableCount();
+            RefreshBell();
+            SetBadge(_menuDailyBadge, _menuDailyLbl, daily);
+            SetBadge(_menuSkillsBadge, _menuSkillsLbl, skills);
+            SetBadge(_menuAchBadge, _menuAchLbl, ach);
+            if (_profileDot != null) _profileDot.SetActive(daily + skills + ach > 0);
+        }
+
+        private static void SetBadge(GameObject badge, TMP_Text lbl, int n)
+        {
+            if (badge == null) return;
+            badge.SetActive(n > 0);
+            if (n > 0 && lbl != null) lbl.text = n > 9 ? "9+" : n.ToString();
+        }
+
+        private void Update()
+        {
+            if (Time.unscaledTime < _nextBadgeRefresh) return;
+            _nextBadgeRefresh = Time.unscaledTime + 1.5f;
+            RefreshBadges();
+        }
+
+        private void OnDestroy()
+        {
+            GameEvents.OnTabChanged -= OnTabChangedCloseMenu;
+            TransportManager.Systems.Notifications.NotificationSystem.Changed -= RefreshBell;
+        }
+
+        // ── Cloche des notifications ─────────────────────────────────────────
+        private GameObject _bellBadge;
+        private TMP_Text   _bellBadgeLbl;
+
+        private void RefreshBell()
+        {
+            int n = ServiceLocator.Get<TransportManager.Systems.Notifications.NotificationSystem>()?.UnreadCount ?? 0;
+            SetBadge(_bellBadge, _bellBadgeLbl, n);
+        }
+
+        // Cloche procédurale (pas d asset) : dôme + bord + battant.
+        private static Sprite _bellSprite;
+        private static Sprite MakeBellSprite()
+        {
+            if (_bellSprite != null) return _bellSprite;
+            const int sz = 64;
+            var tex = new Texture2D(sz, sz, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            var px = new Color[sz * sz];
+            const int SS = 3;
+            float c = sz / 2f;
+            for (int y = 0; y < sz; y++)
+                for (int x = 0; x < sz; x++)
+                {
+                    int hit = 0;
+                    for (int sy = 0; sy < SS; sy++)
+                        for (int sx = 0; sx < SS; sx++)
+                        {
+                            float fx = x + (sx + 0.5f) / SS, fy = y + (sy + 0.5f) / SS;
+                            bool ink = false;
+                            if (fy >= 20f && fy <= 52f)                       // dôme : s élargit vers le bas
+                            {
+                                float t = (52f - fy) / 32f;
+                                float hw = 7f + 15f * Mathf.Sqrt(t);
+                                ink = Mathf.Abs(fx - c) <= hw;
+                            }
+                            if (fy >= 14f && fy < 20f && Mathf.Abs(fx - c) <= 25f) ink = true;   // bord
+                            if ((fx - c) * (fx - c) + (fy - 8f) * (fy - 8f) <= 30f) ink = true;     // battant
+                            if ((fx - c) * (fx - c) + (fy - 55f) * (fy - 55f) <= 14f) ink = true;   // anneau
+                            if (ink) hit++;
+                        }
+                    px[y * sz + x] = new Color(1f, 1f, 1f, hit / (float)(SS * SS));
+                }
+            tex.SetPixels(px); tex.Apply();
+            _bellSprite = Sprite.Create(tex, new Rect(0, 0, sz, sz), new Vector2(0.5f, 0.5f));
+            return _bellSprite;
         }
 
         // ── Helpers ──────────────────────────────────────────────────────────
@@ -298,8 +537,8 @@ namespace TransportManager.UI.Common
             pillImg.raycastTarget = false;
 
             var hlg = pill.AddComponent<HorizontalLayoutGroup>();
-            hlg.padding               = new RectOffset(6, 8, 4, 4);
-            hlg.spacing               = 3;
+            hlg.padding               = new RectOffset(6, 7, 4, 4);
+            hlg.spacing               = 6;
             hlg.childAlignment        = TextAnchor.MiddleCenter;
             hlg.childForceExpandWidth  = false;
             hlg.childForceExpandHeight = false;
@@ -311,7 +550,11 @@ namespace TransportManager.UI.Common
             fitter.verticalFit   = ContentSizeFitter.FitMode.PreferredSize;
 
             var pillLe = pill.AddComponent<LayoutElement>();
-            pillLe.preferredHeight = 26;
+            pillLe.preferredHeight = 44; pillLe.minHeight = 44;
+            var pillBtn = pill.AddComponent<Button>();      // toute la pastille ouvre le Shop
+            pillBtn.targetGraphic = pillImg;
+            pillBtn.onClick.AddListener(OpenShop);
+            pillImg.raycastTarget = true;
 
             // Icon
             var iconGo  = MakeGO("Image", pill.transform);
@@ -334,6 +577,18 @@ namespace TransportManager.UI.Common
             var labelLe = labelTmp.gameObject.AddComponent<LayoutElement>();
             labelLe.preferredHeight = 24;
 
+            // « + » : acheter cette monnaie
+            var plus = MakeGO("Plus", pill.transform);
+            var plusImg = plus.AddComponent<Image>();
+            plusImg.sprite = _sprR8; plusImg.type = Image.Type.Sliced;
+            plusImg.color = new Color32(0x22, 0xC5, 0x6E, 255); plusImg.raycastTarget = false;
+            var plusLe = plus.AddComponent<LayoutElement>();
+            plusLe.preferredWidth = 30; plusLe.preferredHeight = 30; plusLe.minWidth = 30;
+            var plusLbl = MakeTMP("P", plus.transform, "+", 18, FontStyles.Bold, new Color32(0xFF, 0xFF, 0xFF, 255));
+            plusLbl.alignment = TextAlignmentOptions.Center;
+            var plRt = plusLbl.GetComponent<RectTransform>();
+            plRt.anchorMin = Vector2.zero; plRt.anchorMax = Vector2.one; plRt.offsetMin = Vector2.zero; plRt.offsetMax = Vector2.zero;
+
             return labelTmp;
         }
 
@@ -347,8 +602,8 @@ namespace TransportManager.UI.Common
             img.raycastTarget = true;
             var btn = go.AddComponent<Button>();
             btn.targetGraphic = img;
-            SetLayout(go, 44, 44);
-            go.GetComponent<RectTransform>().sizeDelta = new Vector2(44, 44);
+            SetLayout(go, 48, 48);
+            go.GetComponent<RectTransform>().sizeDelta = new Vector2(48, 48);
 
             var iconGo  = MakeGO("Icon", go.transform);
             var iconImg = iconGo.AddComponent<Image>();
@@ -376,8 +631,8 @@ namespace TransportManager.UI.Common
             img.raycastTarget = true;
             var btn = go.AddComponent<Button>();
             btn.targetGraphic = img;
-            SetLayout(go, 44, 44);
-            go.GetComponent<RectTransform>().sizeDelta = new Vector2(44, 44);
+            SetLayout(go, 48, 48);
+            go.GetComponent<RectTransform>().sizeDelta = new Vector2(48, 48);
 
             var iconGo  = MakeGO("Icon", go.transform);
             var iconImg = iconGo.AddComponent<Image>();
@@ -394,6 +649,7 @@ namespace TransportManager.UI.Common
 
         // Icône « cible » procédurale (objectifs/missions) — bandes concentriques.
         private static Sprite _targetSprite;
+        public static Sprite TargetSprite() => MakeTargetSprite();   // utilisée par le rail (Objectifs)
         private static Sprite MakeTargetSprite()
         {
             if (_targetSprite != null) return _targetSprite;
@@ -486,6 +742,7 @@ namespace TransportManager.UI.Common
         /// Met à jour la pastille du bouton Succès (nb de récompenses à réclamer).
         public void RefreshAchievementsBadge()
         {
+            RefreshBadges();
             if (_achBadge == null) return;
             int n = ServiceLocator.Get<TransportManager.Systems.Achievements.AchievementSystem>()?.ClaimableCount() ?? 0;
             _achBadge.SetActive(n > 0);
@@ -559,7 +816,7 @@ namespace TransportManager.UI.Common
             hlg.childAlignment = TextAnchor.MiddleCenter; hlg.spacing = 2;
             // Marge basse → les étoiles se centrent un peu plus haut (remontent vers le titre)
             // sans déplacer le nom de l'entreprise.
-            hlg.padding = new RectOffset(0, 0, 0, 6);
+            hlg.padding = new RectOffset(0, 0, 0, 0);
             hlg.childForceExpandWidth = false; hlg.childForceExpandHeight = false;
             hlg.childControlWidth = false; hlg.childControlHeight = false;
             var fitter = row.AddComponent<ContentSizeFitter>();
@@ -623,9 +880,9 @@ namespace TransportManager.UI.Common
         // If the first segment starts with a digit (house number), prepend it to the street name.
         private static string ExtractCity(string location)
         {
-            if (string.IsNullOrWhiteSpace(location)) return "—";
+            if (string.IsNullOrWhiteSpace(location)) return "-";
             var parts = location.Split(',');
-            if (parts.Length == 0) return "—";
+            if (parts.Length == 0) return "-";
             string first = parts[0].Trim();
             if (parts.Length > 1 && first.Length > 0 && char.IsDigit(first[0]))
                 return first + " " + parts[1].Trim();
@@ -634,7 +891,17 @@ namespace TransportManager.UI.Common
 
         private void UpdateDollars(int value)     { if (_dollarsLabel)    _dollarsLabel.text    = $"{value:N0}"; }
         private void UpdateGoldIngots(int value)  { if (_goldIngotsLabel) _goldIngotsLabel.text = $"{value:N0}"; }
-        private void UpdateXp(int xp, int level)  { if (_xpLabel)         _xpLabel.text         = $"{xp:N0}"; }
+        private void UpdateXp(int xp, int level)
+        {
+            if (_levelLabel) _levelLabel.text = $"Niv. {level}";
+            if (_xpFill)
+            {
+                int floor = TransportManager.Entities.Progression.XpCurve.XpForCompanyLevel(level);
+                int next  = TransportManager.Entities.Progression.XpCurve.XpForCompanyLevel(level + 1);
+                float t = next > floor ? Mathf.Clamp01((xp - floor) / (float)(next - floor)) : 1f;
+                _xpFill.anchorMax = new Vector2(Mathf.Max(0.02f, t), 1f);
+            }
+        }
 
         // ── Étoile pleine procédurale (pour la réputation) ─────────────────────
         private static Sprite _starSprite;

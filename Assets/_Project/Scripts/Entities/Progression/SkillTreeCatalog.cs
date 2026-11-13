@@ -6,12 +6,15 @@ namespace TransportManager.Entities.Progression
     /// <summary>
     /// Catalogue statique de l'arbre de compétences.
     ///
-    /// L'arbre part d'un tronc unique puis se sépare en 3 branches (Dépôt / RH / Essence).
-    /// Chaque branche est ici une chaîne linéaire de 4 augments (tier 1 → 4) : pour en
-    /// débloquer un, il faut avoir débloqué son prérequis et disposer d'assez de points.
+    /// Quatre branches partent du centre : Dépôt (infrastructure & flotte), RH (équipe &
+    /// sécurité), Essence (carburant & réservoirs) et Commercial (contrats & réputation).
+    /// Pour débloquer un nœud, il faut avoir débloqué son prérequis et disposer d'assez
+    /// de points.
     ///
-    /// Tout est conçu pour être édité facilement : ajoute/retire des nœuds, change les
-    /// coûts (cost), les effets (effect) ou les magnitudes (fraction pour les %).
+    /// ⚠️ Les identifiants (id) sont enregistrés dans la sauvegarde : ne jamais renommer
+    /// l'id d'un nœud existant. On peut en revanche changer sa branche, son prérequis, son
+    /// titre ou son coût (c'est ce qui a été fait pour déplacer les nœuds « contrats » de
+    /// Dépôt/RH vers Commercial : un joueur qui les possédait les garde).
     /// </summary>
     public static class SkillTreeCatalog
     {
@@ -46,6 +49,7 @@ namespace TransportManager.Entities.Progression
             list.AddRange(BuildDepot());
             list.AddRange(BuildHr());
             list.AddRange(BuildFuel());
+            list.AddRange(BuildCommercial());
             return list;
         }
 
@@ -53,7 +57,7 @@ namespace TransportManager.Entities.Progression
         private static int CostForTier(int tier) => 1 + (tier - 1) / 2; // 1,1,2,2,3,3,4,4,5,5
 
         // Forme du nœud déduite de son effet : les améliorations structurelles « flat »
-        // (+1 emplacement, +1 niveau de recrutement) prennent un carré ; les capstones
+        // (+1 emplacement, +1 niveau de recrutement…) prennent un carré ; les capstones
         // (effets « flag » de fin de branche) un losange ; tout le reste un cercle.
         private static NodeShape ShapeFor(SkillEffectType effect)
         {
@@ -63,6 +67,8 @@ namespace TransportManager.Entities.Progression
                 case SkillEffectType.RecruitmentLevelBonus:
                 case SkillEffectType.ContractCountryReach:
                 case SkillEffectType.RecruitmentPoolSizeBonus:
+                case SkillEffectType.ExtraTourStops:
+                case SkillEffectType.ExtraContractChoices:
                     return NodeShape.Square;
                 case SkillEffectType.AutoRepair:
                 case SkillEffectType.PremiumContractsUnlocked:
@@ -85,9 +91,7 @@ namespace TransportManager.Entities.Progression
             string prereq, SkillEffectType effect)
             => new SkillNodeDefinition(id, branch, title, desc, 5, prereq, effect, 1f, 6, NodeShape.Diamond);
 
-        // ── Branche DÉPÔT (logistique) ────────────────────────────────────────────
-        // Arbre ramifié : racine → 2 → (2 / 3) → … Les augments les plus forts sont
-        // au plus profond (les plus durs à atteindre).
+        // ── Branche DÉPÔT (infrastructure & flotte) ─────────────────────────────────
         private static List<SkillNodeDefinition> BuildDepot()
         {
             const SkillBranch B = SkillBranch.Depot;
@@ -95,49 +99,39 @@ namespace TransportManager.Entities.Progression
             var U = SkillEffectType.DepotUpgradeCostReduction;
             var R = SkillEffectType.RepairCostReduction;
             var W = SkillEffectType.ContractRewardBonus;
-            var G = SkillEffectType.ContractCountryReach;
+            var P = SkillEffectType.VehiclePriceReduction;
             var list = new List<SkillNodeDefinition>
             {
                 Node("depot_root", B, "Quai supplémentaire", "+1 emplacement de véhicule au dépôt.",          null,        E, 1f,    1),
                 // split 2
                 Node("depot_a",    B, "Négociation BTP",     "-8 % sur le coût d'agrandissement du dépôt.",   "depot_root",U, 0.08f, 2),
                 Node("depot_b",    B, "Atelier interne",     "-8 % sur le coût de réparation des véhicules.", "depot_root",R, 0.08f, 2),
-                // ── Expansion géographique (carrés = portée des contrats) ──
-                Node("depot_geo1", B, "Tournées transfrontalières",
-                    "Débloque les contrats vers les pays limitrophes de ton pays d'attache.",                 "depot_root",G, 1f,    2),
-                Node("depot_geo2", B, "Réseau continental",
-                    "Débloque les contrats dans tout ton continent d'attache.",                               "depot_geo1",G, 1f,    3),
-                // depot_a split 2
+                // depot_a : agrandissement + achats de véhicules
                 Node("depot_a1",   B, "Centrale d'achat",    "-10 % supplémentaires sur l'agrandissement.",   "depot_a",   U, 0.10f, 3),
-                Node("depot_a2",   B, "Contrats premium",    "+4 % sur la récompense des contrats.",          "depot_a",   W, 0.04f, 3),
-                // depot_b split 3
-                Node("depot_b1",   B, "Pièces d'occasion",   "-10 % supplémentaires sur la réparation.",      "depot_b",   R, 0.10f, 3),
-                Node("depot_b2",   B, "Second quai",         "+1 emplacement de véhicule supplémentaire.",    "depot_b",   E, 1f,    3),
-                Node("depot_b3",   B, "Primes de livraison", "+4 % sur la récompense des contrats.",          "depot_b",   W, 0.04f, 3),
-                // depth 4
                 Node("depot_a1a",  B, "Achats groupés",      "-12 % supplémentaires sur l'agrandissement.",   "depot_a1",  U, 0.12f, 4),
-                Node("depot_a2a",  B, "Clients fidèles",     "+6 % sur la récompense des contrats.",          "depot_a2",  W, 0.06f, 4),
-                // Débloque les tournées à escales (contrats multi-arrêts très rémunérateurs)
-                Node("depot_tour", B, "Tournées multi-arrêts",
-                    "Débloque les contrats avec escales : plusieurs livraisons d'affilée, bien plus rémunérateurs.",
-                    "depot_a2a", SkillEffectType.MultiStopContractsUnlocked, 1f, 5),
-                Node("depot_b1a",  B, "Mécanos chevronnés",  "-12 % supplémentaires sur la réparation.",      "depot_b1",  R, 0.12f, 4),
-                Node("depot_b2a",  B, "Troisième quai",      "+1 emplacement de véhicule supplémentaire.",    "depot_b2",  E, 1f,    4),
-                Node("depot_b2b",  B, "Logistique fluide",   "+5 % sur la récompense des contrats.",          "depot_b2",  W, 0.05f, 4),
-                Node("depot_b3a",  B, "Service client",      "+5 % sur la récompense des contrats.",          "depot_b3",  W, 0.05f, 4),
-                // depth 5 (les plus forts)
                 Node("depot_a1a1", B, "Empire immobilier",   "-18 % supplémentaires sur l'agrandissement.",   "depot_a1a", U, 0.18f, 5),
-                Node("depot_a2a1", B, "Contrats en or",      "+12 % sur la récompense des contrats.",         "depot_a2a", W, 0.12f, 5),
+                Node("depot_fleet1", B, "Concession partenaire", "-8 % sur le prix d'achat des véhicules.",   "depot_a",   P, 0.08f, 3),
+                Node("depot_fleet2", B, "Achats en gros",    "-12 % supplémentaires sur le prix des véhicules.", "depot_fleet1", P, 0.12f, 4),
+                Node("depot_speed1", B, "Préparation moteur", "+6 % de vitesse des camions : les trajets durent moins longtemps.", "depot_fleet1",
+                    SkillEffectType.TripSpeedBonus, 0.06f, 4),
+                Node("depot_speed2", B, "Limiteurs recalibrés", "+10 % supplémentaires de vitesse des camions.", "depot_speed1",
+                    SkillEffectType.TripSpeedBonus, 0.10f, 5),
+                // depot_b : réparation, quais, usure
+                Node("depot_b1",   B, "Pièces d'occasion",   "-10 % supplémentaires sur la réparation.",      "depot_b",   R, 0.10f, 3),
+                Node("depot_b1a",  B, "Mécanos chevronnés",  "-12 % supplémentaires sur la réparation.",      "depot_b1",  R, 0.12f, 4),
                 Node("depot_b1a1", B, "Maintenance prédictive","-18 % supplémentaires sur la réparation.",    "depot_b1a", R, 0.18f, 5),
+                Node("depot_b2",   B, "Second quai",         "+1 emplacement de véhicule supplémentaire.",    "depot_b",   E, 1f,    3),
+                Node("depot_b2a",  B, "Troisième quai",      "+1 emplacement de véhicule supplémentaire.",    "depot_b2",  E, 1f,    4),
                 Node("depot_b2a1", B, "Hangar étendu",       "+2 emplacements de véhicule supplémentaires.",  "depot_b2a", E, 2f,    5),
+                Node("depot_b2b",  B, "Logistique fluide",   "+5 % sur la récompense des contrats.",          "depot_b2",  W, 0.05f, 4),
+                Node("depot_wear1", B, "Pneus renforcés",
+                    "Usure des véhicules -15 % : la maintenance obligatoire arrive plus tard.",               "depot_b",   SkillEffectType.WearReduction, 0.15f, 3),
+                Node("depot_wear2", B, "Révisions espacées",
+                    "Maintenance obligatoire à 90 % d'usure au lieu de 80 %.",                                "depot_wear1", SkillEffectType.MaintenanceThresholdBonus, 0.10f, 4),
                 // capstone (losange) : réparation automatique gratuite au retour de mission
                 Capstone("depot_cap", B, "Atelier robotisé",
-                    "Les véhicules arrivant à 80 % d'usure sont révisés automatiquement et gratuitement, sans immobilisation.",
+                    "Les véhicules arrivant à l'usure maximale sont révisés automatiquement et gratuitement, sans immobilisation.",
                     "depot_b1a1", SkillEffectType.AutoRepair),
-                // capstone (losange) : portée mondiale des contrats
-                Capstone("depot_geo3", B, "Réseau mondial",
-                    "Débloque les contrats vers le monde entier, tous continents confondus.",
-                    "depot_geo2", SkillEffectType.ContractCountryReach),
             };
 
             // ── Nœud de CONVERGENCE « ultime » ───────────────────────────────────────
@@ -173,7 +167,7 @@ namespace TransportManager.Entities.Progression
             return leaves;
         }
 
-        // ── Branche RH ──────────────────────────────────────────────────────────────
+        // ── Branche RH (équipe & sécurité) ─────────────────────────────────────────
         private static List<SkillNodeDefinition> BuildHr()
         {
             const SkillBranch B = SkillBranch.Hr;
@@ -184,6 +178,7 @@ namespace TransportManager.Entities.Progression
             var Ps = SkillEffectType.RecruitmentPoolSizeBonus;
             var Rh = SkillEffectType.HrRefreshHoursReduction;
             var Rd = SkillEffectType.HrRefreshPayWithDollars;
+            var Ac = SkillEffectType.AccidentChanceReduction;
             return new List<SkillNodeDefinition>
             {
                 Node("hr_root", B, "Contrats avantageux",   "-8 % sur les salaires des conducteurs.",        null,     Wg, 0.08f, 1),
@@ -209,10 +204,14 @@ namespace TransportManager.Entities.Progression
                 Node("hr_a3a1", B, "Réseau d'élite",        "Candidats du vivier : niveau minimum +2.",      "hr_a3a", Rc, 2f,    5),
                 Node("hr_b1a1", B, "Bien-être total",       "-25 % supplémentaires de fatigue.",             "hr_b1a", Fa, 0.25f, 5),
                 Node("hr_b2a1", B, "Convention dorée",      "-12 % supplémentaires sur les salaires.",       "hr_b2a", Wg, 0.12f, 5),
-                // capstone (losange) : débloque l'apparition des contrats premium
-                Capstone("hr_cap", B, "Carnet d'adresses premium",
-                    "Donne accès aux grands comptes : des contrats premium, plus lucratifs, apparaissent dans la liste.",
-                    "hr_a3a1", SkillEffectType.PremiumContractsUnlocked),
+
+                // ── Sous-branche SÉCURITÉ (accidents) ───────────────────────────────
+                Node("hr_safe1", B, "Formation sécurité",   "-15 % de risque d'accident sur les trajets.",   "hr_b",   Ac, 0.15f, 3),
+                Node("hr_safe2", B, "Conduite défensive",   "-20 % supplémentaires de risque d'accident.",   "hr_safe1", Ac, 0.20f, 4),
+                Node("hr_safe3", B, "Secourisme",
+                    "Un accident a deux fois moins de risques d'être mortel.",                               "hr_safe1", SkillEffectType.FatalAccidentReduction, 0.50f, 4),
+                Node("hr_drink", B, "Boissons premium",
+                    "Les energy drinks retirent 50 % de fatigue en plus.",                                   "hr_b1",  SkillEffectType.EnergyDrinkBoost, 0.50f, 4),
 
                 // ── Sous-branche RECRUTEMENT (vivier de candidats) ──────────────────
                 Node("hr_pool1",   B, "Annonce d'embauche",
@@ -247,6 +246,7 @@ namespace TransportManager.Entities.Progression
             var Ca = SkillEffectType.StationCapacityBonus;
             var Re = SkillEffectType.RefillSpeedBonus;
             var Sp = SkillEffectType.TripSpeedBonus;
+            var Tk = SkillEffectType.VehicleTankBonus;
             return new List<SkillNodeDefinition>
             {
                 Node("fuel_root", B, "Carte carburant pro", "-10 % sur le prix d'achat du carburant.",       null,      Pr, 0.10f, 1),
@@ -267,9 +267,11 @@ namespace TransportManager.Entities.Progression
                     "Étend l'historique du prix à 60 jours.",                                               "fuel_market2", SkillEffectType.FuelMarketHistoryDays, 30f, 5),
                 Node("fuel_market4", B, "Historique complet",
                     "Étend l'historique du prix à 90 jours (maximum).",                                     "fuel_market3", SkillEffectType.FuelMarketHistoryDays, 30f, 6),
-                // fuel_b split 2
+                // fuel_b split 3
                 Node("fuel_b1",   B, "Double cuve",         "+25 % supplémentaires de capacité.",            "fuel_b",  Ca, 0.25f, 3),
                 Node("fuel_b2",   B, "Pompe rapide",        "+20 % de vitesse de remplissage.",              "fuel_b",  Re, 0.20f, 3),
+                Node("fuel_tank1",B, "Réservoirs XL",       "+15 % de capacité des réservoirs des véhicules (plus d'autonomie).", "fuel_b", Tk, 0.15f, 3),
+                Node("fuel_tank2",B, "Réservoirs longue distance", "+20 % supplémentaires de capacité des réservoirs.", "fuel_tank1", Tk, 0.20f, 4),
                 // depth 4
                 Node("fuel_a1a",  B, "Aérodynamisme",       "-10 % supplémentaires de consommation.",        "fuel_a1", Co, 0.10f, 4),
                 Node("fuel_a2a",  B, "Flotte sport",        "+8 % de vitesse sur les trajets.",              "fuel_a2", Sp, 0.08f, 4),
@@ -286,6 +288,69 @@ namespace TransportManager.Entities.Progression
                 Capstone("fuel_cap", B, "Citerne autonome",
                     "La station se ravitaille automatiquement et gratuitement au fil du temps, sans camion ni dépense.",
                     "fuel_b2a1", SkillEffectType.AutoStationRefill),
+            };
+        }
+
+        // ── Branche COMMERCIAL (contrats & réputation) ───────────────────────────────
+        // Regroupe tout ce qui touche aux contrats. Les nœuds « depot_* » / « hr_cap » ont
+        // été déplacés ici depuis Dépôt et RH : leur id est conservé pour les sauvegardes.
+        private static List<SkillNodeDefinition> BuildCommercial()
+        {
+            const SkillBranch B = SkillBranch.Commercial;
+            var W  = SkillEffectType.ContractRewardBonus;
+            var G  = SkillEffectType.ContractCountryReach;
+            var Ot = SkillEffectType.OnTimeBonusIncrease;
+            var Rg = SkillEffectType.ReputationGainBonus;
+            return new List<SkillNodeDefinition>
+            {
+                Node("com_root", B, "Service commercial",   "+4 % sur la récompense des contrats.",          null,       W, 0.04f, 1),
+
+                // ── Clients : récompenses, choix de contrats, événements ──
+                Node("depot_a2",   B, "Négociation tarifaire", "+4 % sur la récompense des contrats.",       "com_root", W, 0.04f, 2),
+                Node("depot_a2a",  B, "Clients fidèles",     "+6 % sur la récompense des contrats.",          "depot_a2", W, 0.06f, 3),
+                Node("com_choices",B, "Carnet de commandes",
+                    "Un contrat supplémentaire proposé à chaque génération.",                                 "depot_a2a", SkillEffectType.ExtraContractChoices, 1f, 4),
+                Node("depot_a2a1", B, "Contrats en or",      "+12 % sur la récompense des contrats.",         "depot_a2a", W, 0.12f, 5),
+                // capstone (losange) : débloque l'apparition des contrats premium (ex-RH)
+                Capstone("hr_cap", B, "Carnet d'adresses premium",
+                    "Donne accès aux grands comptes : des contrats premium, plus lucratifs, apparaissent dans la liste.",
+                    "depot_a2a1", SkillEffectType.PremiumContractsUnlocked),
+                Node("com_events", B, "Opportuniste",
+                    "Le bonus de l'événement du jour est augmenté de 50 % (ex. +30 % → +45 %).",            "depot_a2", SkillEffectType.LiveEventBonus, 0.50f, 3),
+                Node("com_missions", B, "Objectifs ambitieux",
+                    "+50 % sur les récompenses ($ et lingots) des missions quotidiennes.",                   "com_events", SkillEffectType.DailyMissionRewardBonus, 0.50f, 4),
+
+                // ── Expansion : portée géographique & tournées ──
+                Node("depot_geo1", B, "Tournées transfrontalières",
+                    "Débloque les contrats vers les pays limitrophes de ton pays d'attache.",                 "com_root",   G, 1f, 2),
+                Node("depot_geo2", B, "Réseau continental",
+                    "Débloque les contrats dans tout ton continent d'attache.",                               "depot_geo1", G, 1f, 3),
+                // capstone (losange) : portée mondiale des contrats
+                Capstone("depot_geo3", B, "Réseau mondial",
+                    "Débloque les contrats vers le monde entier, tous continents confondus.",
+                    "depot_geo2", SkillEffectType.ContractCountryReach),
+                // Débloque les tournées à escales (contrats multi-arrêts très rémunérateurs)
+                Node("depot_tour", B, "Tournées multi-arrêts",
+                    "Débloque les contrats avec escales : plusieurs livraisons d'affilée, bien plus rémunérateurs.",
+                    "depot_geo1", SkillEffectType.MultiStopContractsUnlocked, 1f, 3),
+                Node("com_tour_long", B, "Tournées longues",
+                    "Les tournées peuvent compter jusqu'à 5 livraisons au lieu de 4.",                       "depot_tour", SkillEffectType.ExtraTourStops, 1f, 4),
+
+                // ── Réputation & ponctualité ──
+                Node("com_deadline", B, "Délais souples",
+                    "+15 % de temps avant la pénalité de retard.",                                          "com_root",     SkillEffectType.DeadlineTimeBonus, 0.15f, 2),
+                Node("com_punct1", B, "Prime de ponctualité",
+                    "Bonus de livraison à l'heure : +20 % au lieu de +15 %.",                               "com_deadline", Ot, 0.05f, 3),
+                Node("com_punct2", B, "Livraison express",
+                    "Bonus de livraison à l'heure : +25 % au lieu de +20 %.",                               "com_punct1",   Ot, 0.05f, 4),
+                Node("depot_b3",   B, "Primes de livraison", "+4 % sur la récompense des contrats.",          "com_deadline", W, 0.04f, 3),
+                Node("depot_b3a",  B, "Service client",      "+5 % sur la récompense des contrats.",          "depot_b3",     W, 0.05f, 4),
+                Node("com_rep1",   B, "Bouche-à-oreille",
+                    "+25 % de réputation gagnée à chaque livraison.",                                        "com_deadline", Rg, 0.25f, 3),
+                Node("com_rep2",   B, "Gestion de crise",
+                    "Les accidents font perdre deux fois moins de réputation.",                              "com_rep1",     SkillEffectType.ReputationLossReduction, 0.50f, 4),
+                Node("com_rep3",   B, "Image de marque",
+                    "+50 % supplémentaires de réputation gagnée.",                                           "com_rep2",     Rg, 0.50f, 5),
             };
         }
     }

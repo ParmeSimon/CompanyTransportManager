@@ -40,10 +40,22 @@ namespace TransportManager.Entities.Vehicles
         public int RequiredCompanyLevel =>
             Mathf.Max(minCompanyLevelRequired, VehicleClassUnlock.ForCategory(category));
 
+        /// <summary>
+        /// Capacité RÉELLE du réservoir : capacité catalogue + bonus « Réservoirs XL »
+        /// (arbre Essence). À utiliser partout dans le jeu à la place de fuelTankCapacityLiters.
+        /// </summary>
+        public float TankCapacity =>
+            fuelTankCapacityLiters * (1f + Systems.Progression.SkillTreeSystem.PctOf(SkillEffectType.VehicleTankBonus));
+
+        /// <summary>Prix d'achat RÉEL : prix catalogue - réduction « Concession partenaire » (arbre Dépôt).</summary>
+        public int EffectivePrice =>
+            Mathf.Max(0, Mathf.RoundToInt(purchasePrice
+                * (1f - Systems.Progression.SkillTreeSystem.PctOf(SkillEffectType.VehiclePriceReduction))));
+
         public float MaxRangeKm()
         {
             return fuelConsumptionLPer100Km > 0f
-                ? fuelTankCapacityLiters * 100f / fuelConsumptionLPer100Km
+                ? TankCapacity * 100f / fuelConsumptionLPer100Km
                 : 0f;
         }
 

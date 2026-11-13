@@ -85,8 +85,7 @@ namespace TransportManager.UI.Fleet
 
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-            scaler.matchWidthOrHeight  = 0.5f;
+            TransportManager.Core.UiScale.Configure(scaler);
             gameObject.AddComponent<GraphicRaycaster>();
 
             var overlay = MakeImg("Overlay", transform, BgOverlay);
@@ -305,17 +304,17 @@ namespace TransportManager.UI.Fleet
                 bool doped = contracts != null && contracts.DriverHasEnergyDrinkActive(driverId);
                 if (doped)
                 {
-                    lbl.text = "⚡ Conducteur dopé ✓"; lbl.color = TextSec;
+                    lbl.text = "Conducteur dopé"; lbl.color = TextSec;
                     btnImg.color = new Color32(0x3A, 0x3F, 0x4A, 255); btn.interactable = false;
                 }
                 else if (count <= 0)
                 {
-                    lbl.text = "⚡ Aucune energy drink"; lbl.color = TextMuted;
+                    lbl.text = "Aucune energy drink"; lbl.color = TextMuted;
                     btnImg.color = new Color32(0x3A, 0x3F, 0x4A, 255); btn.interactable = false;
                 }
                 else
                 {
-                    lbl.text = $"⚡ Energy drink  ({count})"; lbl.color = Color.white;
+                    lbl.text = $"Energy drink  ({count})"; lbl.color = Color.white;
                     btnImg.color = ColBlue; btn.interactable = true;
                 }
             }
@@ -331,7 +330,7 @@ namespace TransportManager.UI.Fleet
         // depuis le stock de la station-service (gratuit : le carburant est déjà payé).
         private void BuildFuelSection(Transform card, VehicleInstance vehicle, VehicleData data)
         {
-            float tank  = data.fuelTankCapacityLiters;
+            float tank  = data.TankCapacity;
             float ratio = tank > 0f ? Mathf.Clamp01(vehicle.currentFuelLiters / tank) : 0f;
 
             var row = MakeRow(card, "Fuel", 22);
@@ -382,7 +381,7 @@ namespace TransportManager.UI.Fleet
                 bool full = r >= 0.999f;
                 btn.interactable = !full;
                 btnImg.color  = full ? new Color32(0x3A, 0x3F, 0x4A, 255) : ColGreen;
-                btnLbl.text   = full ? "Plein ✓" : "Plein";
+                btnLbl.text   = full ? "Plein" : "Plein";
                 btnLbl.color  = full ? (Color)TextMuted : Color.white;
             }
             Render();
@@ -459,7 +458,7 @@ namespace TransportManager.UI.Fleet
                 vehicleName = veh_d?.displayName ?? "Véhicule assigné";
             }
 
-            string nat  = string.IsNullOrEmpty(driver.nationality) ? "—" : driver.nationality;
+            string nat  = string.IsNullOrEmpty(driver.nationality) ? "-" : driver.nationality;
             string desc = $"{nat}  ·  ${driver.assignedWagePerContract}/contrat  ·  {vehicleName}";
             var descLbl = AddTMP("Desc", card.transform, desc, 12, FontStyles.Normal, TextSec);
             descLbl.textWrappingMode = TextWrappingModes.NoWrap;
@@ -490,7 +489,7 @@ namespace TransportManager.UI.Fleet
 
             // Ligne : progression % + temps restant + bouton œil
             var infoRow  = MakeRow(card, "Contract", 22);
-            var infoLbl  = AddTMP("Info", infoRow.transform, "—", 12, FontStyles.Normal, TextSec);
+            var infoLbl  = AddTMP("Info", infoRow.transform, "-", 12, FontStyles.Normal, TextSec);
             infoLbl.textWrappingMode = TextWrappingModes.NoWrap;
             infoLbl.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
 

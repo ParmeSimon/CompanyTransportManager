@@ -1,0 +1,125 @@
+{
+  "style": "Isometric game asset, {building}, 2.5D pre-rendered 3D style, post-apocalyptic industrial theme, slightly worn concrete and metal textures, muted desaturated colors, orthographic camera angle, lighting coming from top-left, soft drop shadow on the bottom-right, isolated on a solid pure white background, clean edges, no ground floor tile, mobile strategy game art style. One single building only, centered, fully visible with wide empty margins on every side.",
+  "negative": "people, characters, vehicles, trucks, cars, text, letters, logo, watermark, signature, ground tile, terrain, grass, road, landscape, sky, horizon, multiple buildings, several structures, cropped, cut off, blurry, saturated colors, bright neon colors, cartoon outline, photograph, front view, side view, perspective camera",
+  "images": [
+    {
+      "name": "hub_lvl0",
+      "seed": 5100,
+      "description": "the ruins of a small brick vehicle garage, collapsed corrugated metal roof, broken walls, rubble and twisted steel beams"
+    },
+    {
+      "name": "hub_lvl1",
+      "seed": 5101,
+      "description": "a small patched-up brick vehicle garage with one rusty corrugated roller door, roof repaired with mismatched metal sheets"
+    },
+    {
+      "name": "hub_lvl2",
+      "seed": 5102,
+      "description": "a repaired vehicle garage with two roller door bays, walls reinforced with welded scrap metal plates, a small workshop annex"
+    },
+    {
+      "name": "hub_lvl3",
+      "seed": 5103,
+      "description": "a rebuilt truck warehouse with three loading bays and roller doors, steel-plated walls, rooftop water tank and ventilation units"
+    },
+    {
+      "name": "hub_lvl4",
+      "seed": 5104,
+      "description": "a large fortified truck depot with four loading bays, concrete and steel walls, a small watchtower on one corner, salvaged solar panels on the roof"
+    },
+    {
+      "name": "hub_lvl5",
+      "seed": 5105,
+      "description": "a huge fortified logistics hub with six loading bays, thick reinforced concrete walls, a rooftop wind turbine, an antenna mast and floodlights"
+    },
+    {
+      "name": "fueltank_lvl0",
+      "seed": 6100,
+      "description": "a wrecked fuel point: a toppled rusty fuel pump, a burnt oil barrel and broken pipes on a cracked concrete slab"
+    },
+    {
+      "name": "fueltank_lvl1",
+      "seed": 6101,
+      "description": "a tiny makeshift fuel point: one rusty oil barrel with a hand pump and a dented jerrycan"
+    },
+    {
+      "name": "fueltank_lvl2",
+      "seed": 6102,
+      "description": "a small fuel stash: two rusty oil barrels and a stack of jerrycans under a torn tarpaulin shelter with a hand pump"
+    },
+    {
+      "name": "fueltank_lvl3",
+      "seed": 6103,
+      "description": "a small rusty fuel station: one old fuel pump under a corrugated tin roof, a patched horizontal fuel tank behind it"
+    },
+    {
+      "name": "fueltank_lvl4",
+      "seed": 6104,
+      "description": "a fuel point with a horizontal cylindrical steel tank raised on welded steel stilts, one fuel pump and hoses"
+    },
+    {
+      "name": "fueltank_lvl5",
+      "seed": 6105,
+      "description": "a small fuel station with two fuel pumps under a corrugated metal canopy and a horizontal steel fuel tank behind"
+    },
+    {
+      "name": "fueltank_lvl6",
+      "seed": 6106,
+      "description": "a fuel station with four fuel pumps on two islands under a steel canopy and two large horizontal steel fuel tanks"
+    },
+    {
+      "name": "fueltank_lvl7",
+      "seed": 6107,
+      "description": "an industrial fuel depot: one tall vertical cylindrical steel storage tank with a spiral staircase, a concrete containment wall and a canopy with pumps"
+    },
+    {
+      "name": "fueltank_lvl8",
+      "seed": 6108,
+      "description": "a regional fuel depot: two tall vertical cylindrical steel storage tanks with walkways, a concrete containment wall, pipe racks and a pump canopy"
+    },
+    {
+      "name": "fueltank_lvl9",
+      "seed": 6109,
+      "description": "a fuel terminal: three large vertical cylindrical steel storage tanks linked by walkways and pipe racks, a tanker loading gantry and a control cabin"
+    },
+    {
+      "name": "fueltank_lvl10",
+      "seed": 6110,
+      "description": "a fortified fuel refinery hub: four large vertical storage tanks, complex pipe racks, a tanker loading gantry, a small flare stack and a reinforced control tower"
+    },
+    {
+      "name": "office_lvl0",
+      "seed": 7100,
+      "description": "the ruins of a small office shack: broken brick walls, a collapsed roof, a fallen door and broken window frames"
+    },
+    {
+      "name": "office_lvl1",
+      "seed": 7101,
+      "description": "a small prefab cabin office for a trucking company, boarded-up windows, a rooftop radio antenna and a metal staircase to the door"
+    },
+    {
+      "name": "office_lvl2",
+      "seed": 7102,
+      "description": "a two-storey brick office building with repaired windows, a radio mast on the roof and an external metal staircase"
+    },
+    {
+      "name": "office_lvl3",
+      "seed": 7103,
+      "description": "a fortified company headquarters building, reinforced concrete walls, satellite dishes and a lookout post on the roof"
+    },
+    {
+      "name": "yard_sq",
+      "seed": 8301,
+      "background": true,
+      "aspect": "1:1",
+      "prompt": "Straight top-down orthographic view of a square post-apocalyptic industrial truck depot yard, game ground texture, flat cracked worn grey concrete slabs in a regular grid, faded yellow painted parking markings, oil stains, small weeds in the cracks, a few puddles, a rusty chain-link fence running along all four edges, a few old tires and rusty debris only in the corners, the whole interior is open empty concrete ground, 2.5D pre-rendered 3D style, muted desaturated colors, lighting coming from top-left, mobile strategy game art style, no buildings, no vehicles, no people, no text, no perspective."
+    },
+    {
+      "name": "yard_sq_b",
+      "seed": 8402,
+      "background": true,
+      "aspect": "1:1",
+      "prompt": "Straight top-down orthographic view of a square post-apocalyptic industrial truck depot yard, game ground texture, flat cracked worn grey concrete slabs in a regular grid, faded yellow painted parking markings, oil stains, small weeds in the cracks, a few puddles, a rusty chain-link fence running along all four edges, a few old tires and rusty debris only in the corners, the whole interior is open empty concrete ground, 2.5D pre-rendered 3D style, muted desaturated colors, lighting coming from top-left, mobile strategy game art style, no buildings, no vehicles, no people, no text, no perspective."
+    }
+  ]
+}

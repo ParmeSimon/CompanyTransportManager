@@ -35,48 +35,16 @@ namespace TransportManager.UI.Common
             hlg.childForceExpandHeight = true;
             hlg.childControlWidth      = true;
             hlg.childControlHeight     = true;
-            hlg.padding                = new RectOffset(20, 14, 0, 0);
-            hlg.spacing                = 12;
+            hlg.padding                = new RectOffset(12, 20, 6, 6);
+            hlg.spacing                = 14;
+            hlg.childForceExpandHeight = false;
+            hlg.childAlignment         = TextAnchor.MiddleLeft;
 
-            // Filet d'accent bleu avant le titre (cohérent avec le reste de l'UI)
-            var accent    = Make("Accent", bar.transform);
-            var accentImg = accent.AddComponent<Image>();
-            accentImg.sprite        = roundedSprite;
-            accentImg.type          = Image.Type.Sliced;
-            accentImg.color         = Accent;
-            accentImg.raycastTarget = false;
-            var accentLe = accent.AddComponent<LayoutElement>();
-            accentLe.preferredWidth  = 3;
-            accentLe.preferredHeight = 24;
+            // « Retour » à gauche (plus de croix) puis le titre.
+            BackButton.Create(bar.transform, onClose);
 
             var tmp = MakeTMP("Title", bar.transform, title, 18, FontStyles.Bold, TextPri);
             tmp.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
-
-            // ── Bouton ✕ ──
-            var btnGo  = Make("CloseBtn", bar.transform);
-            var btnImg = btnGo.AddComponent<Image>();
-            btnImg.sprite = roundedSprite;
-            btnImg.type   = Image.Type.Sliced;
-            btnImg.color  = BgPill;
-            var btn = btnGo.AddComponent<Button>();
-            btn.targetGraphic = btnImg;
-            btn.onClick.AddListener(onClose);
-            var btnLe = btnGo.AddComponent<LayoutElement>();
-            btnLe.preferredWidth  = 40;
-            btnLe.preferredHeight = 40;
-
-            var iconGo  = Make("Icon", btnGo.transform);
-            var iconImg = iconGo.AddComponent<Image>();
-            UiIcons.Apply(iconImg, "UI/Icons/icons/x");
-            iconImg.color          = TextSec;
-            iconImg.preserveAspect = true;
-            iconImg.raycastTarget  = false;
-            var iconRt = iconGo.GetComponent<RectTransform>();
-            iconRt.anchorMin        = new Vector2(0.5f, 0.5f);
-            iconRt.anchorMax        = new Vector2(0.5f, 0.5f);
-            iconRt.pivot            = new Vector2(0.5f, 0.5f);
-            iconRt.anchoredPosition = Vector2.zero;
-            iconRt.sizeDelta        = new Vector2(20, 20);
 
             // ── Séparateur ──
             var div   = Make("Divider", panel);

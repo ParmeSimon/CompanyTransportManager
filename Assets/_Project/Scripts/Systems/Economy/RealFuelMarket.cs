@@ -108,7 +108,7 @@ namespace TransportManager.Systems.Economy
                     _history.Clear();
                     _history.AddRange(hist);
                     _fetchedDay = DateTime.UtcNow.ToString("yyyy-MM-dd");
-                    Debug.Log($"[RealFuelMarket] ✅ Cours réel OK ({resp.date}) — Brent ×{_history[0]:0.000} " +
+                    Debug.Log($"[RealFuelMarket] ✅ Cours réel OK ({resp.date}) · Brent ×{_history[0]:0.000} " +
                               $"({_history.Count} jours d'historique).");
                 }
             }

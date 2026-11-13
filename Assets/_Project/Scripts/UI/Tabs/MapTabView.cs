@@ -37,7 +37,10 @@ namespace TransportManager.UI.Tabs
         private ContractData _previewedContract;
         private Sprite       _sprR12;
 
-        private float _pinchPrevDist;
+        // Pinch : distance au dernier cran de zoom + milieu des doigts au frame précédent.
+        private float   _pinchRefDist;
+        private Vector2 _pinchPrevMid;
+        private const float PinchZoomRatio = 1.45f;   // écart ×1,45 (ou ÷1,45) → un cran de zoom
 
         private void OnEnable()
         {
@@ -53,25 +56,60 @@ namespace TransportManager.UI.Tabs
             EnhancedTouchSupport.Disable();
         }
 
-        // Pinch à deux doigts → zoom carte (le scroll/molette ne marche que sur desktop).
+        // Deux doigts : écarter/rapprocher = zoom centré entre les doigts ; les déplacer = glisser la carte.
         private void Update()
         {
             if (mapView == null) return;
 
             var touches = ETouch.activeTouches;
-            if (touches.Count < 2) { _pinchPrevDist = 0f; return; }
+            if (touches.Count < 2) { _pinchRefDist = 0f; return; }
 
-            float dist = Vector2.Distance(touches[0].screenPosition, touches[1].screenPosition);
-            if (_pinchPrevDist <= 0f) { _pinchPrevDist = dist; return; }
+            Vector2 a = touches[0].screenPosition, b = touches[1].screenPosition;
+            Vector2 mid = (a + b) * 0.5f;
+            float dist = Vector2.Distance(a, b);
+            if (_pinchRefDist <= 0f || !IsPointerOverMap(mid)) { _pinchRefDist = dist; _pinchPrevMid = mid; return; }
 
-            const float step = 80f;   // pixels d'écart avant un cran de zoom
-            float delta = dist - _pinchPrevDist;
-            if (delta >  step) { mapView.ZoomIn();  _pinchPrevDist = dist; }
-            else if (delta < -step) { mapView.ZoomOut(); _pinchPrevDist = dist; }
+            // Glisser à deux doigts (le contenu suit le milieu des doigts).
+            if (ScreenToMapLocal(_pinchPrevMid, out var prevL) && ScreenToMapLocal(mid, out var curL))
+                mapView.PanPixels(curL - prevL);
+            _pinchPrevMid = mid;
+
+            // Zoom par crans (tuiles entières), ancré sous les doigts.
+            if (!ScreenToMapLocal(mid, out var anchor)) return;
+            float ratio = dist / Mathf.Max(1f, _pinchRefDist);
+            if (ratio >= PinchZoomRatio)          { mapView.ZoomAround(mapView.Zoom + 1, anchor); _pinchRefDist = dist; }
+            else if (ratio <= 1f / PinchZoomRatio) { mapView.ZoomAround(mapView.Zoom - 1, anchor); _pinchRefDist = dist; }
+        }
+
+        // Point écran → point local de la carte, relatif à son centre (repère de LatLonToLocal).
+        private bool ScreenToMapLocal(Vector2 screen, out Vector2 local)
+        {
+            local = Vector2.zero;
+            if (mapView == null) return false;
+            var rect = mapView.TilesRect;
+            var canvas = rect.GetComponentInParent<Canvas>();
+            Camera cam = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, screen, cam, out var p)) return false;
+            local = p - rect.rect.center;
+            return true;
+        }
+
+        // Le pinch ne doit pas agir quand les doigts sont sur un panneau/popup posé sur la carte.
+        private bool IsPointerOverMap(Vector2 screen)
+        {
+            var es = EventSystem.current;
+            if (es == null) return true;
+            var results = new System.Collections.Generic.List<RaycastResult>();
+            es.RaycastAll(new PointerEventData(es) { position = screen }, results);
+            if (results.Count == 0) return true;
+            var top = results[0].gameObject.transform;
+            return top == transform || top.IsChildOf(mapView.transform)
+                || (markersContainer != null && top.IsChildOf(markersContainer));
         }
 
         private void Start()
         {
+            StyleMapAttribution();
             _tileSize = (mapView != null && mapView.Config != null) ? mapView.Config.tilePixelSize : 256;
             EnsureRouteOverlay();   // en premier → rendu derrière le HomeMarker
             EnsureFleetOverlay();   // trajets actifs (trait fin + camions)
@@ -125,6 +163,13 @@ namespace TransportManager.UI.Tabs
         {
             _previewedContract = def;
             ShowReopenBar();
+            // Trajet déjà en cours : il est déjà tracé (bleu) → on le passe en jaune plutôt
+            // que d'ajouter un 2e tracé, pour le distinguer parmi tous les contrats de la carte.
+            if (_fleetOverlay != null && _fleetOverlay.Highlight(def))
+            {
+                if (_routeOverlay != null) _routeOverlay.Hide();
+                return;
+            }
             _ = ShowContractRouteAsync(def);
         }
 
@@ -147,6 +192,7 @@ namespace TransportManager.UI.Tabs
             _previewedContract = null;
             if (_reopenBar != null) _reopenBar.SetActive(false);
             if (_routeOverlay != null) _routeOverlay.Hide();
+            if (_fleetOverlay != null) _fleetOverlay.Highlight(null);
         }
 
         private void ReopenPreviewedContract()
@@ -166,7 +212,7 @@ namespace TransportManager.UI.Tabs
             rt.anchorMax = new Vector2(0.5f, 0f);
             rt.pivot     = new Vector2(0.5f, 0f);
             rt.anchoredPosition = new Vector2(0f, 24f);
-            rt.sizeDelta        = new Vector2(304f, 52f);
+            rt.sizeDelta        = new Vector2(372f, 52f);
 
             var hlg = _reopenBar.AddComponent<HorizontalLayoutGroup>();
             hlg.spacing               = 8f;
@@ -181,10 +227,9 @@ namespace TransportManager.UI.Tabs
                 new Color(0.22f, 0.52f, 1f, 1f), 240f);
             reopenBtn.onClick.AddListener(ReopenPreviewedContract);
 
-            // Bouton fermeture (masque la prévisualisation) — icône x.png
-            var closeBtn = MakeBarButton("Close", "",
-                new Color(0.17f, 0.18f, 0.22f, 1f), 52f);
-            AddCenterIcon(closeBtn.transform, "x", new Color(0.85f, 0.88f, 0.93f), 18f);
+            // Masque la prévisualisation de la route (libellé explicite plutôt qu une croix)
+            var closeBtn = MakeBarButton("Close", "Masquer",
+                new Color(0.17f, 0.18f, 0.22f, 1f), 120f);
             closeBtn.onClick.AddListener(ClearPreview);
         }
 
@@ -370,6 +415,29 @@ namespace TransportManager.UI.Tabs
                 mapView.SetView(c.locationLatitude, c.locationLongitude, Mathf.Max(mapView.Zoom, 10));
         }
 
+        // Mention exigée par la licence OpenStreetMap (ODbL) et les conditions des tuiles :
+        // on ne peut pas la retirer, mais on la rend discrète (petite, translucide, coin bas-droit).
+        private void StyleMapAttribution()
+        {
+            foreach (var t in GetComponentsInChildren<TMPro.TMP_Text>(true))
+            {
+                if (t == null || !t.text.Contains("OpenStreetMap")) continue;
+                if (t.GetComponent<UiNoTextBoost>() == null) t.gameObject.AddComponent<UiNoTextBoost>();
+                t.text = "© OpenStreetMap";
+                t.fontSize = 9f;
+                t.enableAutoSizing = false;
+                t.color = new Color(0.15f, 0.17f, 0.20f, 0.55f);
+                t.alignment = TMPro.TextAlignmentOptions.BottomRight;
+                t.textWrappingMode = TMPro.TextWrappingModes.NoWrap;
+                t.raycastTarget = false;
+                var rt = t.rectTransform;
+                rt.anchorMin = rt.anchorMax = new Vector2(1f, 0f);
+                rt.pivot = new Vector2(1f, 0f);
+                rt.sizeDelta = new Vector2(140f, 14f);
+                rt.anchoredPosition = new Vector2(-6f, 3f);
+            }
+        }
+
         public void OnPointerDown(PointerEventData eventData) { }
 
         public void OnDrag(PointerEventData eventData)
@@ -377,19 +445,20 @@ namespace TransportManager.UI.Tabs
             if (mapView == null) return;
             if (ETouch.activeTouches.Count >= 2) return;   // pinch en cours → pas de pan
 
-            float metersPerPixel = MetersPerPixel(mapView.CenterLatitude, mapView.Zoom, _tileSize);
-            double deltaLon = -eventData.delta.x * metersPerPixel / (111320.0 * System.Math.Cos(mapView.CenterLatitude * System.Math.PI / 180.0));
-            double deltaLat = -eventData.delta.y * metersPerPixel / 111320.0;
-            mapView.Pan(deltaLat, deltaLon);
+            // Le contenu suit exactement le doigt (doigt vers la gauche → carte vers la gauche,
+            // on découvre ce qui est à droite), quelle que soit la densité d'écran.
+            if (ScreenToMapLocal(eventData.position - eventData.delta, out var prev)
+                && ScreenToMapLocal(eventData.position, out var cur))
+                mapView.PanPixels(cur - prev);
         }
 
         public void OnScroll(PointerEventData eventData)
         {
             if (mapView == null) return;
-            if (eventData.scrollDelta.y > 0)
-                mapView.ZoomIn();
-            else if (eventData.scrollDelta.y < 0)
-                mapView.ZoomOut();
+            // Molette (desktop) : zoom centré sur le curseur.
+            if (!ScreenToMapLocal(eventData.position, out var anchor)) anchor = Vector2.zero;
+            if (eventData.scrollDelta.y > 0)      mapView.ZoomAround(mapView.Zoom + 1, anchor);
+            else if (eventData.scrollDelta.y < 0) mapView.ZoomAround(mapView.Zoom - 1, anchor);
         }
 
         private static float MetersPerPixel(double latitude, int zoom, int tileSize)

@@ -148,14 +148,14 @@ namespace TransportManager.Systems.Tutorial
                 {
                     id = TutorialStep.GoToShop,
                     advisorTitle = "Le magasin",
-                    advisorMessage = "Excellent ! Direction le magasin — appuyez sur \"Magasin\" dans la barre de navigation à gauche.",
+                    advisorMessage = "Excellent ! Direction le magasin · appuyez sur \"Magasin\" dans la barre de navigation à gauche.",
                     highlightTarget = "tab:shop",
                 },
                 [TutorialStep.ClaimDailyOffer] = new StepData
                 {
                     id = TutorialStep.ClaimDailyOffer,
                     advisorTitle = "Offre du jour",
-                    advisorMessage = "Récupérez l'offre du jour ! Elle se renouvelle chaque jour — ne la manquez pas.",
+                    advisorMessage = "Récupérez l'offre du jour ! Elle se renouvelle chaque jour · ne la manquez pas.",
                     highlightTarget = "btn:daily_offer",
                 },
             };

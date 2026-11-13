@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da50d6ac99c10e64798a95354efcf68e, type: 3}
   m_Name: TileMapConfig
   m_EditorClassIdentifier: Assembly-CSharp::TransportManager.Entities.Map.TileMapConfig
-  urlTemplate: https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png
+  urlTemplate: https://tile.openstreetmap.org/{z}/{x}/{y}.png
   userAgent: TransportManagerMobile/0.1 (parmesimon@gmail.com)
-  subdomains: abcd
+  subdomains: 
   minZoom: 1
-  maxZoom: 18
+  maxZoom: 19
   tilePixelSize: 256
   memoryCacheCapacity: 200
-  diskCacheFolder: carto_voyager_tiles
+  diskCacheFolder: osm_tiles
   requestTimeoutSeconds: 10

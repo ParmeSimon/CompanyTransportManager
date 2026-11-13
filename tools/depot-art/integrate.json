@@ -1,0 +1,138 @@
+{
+  "map": "../../Assets/Resources/UI/WareHouse/depotMap.png",
+  "slotWidth": 0.36,
+  "slotAspect": 1.2496,
+  "strength": 0.9,
+  "slots": {
+    "hangar": {
+      "cx": 0.534,
+      "cy": 0.572
+    },
+    "fuel": {
+      "cx": 0.839,
+      "cy": 0.51
+    },
+    "office": {
+      "cx": 0.335,
+      "cy": 0.494
+    }
+  },
+  "images": [
+    {
+      "name": "hub_lvl0",
+      "slot": "hangar",
+      "seed": 4100,
+      "description": "The ruins of a small warehouse on the parking lot: a cracked concrete foundation slab with rubble, broken low walls and debris."
+    },
+    {
+      "name": "hub_lvl1",
+      "slot": "hangar",
+      "seed": 1101,
+      "description": "A small one-storey logistics warehouse with one truck loading dock and a roller door, flat dark roof with skylights."
+    },
+    {
+      "name": "hub_lvl2",
+      "slot": "hangar",
+      "seed": 4102,
+      "description": "A mid-sized logistics warehouse with two loading docks with roller doors and yellow safety bollards, a small office annex, skylights on the flat roof."
+    },
+    {
+      "name": "hub_lvl3",
+      "slot": "hangar",
+      "seed": 4103,
+      "description": "A large logistics warehouse with four loading docks in a row, roller doors, a two-storey office annex with windows, roof skylights and ventilation units."
+    },
+    {
+      "name": "hub_lvl4",
+      "slot": "hangar",
+      "seed": 4604,
+      "description": "A very large logistics warehouse with six loading docks in a row, light grey metal cladding with a wide blue stripe, a glass office block at one corner and solar panels on the flat roof.",
+      "strength": 0.9
+    },
+    {
+      "name": "hub_lvl5",
+      "slot": "hangar",
+      "seed": 4105,
+      "description": "A huge high-tech logistics hub with eight loading docks, sleek metal and glass facade, a glass office tower at one corner, rooftop solar panel arrays and antennas."
+    },
+    {
+      "name": "fueltank_lvl0",
+      "slot": "fuel",
+      "seed": 5500,
+      "description": "Isometric three-quarter view from above. Ruins of a small fuel station: a cracked concrete slab, scattered grey rubble and a rusty fallen fuel tank.",
+      "strength": 0.86
+    },
+    {
+      "name": "fueltank_lvl1",
+      "slot": "fuel",
+      "seed": 5201,
+      "description": "Seen from above at a three-quarter isometric angle, small and low. A tiny makeshift fuel point: a few old rusty oil barrels with a hand pump on a small concrete slab, a red jerrycan next to them."
+    },
+    {
+      "name": "fueltank_lvl2",
+      "slot": "fuel",
+      "seed": 5102,
+      "description": "A small fuel point: one white plastic cube fuel tank in a metal cage on a concrete slab, with a simple hose and nozzle."
+    },
+    {
+      "name": "fueltank_lvl3",
+      "slot": "fuel",
+      "seed": 5103,
+      "description": "A small fuel station: one horizontal cylindrical steel fuel tank on steel legs on a concrete slab, a single fuel pump next to it."
+    },
+    {
+      "name": "fueltank_lvl4",
+      "slot": "fuel",
+      "seed": 5104,
+      "description": "A fuel station with an underground tank: a concrete slab with round manhole covers and vent pipes, one modern fuel pump under a small metal canopy."
+    },
+    {
+      "name": "fueltank_lvl5",
+      "slot": "fuel",
+      "seed": 5105,
+      "description": "A private fuel station: two fuel pumps on a raised island under a flat blue-trimmed canopy, a horizontal steel fuel tank behind them."
+    },
+    {
+      "name": "fueltank_lvl6",
+      "slot": "fuel",
+      "seed": 5106,
+      "description": "A professional fuel station: four fuel pumps under a large flat canopy with a blue stripe, two large horizontal steel fuel tanks behind."
+    },
+    {
+      "name": "fueltank_lvl7",
+      "slot": "fuel",
+      "seed": 5107,
+      "description": "An industrial fuel depot: one big vertical cylindrical steel storage tank with a staircase around it, a concrete containment wall, a small pump station in front."
+    },
+    {
+      "name": "fueltank_lvl8",
+      "slot": "fuel",
+      "seed": 5108,
+      "description": "A regional fuel depot: two big vertical cylindrical steel storage tanks with staircases and walkways, a concrete containment wall and a pump canopy."
+    },
+    {
+      "name": "fueltank_lvl9",
+      "slot": "fuel",
+      "seed": 5209,
+      "description": "Seen from above at a three-quarter isometric angle, the tank roofs clearly visible, compact so the whole site fits. A fuel terminal: three large vertical cylindrical steel storage tanks linked by walkways and pipe racks, a concrete containment wall and a loading gantry."
+    },
+    {
+      "name": "fueltank_lvl10",
+      "slot": "fuel",
+      "seed": 5110,
+      "description": "A huge private fuel hub: four very large white vertical storage tanks with blue stripes, pipe racks and walkways, a loading gantry and a small control tower."
+    },
+    {
+      "name": "office_lvl0",
+      "slot": "office",
+      "seed": 6100,
+      "description": "The ruins of a small office building on the parking lot: a cracked concrete slab with rubble, broken low brick walls and broken window frames."
+    },
+    {
+      "name": "office_lvl1",
+      "slot": "office",
+      "seed": 6101,
+      "description": "A small single-storey office building for a trucking company: flat roof, a row of windows, a blue front door with a small awning, an air conditioning unit on the roof."
+    }
+  ]
+}

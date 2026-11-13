@@ -74,6 +74,37 @@ namespace TransportManager.Systems.Map.Visualization
         public void ZoomIn() => SetView(centerLatitude, centerLongitude, zoom + 1);
         public void ZoomOut() => SetView(centerLatitude, centerLongitude, zoom - 1);
 
+        public RectTransform TilesRect => tilesContainer != null ? tilesContainer : (RectTransform)transform;
+        private int TileSize => config != null ? config.tilePixelSize : 256;
+
+        /// Inverse de LatLonToLocal : point local (relatif au centre de la carte) → coordonnées.
+        public (double lat, double lon) LocalToLatLon(Vector2 local)
+        {
+            var (cx, cy) = TileCoordinate.LatLonToPixel(centerLatitude, centerLongitude, zoom, TileSize);
+            return TileCoordinate.PixelToLatLon(cx + local.x, cy - local.y, zoom, TileSize);
+        }
+
+        /// Fait glisser la carte de localDelta unités (le contenu suit le doigt, au pixel près).
+        public void PanPixels(Vector2 localDelta)
+        {
+            if (localDelta.sqrMagnitude < 1e-6f) return;
+            var (cx, cy) = TileCoordinate.LatLonToPixel(centerLatitude, centerLongitude, zoom, TileSize);
+            var (lat, lon) = TileCoordinate.PixelToLatLon(cx - localDelta.x, cy + localDelta.y, zoom, TileSize);
+            SetView(lat, lon, zoom);
+        }
+
+        /// Change de niveau de zoom en gardant fixe le lieu situé sous `local` (doigts / curseur).
+        public void ZoomAround(int newZoom, Vector2 local)
+        {
+            var (gLat, gLon) = LocalToLatLon(local);
+            int minZoom = config != null ? ComputeMinZoom() : 1;
+            int z = Mathf.Clamp(newZoom, minZoom, config != null ? config.maxZoom : 18);
+            if (z == zoom) return;
+            var (gx, gy) = TileCoordinate.LatLonToPixel(gLat, gLon, z, TileSize);
+            var (lat, lon) = TileCoordinate.PixelToLatLon(gx - local.x, gy + local.y, z, TileSize);
+            SetView(lat, lon, z);
+        }
+
         /// Zoom et centre la vue de sorte que les deux points soient visibles avec une marge.
         public void FitBounds(double latA, double lonA, double latB, double lonB)
         {

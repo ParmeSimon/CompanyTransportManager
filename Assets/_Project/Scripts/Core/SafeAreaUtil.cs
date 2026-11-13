@@ -31,8 +31,15 @@ namespace TransportManager.Core
         }
 
         // Géométrie de la sidebar (navbar) — doit rester synchronisée avec NavbarView.
-        public const float NavbarLeftMargin = 12f;    // NavbarView.NavbarBaseX
-        public const float NavbarWidth      = 110f;   // NavbarView : rt.sizeDelta.x
+        public const float NavbarLeftMargin = 0f;     // rail collé au bord gauche (NavbarView)
+        public const float NavbarWidth      = 104f;   // largeur visible du rail (hors encoche)
+
+        /// <summary>
+        /// Espace à réserver en HAUT d'une page plein écran pour ne rien cacher sous le bandeau
+        /// (carte entreprise à gauche ≈ 140 unités canvas, boutons à droite). Inclut l'encoche.
+        /// </summary>
+        public const float HudTopHeight = 74f;    // barre du haut collée au bord (HeaderView.HeaderHeight 64) + 10 de marge
+        public static float HudTopReserve(Canvas canvas) => HudTopHeight + Insets(canvas).z;
 
         /// <summary>
         /// Espace à réserver à GAUCHE d'une page/popup pour ne pas passer sous la

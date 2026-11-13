@@ -197,7 +197,7 @@ namespace TransportManager.Systems.Achievements
         public static string RewardLabel(string kind, int amount) => kind switch
         {
             "dollars" => $"+{amount:N0} $",
-            "ingots"  => $"+{amount} ◆",
+            "ingots"  => $"+{amount} lingots",
             "skill"   => $"+{amount} pt",
             _         => $"+{amount}",
         };

@@ -1,0 +1,118 @@
+{
+  "style": "Isometric game asset, {building}, 2.5D pre-rendered 3D style, modern industrial logistics theme, clean realistic concrete, metal and glass textures, natural muted colors, orthographic camera angle, lighting coming from top-left, soft drop shadow on the bottom-right, isolated on a solid pure white background, clean edges, no ground floor tile, mobile strategy game art style. One single building only, centered, fully visible with wide empty margins on every side.",
+  "negative": "people, characters, vehicles, trucks, cars, text, letters, logo, watermark, signature, ground tile, terrain, grass, road, landscape, sky, horizon, multiple buildings, several structures, cropped, cut off, blurry, post-apocalyptic, rust, ruins, saturated colors, neon colors, cartoon outline, photograph, front view, side view, perspective camera",
+  "images": [
+    {
+      "name": "hub_lvl0",
+      "seed": 9100,
+      "description": "an old abandoned run-down small brick vehicle garage, broken windows, damaged roof, boarded-up door, peeling paint"
+    },
+    {
+      "name": "hub_lvl1",
+      "seed": 9101,
+      "description": "a small old but clean brick vehicle garage with one roller door and a simple pitched metal roof"
+    },
+    {
+      "name": "hub_lvl2",
+      "seed": 9102,
+      "description": "a renovated vehicle garage with two roller doors, a new grey metal roof and a small office annex"
+    },
+    {
+      "name": "hub_lvl3",
+      "seed": 9103,
+      "description": "a modern truck warehouse with three loading docks and roller doors, grey metal cladding with a blue stripe"
+    },
+    {
+      "name": "hub_lvl4",
+      "seed": 9104,
+      "description": "a large modern distribution warehouse with four loading docks, a glass-fronted office at one corner and solar panels on the roof"
+    },
+    {
+      "name": "hub_lvl5",
+      "seed": 9105,
+      "description": "a huge state-of-the-art logistics hub with six loading docks, sleek steel and glass facade, a glass office tower at one corner and rooftop solar panel arrays"
+    },
+    {
+      "name": "fueltank_lvl0",
+      "seed": 9200,
+      "description": "an old abandoned fuel pump with peeling paint and an empty oil barrel on a cracked small concrete slab"
+    },
+    {
+      "name": "fueltank_lvl1",
+      "seed": 9201,
+      "description": "a single old fuel pump next to a small steel fuel barrel on a small concrete slab"
+    },
+    {
+      "name": "fueltank_lvl2",
+      "seed": 9202,
+      "description": "a small fuel point: a white plastic cube fuel tank in a metal cage with a pump and hose"
+    },
+    {
+      "name": "fueltank_lvl3",
+      "seed": 9203,
+      "description": "a small fuel station: one modern fuel pump under a small flat canopy and a horizontal steel tank"
+    },
+    {
+      "name": "fueltank_lvl4",
+      "seed": 9204,
+      "description": "a fuel station with a horizontal steel fuel tank on supports and one pump island"
+    },
+    {
+      "name": "fueltank_lvl5",
+      "seed": 9205,
+      "description": "a clean fuel station with two fuel pumps under a flat white canopy and a horizontal steel tank behind"
+    },
+    {
+      "name": "fueltank_lvl6",
+      "seed": 9206,
+      "description": "a modern fuel station with four fuel pumps on two islands under a large white canopy with a blue stripe and two horizontal tanks"
+    },
+    {
+      "name": "fueltank_lvl7",
+      "seed": 9207,
+      "description": "a fuel depot: one tall white vertical storage tank with a spiral staircase and a pump canopy"
+    },
+    {
+      "name": "fueltank_lvl8",
+      "seed": 9208,
+      "description": "a regional fuel depot: two tall white vertical storage tanks with walkways, pipe racks and a pump canopy"
+    },
+    {
+      "name": "fueltank_lvl9",
+      "seed": 9209,
+      "description": "a fuel terminal: three large white vertical storage tanks, pipe racks, a tanker loading gantry and a control building"
+    },
+    {
+      "name": "fueltank_lvl10",
+      "seed": 9210,
+      "description": "a modern private fuel terminal: four very large white storage tanks with blue stripes, a loading gantry, pipe racks and a glass control tower"
+    },
+    {
+      "name": "office_lvl0",
+      "seed": 9300,
+      "description": "a small old abandoned office building with broken windows, a damaged roof and peeling paint"
+    },
+    {
+      "name": "office_lvl1",
+      "seed": 9301,
+      "description": "a small simple clean prefab office cabin for a trucking company with a door and two windows"
+    },
+    {
+      "name": "office_lvl2",
+      "seed": 9302,
+      "description": "a modern two-storey office building with large windows and a flat roof"
+    },
+    {
+      "name": "office_lvl3",
+      "seed": 9303,
+      "description": "a sleek modern glass company headquarters building with a rooftop terrace and solar panels"
+    },
+    {
+      "name": "yard_modern",
+      "seed": 9401,
+      "background": true,
+      "aspect": "1:1",
+      "prompt": "Straight top-down orthographic view of a square modern truck depot yard, game ground texture, clean smooth light grey concrete slabs in a regular grid, fresh white and yellow painted lane markings, a few drain grates, tidy, bordered on all four edges by a low concrete curb and a narrow strip of green grass, 2.5D pre-rendered 3D style, natural muted colors, lighting coming from top-left, mobile strategy game art style, no buildings, no vehicles, no people, no text, no perspective."
+    }
+  ]
+}

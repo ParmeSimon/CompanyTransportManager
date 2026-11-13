@@ -79,8 +79,7 @@ namespace TransportManager.UI.Analytics
 
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-            scaler.matchWidthOrHeight  = 0.5f;
+            TransportManager.Core.UiScale.Configure(scaler);
             gameObject.AddComponent<GraphicRaycaster>();
 
             var overlay = MakeImg("Overlay", transform, BgOverlay);
@@ -132,6 +131,9 @@ namespace TransportManager.UI.Analytics
             BuildStatsRow(content.transform);
             AddHDivider(content.transform);
             BuildQuickRow(content.transform);
+
+            // Petit écran (mobile) : le contenu garde une hauteur lisible et défile.
+            ScrollFit.WrapStretched(contentRt, 640f);
         }
 
         private void BuildTabBar(Transform parent)
@@ -239,9 +241,9 @@ namespace TransportManager.UI.Analytics
             hlg.childControlHeight     = false;
             hlg.childAlignment         = TextAnchor.MiddleCenter;
 
-            _lblMin = AddStatCell(row.transform, "MIN", "—");
-            _lblAvg = AddStatCell(row.transform, "MOYENNE", "—");
-            _lblMax = AddStatCell(row.transform, "MAX", "—");
+            _lblMin = AddStatCell(row.transform, "MIN", "-");
+            _lblAvg = AddStatCell(row.transform, "MOYENNE", "-");
+            _lblMax = AddStatCell(row.transform, "MAX", "-");
         }
 
         private void BuildQuickRow(Transform parent)
@@ -258,9 +260,9 @@ namespace TransportManager.UI.Analytics
             hlg.childControlHeight     = false;
             hlg.childAlignment         = TextAnchor.MiddleCenter;
 
-            _lblTotalContracts = AddStatCell(row.transform, "CONTRATS", "—");
-            _lblVehicles       = AddStatCell(row.transform, "VÉHICULES", "—");
-            _lblTotalKm        = AddStatCell(row.transform, "KM TOTAL", "—");
+            _lblTotalContracts = AddStatCell(row.transform, "CONTRATS", "-");
+            _lblVehicles       = AddStatCell(row.transform, "VÉHICULES", "-");
+            _lblTotalKm        = AddStatCell(row.transform, "KM TOTAL", "-");
         }
 
         private TMP_Text AddStatCell(Transform parent, string header, string value)
@@ -336,7 +338,7 @@ namespace TransportManager.UI.Analytics
             }
             else
             {
-                _lblMin.text = _lblAvg.text = _lblMax.text = "—";
+                _lblMin.text = _lblAvg.text = _lblMax.text = "-";
                 _lblDateRange.text = "";
             }
         }

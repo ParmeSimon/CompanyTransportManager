@@ -25,7 +25,9 @@ namespace TransportManager.UI.Common
 
         private Sprite _sprR8, _sprR16;
 
-        private const float NavbarBaseX = 12f;
+        private const float Bleed = 16f;
+        private static readonly Color32 RailBg = new Color32(0x22, 0x26, 0x2E, 255);   // = barre du haut
+        private static readonly Color32 Accent = new Color32(0x38, 0x85, 0xFF, 255);
         private Rect _lastSafeArea;
         private Canvas _canvas;
 
@@ -37,7 +39,13 @@ namespace TransportManager.UI.Common
             if (_canvas == null) _canvas = GetComponentInParent<Canvas>();
             Vector4 ins = SafeAreaUtil.Insets(_canvas);
             var rt = GetComponent<RectTransform>();
-            rt.anchoredPosition = new Vector2(NavbarBaseX + ins.x, 0f);   // + marge gauche
+            // Rail collé aux bords gauche et bas, juste sous la barre du haut (débord de Bleed
+            // hors écran → seul le coin haut-droit arrondi est visible).
+            rt.offsetMin = new Vector2(-Bleed, -Bleed);
+            rt.offsetMax = new Vector2(ins.x + SafeAreaUtil.NavbarWidth, -(ins.z + HeaderView.HeaderHeight));
+            var vlgSa = GetComponent<VerticalLayoutGroup>();
+            if (vlgSa != null)
+                vlgSa.padding = new RectOffset((int)(Bleed + ins.x) + 6, 6, 12, (int)(Bleed + ins.w) + 10);
             _lastSafeArea = Screen.safeArea;
         }
 
@@ -89,49 +97,68 @@ namespace TransportManager.UI.Common
             // Position: left side, centered vertically, fit-content height
             var rt = GetComponent<RectTransform>();
             if (rt == null) rt = gameObject.AddComponent<RectTransform>();
-            rt.anchorMin        = new Vector2(0, 0.5f);
-            rt.anchorMax        = new Vector2(0, 0.5f);
+            rt.anchorMin        = new Vector2(0, 0);
+            rt.anchorMax        = new Vector2(0, 1);
             rt.pivot            = new Vector2(0, 0.5f);
-            rt.sizeDelta        = new Vector2(110, 0);
             ApplySafeArea();   // décale la barre vers la droite si l'encoche est à gauche (paysage)
 
-            // Rounded background + drop shadow
+            // Fond droit (sans arrondi) : le rail prolonge la barre du haut + ombre portée
             var bg = GetComponent<Image>();
             if (bg == null) bg = gameObject.AddComponent<Image>();
-            bg.color         = new Color32(0x2C, 0x30, 0x38, 255);
-            bg.sprite        = _sprR16;
-            bg.type          = Image.Type.Sliced;
+            bg.color         = RailBg;
+            bg.sprite        = null;
+            bg.type          = Image.Type.Simple;
             bg.raycastTarget = true;
-            var shadow = GetComponent<Shadow>();
-            if (shadow == null) shadow = gameObject.AddComponent<Shadow>();
-            shadow.effectColor    = new Color(0f, 0f, 0f, 0.5f);
-            shadow.effectDistance = new Vector2(3f, -4f);
+            // Pas d ombre portée (effet dur) : filet clair de 1 px sur le bord droit.
+            var oldShadow = GetComponent<Shadow>();
+            if (oldShadow != null) { if (Application.isPlaying) Destroy(oldShadow); else DestroyImmediate(oldShadow); }
+            var edge = new GameObject("Edge", typeof(RectTransform));
+            edge.transform.SetParent(transform, false);
+            var edgeImg = edge.AddComponent<Image>();
+            edgeImg.color = new Color(1f, 1f, 1f, 0.07f); edgeImg.raycastTarget = false;
+            edge.AddComponent<LayoutElement>().ignoreLayout = true;
+            var edgeRt = edge.GetComponent<RectTransform>();
+            edgeRt.anchorMin = new Vector2(1, 0); edgeRt.anchorMax = new Vector2(1, 1);
+            edgeRt.pivot = new Vector2(1, 0.5f); edgeRt.sizeDelta = new Vector2(1, 0);
+            edgeRt.anchoredPosition = Vector2.zero;
 
             var fitter = GetComponent<ContentSizeFitter>();
             if (fitter == null) fitter = gameObject.AddComponent<ContentSizeFitter>();
-            fitter.verticalFit   = ContentSizeFitter.FitMode.PreferredSize;
+            fitter.verticalFit   = ContentSizeFitter.FitMode.Unconstrained;   // hauteur = écran
             fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
 
             // VerticalLayoutGroup
             var vlg = GetComponent<VerticalLayoutGroup>();
             if (vlg == null) vlg = gameObject.AddComponent<VerticalLayoutGroup>();
-            vlg.padding               = new RectOffset(8, 8, 10, 10);
-            vlg.spacing               = 4;
+            vlg.spacing               = 6;
             vlg.childForceExpandWidth  = true;
             vlg.childForceExpandHeight = false;
+            vlg.childControlWidth      = true;
+            vlg.childControlHeight     = true;
             vlg.childAlignment        = TextAnchor.UpperCenter;
+            ApplySafeArea();   // marges intérieures (encoche / bas d'écran)
 
             (_mapBtn, _mapBg)           = AddTab("Carte",     "UI/Icons/icons/map");
             (_depotBtn, _depotBg)       = AddTab("Dépôt",     "UI/Icons/icons/warehouse");
-            (_vehiclesBtn, _vehiclesBg) = AddTab("Véhicules", "UI/Icons/icons/truck");
+            (_vehiclesBtn, _vehiclesBg) = AddTab("Camions",   "UI/Icons/icons/truck");
             (_hrBtn, _hrBg)             = AddTab("Pilote",    "UI/Icons/icons/driver");
-            (_shopBtn, _shopBg)         = AddTab("Magasin",   "UI/Icons/icons/store");
+            (_shopBtn, _shopBg)         = AddTab("Shop",      "UI/Icons/icons/store");
 
             _mapBtn.onClick.AddListener(() => SelectTab(TabType.Map));
             _depotBtn.onClick.AddListener(() => SelectTab(TabType.Depot));
             _vehiclesBtn.onClick.AddListener(() => SelectTab(TabType.Vehicles));
             _hrBtn.onClick.AddListener(() => SelectTab(TabType.Hr));
             _shopBtn.onClick.AddListener(() => SelectTab(TabType.Shop));
+
+            // Espace libre, puis les accès « quotidiens » avec compteur rouge (toutes les pages).
+            var spacer = new GameObject("Spacer", typeof(RectTransform));
+            spacer.transform.SetParent(transform, false);
+            spacer.AddComponent<LayoutElement>().flexibleHeight = 1;
+            AddHorizontalDivider();
+            (_dailyBadge, _dailyBadgeLbl) = AddUtility("Objectifs", null, HeaderView.TargetSprite(),
+                TransportManager.UI.Daily.DailyHubPopupView.Show);
+            (_skillsBadge, _skillsBadgeLbl) = AddUtility("Compétences", "UI/Icons/icons/research", null,
+                TransportManager.UI.Skills.SkillTreePopupView.Show);
 
             UpdateVisuals();
         }
@@ -168,8 +195,19 @@ namespace TransportManager.UI.Common
             btn.targetGraphic = bg;
 
             var le = go.AddComponent<LayoutElement>();
-            le.preferredHeight = 80;
-            go.GetComponent<RectTransform>().sizeDelta = new Vector2(80, 80);
+            le.preferredHeight = 68; le.minHeight = 68;
+            go.GetComponent<RectTransform>().sizeDelta = new Vector2(80, 68);
+
+            var accent = new GameObject("Accent", typeof(RectTransform));
+            accent.transform.SetParent(go.transform, false);
+            var accImg = accent.AddComponent<Image>();
+            accImg.sprite = _sprR8; accImg.type = Image.Type.Sliced;
+            accImg.color = Accent; accImg.raycastTarget = false;
+            accent.AddComponent<LayoutElement>().ignoreLayout = true;
+            var accRt = accent.GetComponent<RectTransform>();
+            accRt.anchorMin = new Vector2(0, 0.2f); accRt.anchorMax = new Vector2(0, 0.8f);
+            accRt.pivot = new Vector2(0, 0.5f); accRt.sizeDelta = new Vector2(4, 0); accRt.anchoredPosition = new Vector2(-4, 0);
+            accent.SetActive(false);
 
             var inner = go.AddComponent<VerticalLayoutGroup>();
             inner.childAlignment         = TextAnchor.MiddleCenter;
@@ -178,7 +216,7 @@ namespace TransportManager.UI.Common
             inner.childControlWidth      = false;
             inner.childControlHeight     = false;
             inner.spacing = 4;
-            inner.padding = new RectOffset(4, 4, 8, 8);
+            inner.padding = new RectOffset(4, 4, 6, 6);
 
             // Sprite icon
             var iconGo  = new GameObject("Icon", typeof(RectTransform));
@@ -189,11 +227,11 @@ namespace TransportManager.UI.Common
             iconImg.preserveAspect = true;
             iconImg.raycastTarget  = false;
             var iconLe = iconGo.AddComponent<LayoutElement>();
-            iconLe.minWidth        = 36;
-            iconLe.preferredWidth  = 36;
-            iconLe.minHeight       = 36;
-            iconLe.preferredHeight = 36;
-            iconGo.GetComponent<RectTransform>().sizeDelta = new Vector2(36, 36);
+            iconLe.minWidth        = 32;
+            iconLe.preferredWidth  = 32;
+            iconLe.minHeight       = 32;
+            iconLe.preferredHeight = 32;
+            iconGo.GetComponent<RectTransform>().sizeDelta = new Vector2(32, 32);
 
             // Label
             var lblGo  = new GameObject("Label", typeof(RectTransform));
@@ -204,6 +242,11 @@ namespace TransportManager.UI.Common
             lblTmp.fontStyle     = FontStyles.Bold;
             lblTmp.alignment     = TextAlignmentOptions.Center;
             lblTmp.color         = new Color(0.55f, 0.55f, 0.60f);
+            // Toujours sur une seule ligne : rétrécit un peu si le libellé est trop large.
+            lblTmp.textWrappingMode = TextWrappingModes.NoWrap;
+            lblTmp.enableAutoSizing = true;
+            lblTmp.fontSizeMin      = 12;
+            lblTmp.fontSizeMax      = 16;
             lblTmp.raycastTarget = false;
             var lblLe = lblGo.AddComponent<LayoutElement>();
             lblLe.preferredWidth  = 82;
@@ -232,9 +275,11 @@ namespace TransportManager.UI.Common
         private static void SetTabActive(Image bg, Button btn, bool active)
         {
             if (bg == null) return;
-            bg.color = active ? new Color(1f, 1f, 1f, 0.12f) : Color.clear;
+            bg.color = active ? new Color(1f, 1f, 1f, 0.10f) : Color.clear;
+            var acc = btn.transform.Find("Accent");
+            if (acc != null) acc.gameObject.SetActive(active);
 
-            var activeColor   = Color.white;
+            var activeColor   = Color.white;   // + barre d'accent bleue
             var inactiveColor = new Color(0.55f, 0.55f, 0.60f);
 
             var lbl = btn.transform.Find("Label")?.GetComponent<TextMeshProUGUI>();
@@ -242,6 +287,84 @@ namespace TransportManager.UI.Common
 
             var icon = btn.transform.Find("Icon")?.GetComponent<Image>();
             if (icon) icon.color = active ? activeColor : inactiveColor;
+        }
+
+        private GameObject _dailyBadge, _skillsBadge;
+        private TMP_Text   _dailyBadgeLbl, _skillsBadgeLbl;
+        private float      _nextBadge;
+
+        private (GameObject, TMP_Text) AddUtility(string label, string iconPath, Sprite sprite, UnityEngine.Events.UnityAction onClick)
+        {
+            var go = new GameObject(label, typeof(RectTransform));
+            go.transform.SetParent(transform, false);
+            var bg = go.AddComponent<Image>();
+            bg.sprite = _sprR8; bg.type = Image.Type.Sliced;
+            bg.color = new Color(1f, 1f, 1f, 0.05f);
+            var btn = go.AddComponent<Button>();
+            btn.targetGraphic = bg;
+            btn.onClick.AddListener(onClick);
+            var le = go.AddComponent<LayoutElement>();
+            le.preferredHeight = 60; le.minHeight = 60;
+
+            var inner = go.AddComponent<VerticalLayoutGroup>();
+            inner.childAlignment = TextAnchor.MiddleCenter;
+            inner.childForceExpandWidth = false; inner.childForceExpandHeight = false;
+            inner.childControlWidth = true; inner.childControlHeight = true;
+            inner.spacing = 3; inner.padding = new RectOffset(2, 2, 5, 5);
+
+            var iconGo = new GameObject("Icon", typeof(RectTransform));
+            iconGo.transform.SetParent(go.transform, false);
+            var iconImg = iconGo.AddComponent<Image>();
+            if (sprite != null) iconImg.sprite = sprite; else UiIcons.Apply(iconImg, iconPath);
+            iconImg.color = new Color32(0xEC, 0xEE, 0xF5, 255);
+            iconImg.preserveAspect = true; iconImg.raycastTarget = false;
+            var iLe = iconGo.AddComponent<LayoutElement>();
+            iLe.preferredWidth = 26; iLe.preferredHeight = 26;
+
+            var lblGo = new GameObject("Label", typeof(RectTransform));
+            lblGo.transform.SetParent(go.transform, false);
+            var lbl = lblGo.AddComponent<TextMeshProUGUI>();
+            lbl.text = label; lbl.fontSize = 11; lbl.fontStyle = FontStyles.Bold;
+            lbl.alignment = TextAlignmentOptions.Center; lbl.color = new Color32(0xEC, 0xEE, 0xF5, 255);
+            lbl.textWrappingMode = TextWrappingModes.NoWrap;
+            lbl.enableAutoSizing = true; lbl.fontSizeMin = 9; lbl.fontSizeMax = 11;
+            lbl.raycastTarget = false;
+
+            // Compteur rouge en coin
+            var badge = new GameObject("Badge", typeof(RectTransform));
+            badge.transform.SetParent(go.transform, false);
+            var bImg = badge.AddComponent<Image>();
+            bImg.sprite = _sprR8; bImg.type = Image.Type.Sliced;
+            bImg.color = new Color32(0xE5, 0x3E, 0x3E, 255); bImg.raycastTarget = false;
+            badge.AddComponent<LayoutElement>().ignoreLayout = true;
+            var bRt = badge.GetComponent<RectTransform>();
+            bRt.anchorMin = bRt.anchorMax = new Vector2(1f, 1f);
+            bRt.pivot = new Vector2(1f, 1f); bRt.anchoredPosition = new Vector2(-2f, -2f);
+            bRt.sizeDelta = new Vector2(26f, 22f);
+            var nGo = new GameObject("N", typeof(RectTransform));
+            nGo.transform.SetParent(badge.transform, false);
+            var n = nGo.AddComponent<TextMeshProUGUI>();
+            n.text = "0"; n.fontSize = 11; n.fontStyle = FontStyles.Bold; n.color = Color.white;
+            n.alignment = TextAlignmentOptions.Center; n.raycastTarget = false;
+            var nRt = nGo.GetComponent<RectTransform>();
+            nRt.anchorMin = Vector2.zero; nRt.anchorMax = Vector2.one; nRt.offsetMin = Vector2.zero; nRt.offsetMax = Vector2.zero;
+            badge.SetActive(false);
+            return (badge, n);
+        }
+
+        private void Update()
+        {
+            if (Time.unscaledTime < _nextBadge) return;
+            _nextBadge = Time.unscaledTime + 1.5f;
+            SetBadge(_dailyBadge, _dailyBadgeLbl, HeaderView.DailyPendingCount());
+            SetBadge(_skillsBadge, _skillsBadgeLbl, HeaderView.SkillPointsCount());
+        }
+
+        private static void SetBadge(GameObject b, TMP_Text l, int count)
+        {
+            if (b == null) return;
+            b.SetActive(count > 0);
+            if (count > 0 && l != null) l.text = count > 9 ? "9+" : count.ToString();
         }
 
         private void OnEnable() => GameEvents.OnTabChanged += OnTabChanged;

@@ -126,5 +126,11 @@ namespace TransportManager.Systems.Progression
 
         /// <summary>Somme entière des magnitudes (effets « flat ») de tous les nœuds débloqués.</summary>
         public int Flat(SkillEffectType effect) => Mathf.RoundToInt(Pct(effect));
+
+        // Raccourcis pour les systèmes : 0 si l'arbre n'est pas (encore) disponible.
+        public static float PctOf(SkillEffectType effect) =>
+            Core.ServiceLocator.Get<SkillTreeSystem>()?.Pct(effect) ?? 0f;
+        public static int FlatOf(SkillEffectType effect) =>
+            Core.ServiceLocator.Get<SkillTreeSystem>()?.Flat(effect) ?? 0;
     }
 }

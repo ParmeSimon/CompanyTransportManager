@@ -10,6 +10,11 @@ namespace TransportManager.Entities.Drivers
         public string lastName;
         public string nationality;
 
+        // Genre ("m" / "f") et famille d'origine (cf. DriverOrigins) : fixent prénom, nom,
+        // nationalité et portrait de façon cohérente.
+        public string gender;
+        public string origin;
+
         public int xp;
         public int contractsCompleted;
 
@@ -29,6 +34,13 @@ namespace TransportManager.Entities.Drivers
 
         // Fatigue : 0 = reposé, 100 = épuisé. Persiste entre les contrats.
         public float currentFatigue;
+
+        // Demande d'augmentation (au lieu d'une démission surprise) :
+        public long raiseRequestDeadlineTicks;   // 0 = aucune demande en cours ; sinon heure limite UTC
+        public int  raiseRequestedWage;          // salaire demandé
+        public int  raiseRefusals;               // refus cumulés (3 → départ)
+        public long raiseNextAllowedTicks;       // pas de nouvelle demande avant (après un refus)
+        public bool quitPending;                 // part à la fin de sa livraison en cours
         public long lastContractEndUtcTicks;
 
         public string FullName => $"{firstName} {lastName}";

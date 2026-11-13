@@ -142,6 +142,8 @@ namespace TransportManager.Systems.Fuel
             _save.fuelStation.pendingRefillLiters = liters;
             _save.fuelStation.refillCompleteUtcTicks = DateTime.UtcNow.AddSeconds(seconds).Ticks;
             GameEvents.RaiseFuelRefillStarted(_save.fuelStation);
+            // Palier sans délai de livraison (ex. « Vieux Baril ») : carburant crédité tout de suite.
+            if (seconds <= 0f) CompleteTruckRefill();
             return true;
         }
 
@@ -241,7 +243,7 @@ namespace TransportManager.Systems.Fuel
             if (vehicle.currentFuelLiters >= requiredLiters) return true;
 
             float deficit = requiredLiters - vehicle.currentFuelLiters;
-            float headroom = data.fuelTankCapacityLiters - vehicle.currentFuelLiters;
+            float headroom = data.TankCapacity - vehicle.currentFuelLiters;
             float topUp = Mathf.Min(deficit, headroom);
             if (topUp <= 0f) return false;
             if (_save.fuelStation.currentLiters < topUp) return false;
@@ -256,7 +258,7 @@ namespace TransportManager.Systems.Fuel
         public bool TryFillVehicleTank(VehicleInstance vehicle, VehicleData data)
         {
             if (vehicle == null || data == null) return false;
-            float headroom = data.fuelTankCapacityLiters - vehicle.currentFuelLiters;
+            float headroom = data.TankCapacity - vehicle.currentFuelLiters;
             if (headroom <= 0f) return true;
 
             float available = Mathf.Min(headroom, _save.fuelStation.currentLiters);
@@ -266,7 +268,7 @@ namespace TransportManager.Systems.Fuel
             vehicle.currentFuelLiters += available;
             GameEvents.RaiseStationFuelChanged(_save.fuelStation.currentLiters);
             GameEvents.RaiseVehicleFuelChanged(vehicle);
-            return Mathf.Approximately(vehicle.currentFuelLiters, data.fuelTankCapacityLiters);
+            return Mathf.Approximately(vehicle.currentFuelLiters, data.TankCapacity);
         }
     }
 }

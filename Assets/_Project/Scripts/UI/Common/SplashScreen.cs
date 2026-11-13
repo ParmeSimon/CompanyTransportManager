@@ -35,8 +35,7 @@ namespace TransportManager.UI.Common
             canvas.sortingOrder = 9999;
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-            scaler.matchWidthOrHeight = 0.5f;
+            TransportManager.Core.UiScale.Configure(scaler);
             gameObject.AddComponent<GraphicRaycaster>();
 
             _canvasGroup = gameObject.AddComponent<CanvasGroup>();

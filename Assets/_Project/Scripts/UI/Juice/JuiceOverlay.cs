@@ -48,8 +48,7 @@ namespace TransportManager.UI.Juice
             canvas.sortingOrder = 7000;   // au-dessus des popups, sous le tutoriel/splash
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-            scaler.matchWidthOrHeight  = 0.5f;
+            TransportManager.Core.UiScale.Configure(scaler);
             // Pas de GraphicRaycaster : la couche ne doit jamais intercepter les clics.
 
             _root = gameObject.GetComponent<RectTransform>();

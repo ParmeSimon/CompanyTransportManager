@@ -6,6 +6,7 @@ using TransportManager.Core;
 using TransportManager.Events;
 using TransportManager.Systems.Economy;
 using TransportManager.Systems.Shop;
+using TransportManager.UI.Common;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -54,7 +55,7 @@ namespace TransportManager.UI.Tabs
         [SerializeField] private int safeBottom = 20;
 
         // ── Pour ajouter une offre : cliquer sur + ci-dessous, remplir title / quantity / priceText / bonus / resourceImage ──
-        [Header("Boissons Énergisantes — ajoutez vos offres ici sans toucher au code")]
+        [Header("Boissons Énergisantes · ajoutez vos offres ici sans toucher au code")]
         [SerializeField] private EnergyDrinkOfferData[] _energyDrinkOffers = new EnergyDrinkOfferData[]
         {
             new EnergyDrinkOfferData { title = "SOLO",    quantity = 1, priceText = "0,99 €", bonus = ""           },
@@ -148,6 +149,8 @@ namespace TransportManager.UI.Tabs
 
             // Inset (évite header + sidebar). La réserve gauche suit l'encoche (safe area).
             safeLeft = Mathf.RoundToInt(SafeAreaUtil.SidebarReserve(GetComponentInParent<Canvas>()));
+            // Plein écran : seules la navbar (gauche) et le bandeau (haut) sont réservés.
+            safeTop = Mathf.RoundToInt(SafeAreaUtil.HudTopReserve(GetComponentInParent<Canvas>())); safeRight = 0; safeBottom = 0;
             var rt = GetComponent<RectTransform>();
             rt.anchorMin = Vector2.zero;
             rt.anchorMax = Vector2.one;
@@ -160,8 +163,10 @@ namespace TransportManager.UI.Tabs
             bg.color         = new Color(0f, 0f, 0f, 0f);
             bg.raycastTarget = true;
 
-            // 1. Image en fond d'écran (plein écran, derrière le HUD flottant)
-            BuildPageBackground("UI/background/shop");
+            // 1. Fond de page sobre (dégradé + trame), plein écran : on annule les marges
+            //    d'insertion (safe*) pour couvrir aussi la zone sous le header et la navbar.
+            PageBackdrop.Create(transform, ColGold,
+                new Vector2(safeLeft, safeBottom), new Vector2(safeRight, safeTop));
 
             // 2. Panneau des offres (inséré, arrondi) — la « popup » par-dessus le fond
             var panelGo  = MakeGO("OffersPanel", transform);
@@ -169,30 +174,11 @@ namespace TransportManager.UI.Tabs
             var panelImg = panelGo.AddComponent<Image>();
             panelImg.sprite        = _sprRound24;
             panelImg.type          = Image.Type.Sliced;
-            panelImg.color         = BgPanel;
+            panelImg.color         = new Color32(0, 0, 0, 0);   // plein écran : pas de cadre
             panelImg.raycastTarget = true;
 
             // 3. Contenu défilant (par-dessus le panneau)
             BuildScroll();
-        }
-
-        // Image en fond d'écran (RawImage : marche quel que soit le type d'import de la texture).
-        // On annule les marges d'insertion (safe*) pour couvrir tout le conteneur d'onglets,
-        // lui-même rendu DERRIÈRE la navbar et le header.
-        private void BuildPageBackground(string texturePath)
-        {
-            var tex = Resources.Load<Texture2D>(texturePath);
-            if (tex == null) return;
-            var go = MakeGO("PageBackground", transform);
-            go.transform.SetAsFirstSibling();
-            var rt = go.GetComponent<RectTransform>();
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            rt.offsetMin = new Vector2(-safeLeft,  -safeBottom);
-            rt.offsetMax = new Vector2( safeRight,  safeTop);
-            var raw = go.AddComponent<RawImage>();
-            raw.texture       = tex;
-            raw.raycastTarget = false;
         }
 
         private void BuildScroll()
@@ -434,71 +420,44 @@ namespace TransportManager.UI.Tabs
             vlg.padding = new RectOffset(0, 0, 0, 0);
             vlg.spacing = 0;
 
-            // ── Bloc visuel (image + badge superposé) ──
-            var visualGo = MakeGO("Visual", card.transform);
-            visualGo.AddComponent<LayoutElement>().preferredHeight = 110;
-
-            var visualImg = visualGo.AddComponent<Image>();
-            visualImg.sprite = _sprRound16;
-            visualImg.type   = Image.Type.Sliced;
-            visualImg.color  = BgImgSlot;
-            var mask = visualGo.AddComponent<Mask>();
-            mask.showMaskGraphic = true;
-
-            // Image (sprite drop later via Resources)
-            var imgGo = MakeGO("PackImage", visualGo.transform);
-            var imgRt = imgGo.GetComponent<RectTransform>();
-            FillParent(imgRt);
-            var packImg = imgGo.AddComponent<Image>();
-            var loadedSprite = LoadSprite(resourceImage);
-            packImg.sprite         = loadedSprite;
-            packImg.preserveAspect = false;
-            packImg.color          = loadedSprite != null
-                ? Color.white
-                : new Color(accent.r / 255f, accent.g / 255f, accent.b / 255f, 0.18f);
-            packImg.raycastTarget  = false;
-
-            // Badge en haut-droite
-            BuildCornerBadge(visualGo.transform, badge, badgeColor);
-
-            // Accent gauche
-            var stripe = MakeGO("Stripe", visualGo.transform);
-            var stripeImg = stripe.AddComponent<Image>();
-            stripeImg.color = accent;
-            var stripeRt = stripe.GetComponent<RectTransform>();
-            stripeRt.anchorMin = new Vector2(0, 0);
-            stripeRt.anchorMax = new Vector2(0, 1);
-            stripeRt.pivot     = new Vector2(0, 0.5f);
-            stripeRt.sizeDelta = new Vector2(4, 0);
-            stripeRt.anchoredPosition = Vector2.zero;
+            // ── Version texte (plus d'image de pack) : une fine barre de couleur en haut ──
+            var barGo = MakeGO("AccentBar", card.transform);
+            barGo.AddComponent<Image>().color = accent;
+            barGo.AddComponent<LayoutElement>().preferredHeight = 4;
 
             // ── Contenu textuel ── (flexibleHeight pour remplir la carte égalisée)
             var infoGo = MakeGO("Info", card.transform);
             infoGo.AddComponent<LayoutElement>().flexibleHeight = 1;
             var infoVlg = infoGo.AddComponent<VerticalLayoutGroup>();
-            infoVlg.padding = new RectOffset(18, 18, 14, 16);
-            infoVlg.spacing = 4;
+            infoVlg.padding = new RectOffset(22, 22, 16, 18);
+            infoVlg.spacing = 6;
             infoVlg.childForceExpandWidth = true;
             infoVlg.childControlWidth     = true;
             infoVlg.childControlHeight    = true;
             infoVlg.childForceExpandHeight = false;
 
-            var titleLbl = AddTMP("Title", infoGo.transform, title, 11, FontStyles.Bold, TextSec);
-            titleLbl.characterSpacing = 4f;
-            titleLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 14;
+            // Titre + durée de l'offre sur la même ligne
+            var headRow = MakeRow(infoGo.transform, height: 20, spacing: 8);
+            var titleLbl = AddTMP("Title", headRow.transform, title, 13, FontStyles.Bold, TextPri);
+            titleLbl.characterSpacing = 3f;
+            titleLbl.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
+            var badgeLbl = AddTMP("Badge", headRow.transform, badge, 12, FontStyles.Bold, badgeColor);
+            badgeLbl.alignment = TextAlignmentOptions.MidlineRight;
+            badgeLbl.gameObject.AddComponent<LayoutElement>().preferredWidth = 90;
 
-            var valueLbl = AddTMP("Big", infoGo.transform, bigValue, 26, FontStyles.Bold, accent);
-            valueLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 32;
+            var valueLbl = AddTMP("Big", infoGo.transform, bigValue, 32, FontStyles.Bold, accent);
+            valueLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 40;
 
+            // Contenu du pack : lisible (14 px), une ligne par élément
             foreach (var item in items)
             {
-                var itemLbl = AddTMP("Item", infoGo.transform, "· " + item, 11, FontStyles.Normal, TextSec);
-                itemLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 14;
+                var itemLbl = AddTMP("Item", infoGo.transform, "<color=#7A8FA6>•</color>  " + item, 14, FontStyles.Normal, TextPri);
+                itemLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 20;
             }
 
             // Compte à rebours par pack
-            var countdownLbl = AddTMP("Countdown", infoGo.transform, "", 10, FontStyles.Normal, ColOrange);
-            countdownLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 14;
+            var countdownLbl = AddTMP("Countdown", infoGo.transform, "", 12, FontStyles.Bold, ColOrange);
+            countdownLbl.gameObject.AddComponent<LayoutElement>().preferredHeight = 18;
 
             // Spacer flexible : pousse le CTA en bas pour aligner les boutons des 2 cartes.
             var spacerGo = MakeGO("Sp", infoGo.transform);
@@ -535,7 +494,7 @@ namespace TransportManager.UI.Tabs
             overlayVlg.childAlignment = TextAnchor.MiddleCenter;
             overlayVlg.childForceExpandHeight = false;
 
-            var lockTitle = AddTMP("LockTitle", overlay.transform, "—", 14, FontStyles.Bold, TextPri);
+            var lockTitle = AddTMP("LockTitle", overlay.transform, "-", 14, FontStyles.Bold, TextPri);
             lockTitle.alignment = TextAlignmentOptions.Center;
             lockTitle.gameObject.AddComponent<LayoutElement>().preferredHeight = 20;
 
@@ -555,7 +514,7 @@ namespace TransportManager.UI.Tabs
                 if (claimed)
                 {
                     overlay.SetActive(true);
-                    lockTitle.text  = "✓  OBTENUE";
+                    lockTitle.text  = "OBTENUE";
                     lockTitle.color = ColGreen;
                     lockSub.text    = "Cette offre a été utilisée";
                 }
@@ -639,14 +598,14 @@ namespace TransportManager.UI.Tabs
             imgRt.offsetMax = new Vector2(-8, -8);
             var drinkImg = imgGo.AddComponent<Image>();
             drinkImg.sprite = !string.IsNullOrEmpty(offer.resourceImage)
-                ? Resources.Load<Sprite>(offer.resourceImage)
+                ? LoadSprite(offer.resourceImage)
                 : null;
             drinkImg.preserveAspect = true;
             drinkImg.raycastTarget  = false;
             if (drinkImg.sprite == null)
             {
                 // L'icône "energy" n'existe pas ; on retombe sur l'image de canette.
-                drinkImg.sprite = Resources.Load<Sprite>("UI/energized_drink/1_can");
+                drinkImg.sprite = LoadSprite("UI/energized_drink/1_can");
                 drinkImg.color  = Color.white;
             }
             drinkImg.enabled = drinkImg.sprite != null;
@@ -828,7 +787,7 @@ namespace TransportManager.UI.Tabs
             lbl.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
 
             var rate = AddTMP("Rate", head.transform,
-                $"1 ◆ = {ShopSystem.GoldToDollarsRate:N0} $", 12, FontStyles.Bold, ColBlue);
+                $"1 lingot = {ShopSystem.GoldToDollarsRate:N0} $", 12, FontStyles.Bold, ColBlue);
             rate.alignment = TextAlignmentOptions.MidlineRight;
             rate.gameObject.AddComponent<LayoutElement>().preferredWidth = 160;
 
@@ -985,7 +944,7 @@ namespace TransportManager.UI.Tabs
 
         private static void AddCtaLeftIcon(Transform btn, string spritePath, Color32 color, int size)
         {
-            var sprite = Resources.Load<Sprite>(spritePath);
+            var sprite = LoadSprite(spritePath);
             if (sprite == null) return;
             var go = new GameObject("Icon", typeof(RectTransform));
             go.transform.SetParent(btn, false);
@@ -1006,7 +965,7 @@ namespace TransportManager.UI.Tabs
         {
             var go  = MakeGO("Icon", parent);
             var img = go.AddComponent<Image>();
-            img.sprite         = Resources.Load<Sprite>(spritePath);
+            img.sprite         = LoadSprite(spritePath);
             img.enabled        = img.sprite != null;  // pas de carré blanc si l'icône manque
             img.color          = color;
             img.preserveAspect = true;

@@ -9,18 +9,20 @@ using TransportManager.Systems.Depot;
 using TransportManager.Systems.Fleet;
 using TransportManager.Systems.Fuel;
 using TransportManager.Systems.Tutorial;
+using TransportManager.UI.Depot;
 
 namespace TransportManager.UI.Tabs
 {
     public class DepotTabView : MonoBehaviour
     {
-        private RawImage _depotBgImage;
-        private RectTransform _depotBgRect;
-        private RectTransform _depotWorldRect;
-        private Texture2D _depotBgTex;
-        private Vector2 _lastBgSize;
-
-        private readonly System.Collections.Generic.Dictionary<string, Image> _buildingSprites = new System.Collections.Generic.Dictionary<string, Image>();
+        // Dépôt 3D (DepotScene3D) rendu dans une texture, affichée plein écran derrière les panneaux.
+        private DepotScene3D _scene;
+        private RawImage _view;
+        private RenderTexture _rt;
+        private Vector2Int _rtSize;
+        private Vector2 _framedSize;
+        private RectTransform _overlayLayer;
+        private readonly System.Collections.Generic.Dictionary<string, RectTransform> _overlays = new System.Collections.Generic.Dictionary<string, RectTransform>();
 
         // Hangar overlay
         private TMP_Text _hangarLevelLabel;
@@ -33,6 +35,8 @@ namespace TransportManager.UI.Tabs
         private TMP_Text _fuelCapacityLabel;
         private Slider _fuelSlider;
         private Button _fuelNavButton;
+        private Button _fuelUpgradeButton;
+        private TMP_Text _fuelUpgradeCostLabel;
 
         // HR overlay
         private TMP_Text _hrHiredLabel;
@@ -59,80 +63,126 @@ namespace TransportManager.UI.Tabs
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
 
-            // --- Dark fill behind everything (visible if the map is letterboxed) ---
-            var fillGo = new GameObject("Fill", typeof(RectTransform));
-            fillGo.transform.SetParent(transform, false);
-            var fillImg = fillGo.AddComponent<Image>();
-            fillImg.color = new Color(0.08f, 0.10f, 0.12f, 1f);
-            fillImg.raycastTarget = false;
-            StretchRect(fillGo.GetComponent<RectTransform>());
+            // --- Rendu du dépôt 3D : terrain, parkings, route et les 3 bâtiments, construits en code. ---
+            _scene = new DepotScene3D();
+            var viewGo = new GameObject("DepotView", typeof(RectTransform));
+            viewGo.transform.SetParent(transform, false);
+            _view = viewGo.AddComponent<RawImage>();
+            _view.color = Color.white;
+            _view.raycastTarget = false;
+            StretchRect(viewGo.GetComponent<RectTransform>());
 
-            // --- World container: keeps the map's aspect ratio, so all building
-            //     sprites positioned in normalized coords stay aligned with the map. ---
-            var worldGo = new GameObject("DepotWorld", typeof(RectTransform));
-            worldGo.transform.SetParent(transform, false);
-            var worldRt = worldGo.GetComponent<RectTransform>();
-            worldRt.anchorMin = Vector2.zero;
-            worldRt.anchorMax = Vector2.one;
-            worldRt.offsetMin = Vector2.zero;
-            worldRt.offsetMax = Vector2.zero;
-            _depotWorldRect = worldRt;
+            // --- Panneaux d'info : chacun suit son emplacement à l'écran (voir PlaceOverlays). ---
+            var layerGo = new GameObject("Overlays", typeof(RectTransform));
+            layerGo.transform.SetParent(transform, false);
+            _overlayLayer = layerGo.GetComponent<RectTransform>();
+            StretchRect(_overlayLayer);
 
-            var bgTex = Resources.Load<Texture2D>("UI/WareHouse/depotMap") ?? Resources.Load<Texture2D>("UI/WareHouse/DepotBackground");
-            if (bgTex != null && bgTex.height > 0)
-            {
-                var arf = worldGo.AddComponent<AspectRatioFitter>();
-                arf.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent; // fills screen, may crop one axis
-                arf.aspectRatio = (float)bgTex.width / bgTex.height;
-            }
-
-            // --- Background image (depot map) — fills the world container exactly ---
-            var bgGo = new GameObject("Background", typeof(RectTransform));
-            bgGo.transform.SetParent(worldGo.transform, false);
-            var bgImg = bgGo.AddComponent<RawImage>();
-            bgImg.texture = bgTex;
-            bgImg.color = Color.white;
-            bgImg.raycastTarget = false;
-            bgImg.uvRect = new Rect(0, 0, 1, 1);
-            _depotBgImage = bgImg;
-            _depotBgTex = bgTex;
-            var bgRt = bgGo.GetComponent<RectTransform>();
-            StretchRect(bgRt);
-            _depotBgRect = bgRt;
-
-            // --- Building sprites — children of the world container (always aligned with the map) ---
-            BuildBuildingSprite(BuildingVisuals.Hangar, new Vector2(0.50f, 0.62f), new Vector2(170, 170), worldGo.transform);
-            BuildBuildingSprite(BuildingVisuals.Office, new Vector2(0.22f, 0.35f), new Vector2(120, 120), worldGo.transform);
-            BuildBuildingSprite(BuildingVisuals.FuelTank, new Vector2(0.78f, 0.32f), new Vector2(110, 110), worldGo.transform);
-
-            // Semi-transparent dark scrim so overlays are readable
-            var scrimGo = new GameObject("Scrim", typeof(RectTransform));
-            scrimGo.transform.SetParent(transform, false);
-            var scrimImg = scrimGo.AddComponent<Image>();
-            scrimImg.color = new Color(0f, 0f, 0f, 0.18f);
-            var scrimRt = scrimGo.GetComponent<RectTransform>();
-            scrimRt.anchorMin = Vector2.zero;
-            scrimRt.anchorMax = Vector2.one;
-            scrimRt.offsetMin = Vector2.zero;
-            scrimRt.offsetMax = Vector2.zero;
-
-            // ---- Hangar overlay â€” top center ----
-            // Anchored at ~50% x, ~72% y (warehouse building top area)
-            var hangarOverlay = CreateOverlayPanel("HangarOverlay", transform);
-            SetOverlayAnchor(hangarOverlay, new Vector2(0.50f, 0.72f));
+            var hangarOverlay = CreateOverlayPanel("HangarOverlay", _overlayLayer);
+            _overlays[BuildingVisuals.Hangar] = hangarOverlay.GetComponent<RectTransform>();
             BuildHangarOverlay(hangarOverlay);
 
-            // ---- Fuel overlay â€” right ----
-            // Anchored at ~78% x, ~42% y (tank on the right)
-            var fuelOverlay = CreateOverlayPanel("FuelOverlay", transform);
-            SetOverlayAnchor(fuelOverlay, new Vector2(0.78f, 0.42f));
+            var fuelOverlay = CreateOverlayPanel("FuelOverlay", _overlayLayer);
+            _overlays[BuildingVisuals.FuelTank] = fuelOverlay.GetComponent<RectTransform>();
             BuildFuelOverlay(fuelOverlay);
 
-            // ---- HR overlay â€” left ----
-            // Anchored at ~22% x, ~45% y (admin building on the left)
-            var hrOverlay = CreateOverlayPanel("HrOverlay", transform);
-            SetOverlayAnchor(hrOverlay, new Vector2(0.22f, 0.45f));
+            var hrOverlay = CreateOverlayPanel("HrOverlay", _overlayLayer);
+            _overlays[BuildingVisuals.Office] = hrOverlay.GetComponent<RectTransform>();
             BuildHrOverlay(hrOverlay);
+
+            foreach (var o in _overlays.Values) o.pivot = new Vector2(0.5f, 1f);
+#if UNITY_EDITOR
+            BuildPreviewBar();
+#endif
+            RefreshBuildingModel(BuildingVisuals.Hangar);
+            RefreshBuildingModel(BuildingVisuals.FuelTank);
+            RefreshBuildingModel(BuildingVisuals.Office);
+        }
+
+        // ── Rendu 3D : texture à la taille de l'écran, cadrage hors HUD, panneaux ─────────
+
+        private Canvas RootCanvas
+        {
+            get { var c = GetComponentInParent<Canvas>(); return c != null ? c.rootCanvas : null; }
+        }
+
+        // Partie de l'écran NON cachée par le HUD (rail à gauche, barre en haut), en fraction du rendu.
+        private Rect FreeArea(Vector2 view)
+        {
+            var canvas = RootCanvas;
+            float left = SafeAreaUtil.SidebarReserve(canvas, 8f) / view.x;
+            float top = SafeAreaUtil.HudTopReserve(canvas) / view.y;
+            const float pad = 0.02f;
+            return Rect.MinMaxRect(left + pad, pad, 1f - pad, 1f - top - pad);
+        }
+
+        private void LateUpdate()
+        {
+            if (_scene == null) return;
+            Vector2 view = ((RectTransform)transform).rect.size;
+            if (view.x <= 1f || view.y <= 1f) return;
+
+            // Texture de rendu à la résolution réelle de l'écran (recréée si la taille change).
+            var canvas = RootCanvas;
+            float sf = canvas != null && canvas.scaleFactor > 0.0001f ? canvas.scaleFactor : 1f;
+            var px = new Vector2Int(Mathf.Clamp(Mathf.RoundToInt(view.x * sf), 64, 2560), Mathf.Clamp(Mathf.RoundToInt(view.y * sf), 64, 2560));
+            if (_rt == null || px != _rtSize)
+            {
+                ReleaseTexture();
+                _rt = new RenderTexture(px.x, px.y, 24, RenderTextureFormat.ARGB32)
+                {
+                    antiAliasing = Application.isMobilePlatform ? 2 : 4,
+                    name = "DepotView",
+                };
+                _rt.Create();
+                _rtSize = px;
+                _scene.Camera.targetTexture = _rt;
+                _view.texture = _rt;
+            }
+            if (view != _framedSize)
+            {
+                _scene.Frame(view.x / view.y, FreeArea(view));
+                _framedSize = view;
+            }
+            _scene.Tick(Time.unscaledDeltaTime);
+            PlaceOverlays(view);
+        }
+
+        // Chaque panneau est accroché au coin avant de son emplacement, puis ramené dans
+        // la zone visible s'il en déborde (jamais sous le rail ni sous la barre du haut).
+        private void PlaceOverlays(Vector2 view)
+        {
+            var canvas = RootCanvas;
+            float minX = SafeAreaUtil.SidebarReserve(canvas, 8f);
+            float maxY = view.y - SafeAreaUtil.HudTopReserve(canvas);
+            foreach (var kv in _overlays)
+            {
+                var rt = kv.Value;
+                if (rt == null) continue;
+                Vector3 vp = _scene.Camera.WorldToViewportPoint(_scene.PanelAnchor(kv.Key));
+                rt.anchorMin = rt.anchorMax = Vector2.zero;
+                Vector2 size = rt.rect.size;
+                float x = Mathf.Clamp(vp.x * view.x, minX + size.x * 0.5f, view.x - 8f - size.x * 0.5f);
+                float y = Mathf.Clamp(vp.y * view.y + size.y * 0.35f, size.y + 8f, maxY);
+                rt.anchoredPosition = new Vector2(x, y);
+            }
+        }
+
+        private void ReleaseTexture()
+        {
+            if (_rt == null) return;
+            if (_scene != null) _scene.Camera.targetTexture = null;
+            if (_view != null) _view.texture = null;
+            _rt.Release();
+            Destroy(_rt);
+            _rt = null;
+        }
+
+        private void OnDestroy()
+        {
+            ReleaseTexture();
+            _scene?.Dispose();
+            _scene = null;
         }
 
         // ---- Overlay panel factory ----
@@ -159,15 +209,6 @@ namespace TransportManager.UI.Tabs
             csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
             return go;
-        }
-
-        private void SetOverlayAnchor(GameObject overlay, Vector2 normalizedPos)
-        {
-            var rt = overlay.GetComponent<RectTransform>();
-            rt.anchorMin = normalizedPos;
-            rt.anchorMax = normalizedPos;
-            rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.anchoredPosition = Vector2.zero;
         }
 
         // ---- Hangar overlay ----
@@ -237,6 +278,9 @@ namespace TransportManager.UI.Tabs
                 _fuelSlider = AddMiniSlider(panel, new Color(0.20f, 0.65f, 0.45f));
                 _fuelNavButton = AddOverlayButton(panel, "Gérer", new Color(0.20f, 0.65f, 0.45f));
                 _fuelNavButton.onClick.AddListener(OnOpenFuel);
+                _fuelUpgradeCostLabel = AddOverlaySubtext(panel, "");
+                _fuelUpgradeButton = AddOverlayButton(panel, "Améliorer", new Color(0.29f, 0.56f, 0.89f));
+                _fuelUpgradeButton.onClick.AddListener(OnFuelUpgrade);
                 TutorialTargetRegistry.Register("btn:open_fuel", _fuelNavButton.GetComponent<RectTransform>());
             }
         }
@@ -283,25 +327,110 @@ namespace TransportManager.UI.Tabs
             if (building == BuildingVisuals.Hangar) RebuildHangarOverlay();
             else if (building == BuildingVisuals.FuelTank) RebuildFuelOverlay();
             else if (building == BuildingVisuals.Office) RebuildHrOverlay();
-            RefreshBuildingSprite(building);
+            RefreshBuildingModel(building);
             Refresh();
+            GameManager.Instance?.SaveNow();
         }
 
-        private void BuildBuildingSprite(string building, Vector2 normalizedPos, Vector2 size, Transform parent = null)
+        // Le modèle 3D suit le niveau visuel du bâtiment ; petit « pop » s'il change à l'écran.
+        private void RefreshBuildingModel(string building)
         {
-            var go = new GameObject($"Sprite_{building}", typeof(RectTransform));
-            go.transform.SetParent(parent != null ? parent : transform, false);
-            var img = go.AddComponent<Image>();
-            img.preserveAspect = true;
-            img.raycastTarget = false;
-            var rt = go.GetComponent<RectTransform>();
-            rt.anchorMin = normalizedPos;
-            rt.anchorMax = normalizedPos;
-            rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = size;
-            rt.anchoredPosition = Vector2.zero;
-            _buildingSprites[building] = img;
-            RefreshBuildingSprite(building);
+            if (_scene == null) return;
+            var bs = ServiceLocator.Get<BuildingService>();
+            int level = bs != null ? bs.GetVisualLevel(building) : 0;
+            if (_previewLevels.TryGetValue(building, out int forced)) level = forced;
+            bool changed = _shownLevels.TryGetValue(building, out int previous) && previous != level;
+            _shownLevels[building] = level;
+            _scene.SetLevel(building, level, changed && isActiveAndEnabled);
+        }
+
+        private readonly System.Collections.Generic.Dictionary<string, int> _shownLevels = new System.Collections.Generic.Dictionary<string, int>();
+
+        // ── Aperçu des designs (éditeur uniquement) : force le niveau AFFICHÉ, sans toucher la sauvegarde ──
+        private readonly System.Collections.Generic.Dictionary<string, int> _previewLevels = new System.Collections.Generic.Dictionary<string, int>();
+
+        private void BuildPreviewBar()
+        {
+            var bar = new GameObject("DesignPreview", typeof(RectTransform));
+            bar.transform.SetParent(transform, false);
+            var rt = bar.GetComponent<RectTransform>();
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 0f);
+            rt.anchoredPosition = new Vector2(-10f, 10f);
+            bar.AddComponent<Image>().color = new Color(0.08f, 0.08f, 0.12f, 0.85f);
+            var vlg = bar.AddComponent<VerticalLayoutGroup>();
+            vlg.padding = new RectOffset(10, 10, 8, 8);
+            vlg.spacing = 4;
+            vlg.childForceExpandHeight = false;
+            var csf = bar.AddComponent<ContentSizeFitter>();
+            csf.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            AddOverlaySubtext(bar, "Aperçu des designs (éditeur)");
+            AddPreviewRow(bar, BuildingVisuals.Hangar, "Garage", 6);
+            AddPreviewRow(bar, BuildingVisuals.FuelTank, "Station", 10);
+            AddPreviewRow(bar, BuildingVisuals.Office, "RH", 3);
+        }
+
+        private void AddPreviewRow(GameObject bar, string building, string name, int max)
+        {
+            var row = new GameObject("Row_" + name, typeof(RectTransform));
+            row.transform.SetParent(bar.transform, false);
+            var hlg = row.AddComponent<HorizontalLayoutGroup>();
+            hlg.spacing = 6;
+            hlg.childAlignment = TextAnchor.MiddleCenter;
+            hlg.childForceExpandWidth = false;
+            hlg.childForceExpandHeight = false;
+            row.AddComponent<LayoutElement>().preferredHeight = 30;
+
+            var lblGo = new GameObject("Label", typeof(RectTransform));
+            lblGo.transform.SetParent(row.transform, false);
+            var lbl = lblGo.AddComponent<TextMeshProUGUI>();
+            lbl.fontSize = 13;
+            lbl.color = Color.white;
+            lbl.alignment = TextAlignmentOptions.MidlineLeft;
+            var le = lblGo.AddComponent<LayoutElement>();
+            le.preferredWidth = 120;
+            le.preferredHeight = 30;
+
+            void Show()
+            {
+                lbl.text = _previewLevels.TryGetValue(building, out int l) ? $"{name} : niv. {l}" : $"{name} : réel";
+                RefreshBuildingModel(building);
+            }
+            void Step(int delta)
+            {
+                int cur = _previewLevels.TryGetValue(building, out int l) ? l
+                        : (ServiceLocator.Get<BuildingService>()?.GetVisualLevel(building) ?? 0);
+                int next = Mathf.Clamp(cur + delta, 0, max);
+                _previewLevels[building] = next;
+                Show();
+            }
+
+            PreviewButton(row, "<", () => Step(-1));
+            PreviewButton(row, ">", () => Step(+1));
+            PreviewButton(row, "Réel", () => { _previewLevels.Remove(building); Show(); });
+            Show();
+        }
+
+        private static void PreviewButton(GameObject row, string label, UnityEngine.Events.UnityAction onClick)
+        {
+            var go = new GameObject("Btn_" + label, typeof(RectTransform));
+            go.transform.SetParent(row.transform, false);
+            go.AddComponent<Image>().color = new Color(0.29f, 0.56f, 0.89f);
+            var btn = go.AddComponent<Button>();
+            btn.onClick.AddListener(onClick);
+            var le = go.AddComponent<LayoutElement>();
+            le.preferredWidth = label.Length > 1 ? 52 : 34;
+            le.preferredHeight = 30;
+            var txtGo = new GameObject("Label", typeof(RectTransform));
+            txtGo.transform.SetParent(go.transform, false);
+            var txt = txtGo.AddComponent<TextMeshProUGUI>();
+            txt.text = label;
+            txt.fontSize = 14;
+            txt.fontStyle = FontStyles.Bold;
+            txt.color = Color.white;
+            txt.alignment = TextAlignmentOptions.Center;
+            StretchRect(txtGo.GetComponent<RectTransform>());
         }
 
         private static void StretchRect(RectTransform rt)
@@ -310,16 +439,6 @@ namespace TransportManager.UI.Tabs
             rt.anchorMax = Vector2.one;
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
-        }
-
-        private void RefreshBuildingSprite(string building)
-        {
-            if (!_buildingSprites.TryGetValue(building, out var img) || img == null) return;
-            var bs = ServiceLocator.Get<BuildingService>();
-            int level = bs != null ? bs.GetLevel(building) : 0;
-            var sprite = BuildingVisuals.GetSprite(building, level);
-            img.enabled = sprite != null;
-            img.sprite = sprite;
         }
 
         private void OnOpenFuel()
@@ -469,31 +588,45 @@ namespace TransportManager.UI.Tabs
 
         private void OnEnable()
         {
-            GameEvents.OnDockUnlocked += _ => Refresh();
-            GameEvents.OnDollarsChanged += _ => Refresh();
-            GameEvents.OnVehicleAdded += _ => Refresh();
-            GameEvents.OnStationFuelChanged += _ => Refresh();
-            GameEvents.OnDriverHired += _ => Refresh();
-            GameEvents.OnDriverFired += _ => Refresh();
-            GameEvents.OnDriverResigned += _ => Refresh();
+            GameEvents.OnDockUnlocked += OnIntEvent;
+            GameEvents.OnDollarsChanged += OnIntEvent;
+            GameEvents.OnVehicleAdded += OnVehicleEvent;
+            GameEvents.OnStationFuelChanged += OnFloatEvent;
+            GameEvents.OnDriverHired += OnDriverEvent;
+            GameEvents.OnDriverFired += OnDriverEvent;
+            GameEvents.OnDriverResigned += OnDriverEvent;
+            GameEvents.OnDriverDied += OnDriverEvent;
+            GameEvents.OnPumpUpgraded += OnIntEvent;
+            _scene?.SetActive(true);
+            _framedSize = Vector2.zero;   // recadrer à la prochaine image
             Refresh();
         }
 
         private void OnDisable()
         {
-            GameEvents.OnDockUnlocked -= _ => Refresh();
-            GameEvents.OnDollarsChanged -= _ => Refresh();
-            GameEvents.OnVehicleAdded -= _ => Refresh();
-            GameEvents.OnStationFuelChanged -= _ => Refresh();
-            GameEvents.OnDriverHired -= _ => Refresh();
-            GameEvents.OnDriverFired -= _ => Refresh();
-            GameEvents.OnDriverResigned -= _ => Refresh();
+            GameEvents.OnDockUnlocked -= OnIntEvent;
+            GameEvents.OnDollarsChanged -= OnIntEvent;
+            GameEvents.OnVehicleAdded -= OnVehicleEvent;
+            GameEvents.OnStationFuelChanged -= OnFloatEvent;
+            GameEvents.OnDriverHired -= OnDriverEvent;
+            GameEvents.OnDriverFired -= OnDriverEvent;
+            GameEvents.OnDriverResigned -= OnDriverEvent;
+            GameEvents.OnDriverDied -= OnDriverEvent;
+            GameEvents.OnPumpUpgraded -= OnIntEvent;
+            _scene?.SetActive(false);   // plus de rendu 3D quand l'onglet est caché
         }
+
+        // Méthodes nommées : un lambda ne peut pas être désabonné (un « -= _ => … » crée
+        // un nouveau délégué et ne retire rien), les handlers s'empilaient à chaque ouverture.
+        private void OnIntEvent(int _) => Refresh();
+        private void OnFloatEvent(float _) => Refresh();
+        private void OnVehicleEvent(Entities.Vehicles.VehicleInstance _) => Refresh();
+        private void OnDriverEvent(Entities.Drivers.DriverInstance _) => Refresh();
 
         private void OnHangarUpgrade()
         {
             var depot = ServiceLocator.Get<DepotSystem>();
-            depot?.TryUpgrade();
+            if (depot != null && depot.TryUpgrade()) GameManager.Instance?.SaveNow();
         }
 
         private void GoToFuel() => GameEvents.RaiseTabChanged(TabType.Fuel);
@@ -501,6 +634,10 @@ namespace TransportManager.UI.Tabs
 
         private void Refresh()
         {
+            // Le look suit le niveau : chaque modèle 3D est mis à jour.
+            RefreshBuildingModel(BuildingVisuals.Hangar);
+            RefreshBuildingModel(BuildingVisuals.FuelTank);
+            RefreshBuildingModel(BuildingVisuals.Office);
             RefreshHangar();
             RefreshFuel();
             RefreshHr();
@@ -524,7 +661,7 @@ namespace TransportManager.UI.Tabs
             {
                 _hangarUpgradeButton.interactable = canUpgrade;
                 var lbl = _hangarUpgradeButton.GetComponentInChildren<TMP_Text>();
-                if (lbl) lbl.text = canUpgrade ? "AmÃ©liorer" : "Fonds insuffisants";
+                if (lbl) lbl.text = canUpgrade ? "Améliorer" : "Fonds insuffisants";
             }
         }
 
@@ -540,6 +677,25 @@ namespace TransportManager.UI.Tabs
             if (_fuelLitersLabel) _fuelLitersLabel.text = $"{liters:F0} L";
             if (_fuelCapacityLabel) _fuelCapacityLabel.text = $"/ {capacity:F0} L";
             if (_fuelSlider) _fuelSlider.value = ratio;
+
+            // Amélioration de la cuve (palier de pompe suivant) → change aussi son look.
+            var next = fuel.Config != null ? fuel.Config.GetNextTier(fuel.State.pumpLevel) : null;
+            if (_fuelUpgradeCostLabel)
+                _fuelUpgradeCostLabel.text = next != null ? $"Niv. {next.level} : $ {next.upgradeCostDollars:N0}" : "Niveau max";
+            if (_fuelUpgradeButton)
+            {
+                _fuelUpgradeButton.gameObject.SetActive(next != null);
+                bool canUpgrade = fuel.CanUpgradePump();
+                _fuelUpgradeButton.interactable = canUpgrade;
+                var lbl = _fuelUpgradeButton.GetComponentInChildren<TMP_Text>();
+                if (lbl) lbl.text = canUpgrade ? "Améliorer" : "Fonds insuffisants";
+            }
+        }
+
+        private void OnFuelUpgrade()
+        {
+            var fuel = ServiceLocator.Get<FuelSystem>();
+            if (fuel != null && fuel.TryUpgradePump()) GameManager.Instance?.SaveNow();
         }
 
         private void RefreshHr()

@@ -11,6 +11,7 @@ using TransportManager.Entities.Progression;
 using TransportManager.Events;
 using TransportManager.Systems.Economy;
 using TransportManager.Systems.Hr;
+using TransportManager.UI.Common;
 
 namespace TransportManager.UI.Tabs
 {
@@ -37,12 +38,12 @@ namespace TransportManager.UI.Tabs
 
         // ── Layout ─────────────────────────────────────────────────────────────
         private const float SIDEBAR_RESERVE = 130f;
-        private const float TOP_RESERVE     = 160f;
-        private const float RIGHT_PADDING   = 32f;
-        private const float BOTTOM_PADDING  = 32f;
+        // (marge du haut : SafeAreaUtil.HudTopReserve, commune à toutes les pages plein écran)
+        private const float RIGHT_PADDING   = 0f;     // plein écran
+        private const float BOTTOM_PADDING  = 0f;     // plein écran
         private const float HEADER_HEIGHT   = 56f;
         private const float MIN_CARD_W      = 360f;
-        private const float CARD_H          = 340f;
+        private const float CARD_H          = 352f;
         private const float GRID_SPACING    = 14f;
         private const float CONTENT_PAD     = 14f;
 
@@ -86,8 +87,8 @@ namespace TransportManager.UI.Tabs
             bg.color  = BgRoot;
             bg.sprite = null;
 
-            // Image de fond plein écran (derrière le panneau, visible dans les marges)
-            BuildPageBackground("UI/background/driver");
+            // Fond de page sobre (dégradé + trame), visible dans les marges autour du panneau.
+            PageBackdrop.Create(transform, Accent);
 
             // Panneau principal (sous le HUD)
             var panel   = MakeGO("Panel", transform);
@@ -95,14 +96,11 @@ namespace TransportManager.UI.Tabs
             panelRt.anchorMin = Vector2.zero;
             panelRt.anchorMax = Vector2.one;
             panelRt.offsetMin = new Vector2(SafeAreaUtil.SidebarReserve(GetComponentInParent<Canvas>()), BOTTOM_PADDING);
-            panelRt.offsetMax = new Vector2(-RIGHT_PADDING, -TOP_RESERVE);
+            panelRt.offsetMax = new Vector2(-RIGHT_PADDING, -SafeAreaUtil.HudTopReserve(GetComponentInParent<Canvas>()));   // rien sous le bandeau
             var panelImg = panel.AddComponent<Image>();
             panelImg.sprite = _sprR16;
             panelImg.type   = Image.Type.Sliced;
-            panelImg.color  = BgPanel;
-            var panelShadow = panel.AddComponent<Shadow>();
-            panelShadow.effectColor    = new Color(0f, 0f, 0f, 0.5f);
-            panelShadow.effectDistance = new Vector2(3f, -4f);
+            panelImg.color  = new Color(0f, 0f, 0f, 0f);   // plein écran : pas de « carte » posée sur le fond
 
             BuildHeader(panel.transform);
             BuildScroll(panel.transform);
@@ -307,8 +305,19 @@ namespace TransportManager.UI.Tabs
             // ── Action ──
             if (hired)
             {
-                var fireBtn = MakeButton(card.transform, "Licencier", new Color(0x6B / 255f, 0x2A / 255f, 0x2A / 255f, 1f), 36);
                 string id = d.instanceId;
+                BuildWageRow(card.transform, d);
+                if (HrSystem.HasRaiseRequest(d)) BuildRaiseRequest(card.transform, d);
+
+                var actions = MakeGO("Actions", card.transform);
+                var aHlg = actions.AddComponent<HorizontalLayoutGroup>();
+                aHlg.spacing = 8;
+                aHlg.childForceExpandWidth = true; aHlg.childForceExpandHeight = true;
+                aHlg.childControlWidth = true; aHlg.childControlHeight = true;
+                actions.AddComponent<LayoutElement>().preferredHeight = 38;
+                var editBtn = MakeButton(actions.transform, "Modifier le salaire", new Color(0x2F / 255f, 0x4E / 255f, 0x86 / 255f, 1f), 38);
+                editBtn.onClick.AddListener(() => OpenWageEditor(id));
+                var fireBtn = MakeButton(actions.transform, "Licencier", new Color(0x6B / 255f, 0x2A / 255f, 0x2A / 255f, 1f), 38);
                 fireBtn.onClick.AddListener(() => OnFireClicked(id));
             }
             else
@@ -318,6 +327,150 @@ namespace TransportManager.UI.Tabs
                 string id = d.instanceId; int wage = d.desiredWagePerContract;
                 hireBtn.onClick.AddListener(() => OnHireClicked(id, wage));
             }
+        }
+
+        // ── Salaire / satisfaction ─────────────────────────────────────────────
+        private static readonly Color ColWarn = new Color(0xF7 / 255f, 0xA6 / 255f, 0x24 / 255f, 1f);
+
+        private void BuildWageRow(Transform card, DriverInstance d)
+        {
+            var row = MakeGO("Wage", card);
+            var hlg = row.AddComponent<HorizontalLayoutGroup>();
+            hlg.spacing = 8; hlg.childAlignment = TextAnchor.MiddleLeft;
+            hlg.childForceExpandWidth = false; hlg.childForceExpandHeight = false;
+            hlg.childControlWidth = true; hlg.childControlHeight = true;
+            row.AddComponent<LayoutElement>().preferredHeight = 24;
+
+            var lbl = MakeTMP("L", row.transform,
+                $"Salaire  <b><color=#ECEEF5>{d.assignedWagePerContract:N0} $</color></b> / contrat", 12, FontStyles.Normal, TextSec);
+            lbl.textWrappingMode = TextWrappingModes.NoWrap;
+            lbl.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
+
+            bool happy = HrSystem.Satisfaction(d) >= HrSystem.SatisfiedRatio;
+            string chip = d.quitPending ? "Part après sa livraison"
+                        : happy ? "Satisfait"
+                        : $"Veut {d.desiredWagePerContract:N0} $";
+            Color c = d.quitPending ? TierLow : happy ? TierHigh : ColWarn;
+            var pill = MakeGO("Mood", row.transform);
+            var pImg = pill.AddComponent<Image>();
+            pImg.sprite = _sprR8; pImg.type = Image.Type.Sliced; pImg.color = new Color(c.r, c.g, c.b, 0.16f);
+            var pHlg = pill.AddComponent<HorizontalLayoutGroup>();
+            pHlg.padding = new RectOffset(8, 8, 2, 2);
+            pHlg.childControlWidth = true; pHlg.childControlHeight = true;
+            pHlg.childForceExpandWidth = false; pHlg.childForceExpandHeight = false;
+            var pl = MakeTMP("T", pill.transform, chip, 11, FontStyles.Bold, c);
+            pl.textWrappingMode = TextWrappingModes.NoWrap;
+        }
+
+        private void BuildRaiseRequest(Transform card, DriverInstance d)
+        {
+            var box = MakeGO("Raise", card);
+            var bImg = box.AddComponent<Image>();
+            bImg.sprite = _sprR8; bImg.type = Image.Type.Sliced; bImg.color = new Color(ColWarn.r, ColWarn.g, ColWarn.b, 0.14f);
+            var vlg = box.AddComponent<VerticalLayoutGroup>();
+            vlg.padding = new RectOffset(10, 10, 8, 8); vlg.spacing = 6;
+            vlg.childForceExpandWidth = true; vlg.childForceExpandHeight = false;
+            vlg.childControlWidth = true; vlg.childControlHeight = true;
+
+            double hoursLeft = (d.raiseRequestDeadlineTicks - System.DateTime.UtcNow.Ticks) / (double)System.TimeSpan.TicksPerHour;
+            string left = hoursLeft >= 1 ? $"{Mathf.FloorToInt((float)hoursLeft)} h" : $"{Mathf.Max(1, Mathf.CeilToInt((float)hoursLeft * 60f))} min";
+            int refusalsLeft = HrSystem.RefusalsLeft(d) - 1;
+            string refusalTxt = refusalsLeft <= 0 ? "un refus = départ"
+                              : refusalsLeft == 1 ? "encore 1 refus possible" : "encore " + refusalsLeft + " refus possibles";
+            var t = MakeTMP("T", box.transform,
+                $"<b>Demande une augmentation : {d.raiseRequestedWage:N0} $</b>\n" +
+                $"Répondre sous {left}  ·  {refusalTxt}",
+                12, FontStyles.Normal, ColWarn);
+            t.textWrappingMode = TextWrappingModes.Normal;
+
+            var btns = MakeGO("Btns", box.transform);
+            var hlg = btns.AddComponent<HorizontalLayoutGroup>();
+            hlg.spacing = 8; hlg.childForceExpandWidth = true; hlg.childForceExpandHeight = true;
+            hlg.childControlWidth = true; hlg.childControlHeight = true;
+            btns.AddComponent<LayoutElement>().preferredHeight = 34;
+            string id = d.instanceId;
+            var ok = MakeButton(btns.transform, $"Accepter  {d.raiseRequestedWage:N0} $", new Color(0x2E / 255f, 0x7D / 255f, 0x52 / 255f, 1f), 34);
+            ok.onClick.AddListener(() => ServiceLocator.Get<HrSystem>()?.AcceptRaise(id));
+            var no = MakeButton(btns.transform, "Refuser", ColDisabled, 34);
+            no.onClick.AddListener(() => ServiceLocator.Get<HrSystem>()?.RefuseRaise(id));
+        }
+
+        // ── Éditeur de salaire (popup) ─────────────────────────────────────────
+        private GameObject _wageEditor;
+
+        private void OpenWageEditor(string driverId)
+        {
+            var hr = ServiceLocator.Get<HrSystem>();
+            var d = hr?.GetHired(driverId);
+            if (d == null) return;
+            if (_wageEditor != null) Destroy(_wageEditor);
+            int wage = d.assignedWagePerContract;
+
+            _wageEditor = MakeGO("WageEditor", transform);
+            FillParent(_wageEditor.GetComponent<RectTransform>());
+            var scrim = _wageEditor.AddComponent<Image>();
+            scrim.color = new Color(0f, 0f, 0f, 0.6f);
+            _wageEditor.AddComponent<Button>().onClick.AddListener(CloseWageEditor);
+
+            var panel = MakeGO("Panel", _wageEditor.transform);
+            var pImg = panel.AddComponent<Image>();
+            pImg.sprite = _sprR12; pImg.type = Image.Type.Sliced; pImg.color = BgPanel;
+            var pRt = panel.GetComponent<RectTransform>();
+            pRt.anchorMin = pRt.anchorMax = new Vector2(0.5f, 0.5f);
+            pRt.sizeDelta = new Vector2(460f, 0f);
+            var vlg = panel.AddComponent<VerticalLayoutGroup>();
+            vlg.padding = new RectOffset(20, 20, 18, 18); vlg.spacing = 12;
+            vlg.childForceExpandWidth = true; vlg.childForceExpandHeight = false;
+            vlg.childControlWidth = true; vlg.childControlHeight = true;
+            panel.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            panel.AddComponent<Button>().transition = Selectable.Transition.None;   // n'interrompt pas la fermeture du scrim
+
+            MakeTMP("Title", panel.transform, $"Salaire de {d.FullName}", 16, FontStyles.Bold, TextPri);
+            var value = MakeTMP("Value", panel.transform, "", 30, FontStyles.Bold, TextPri);
+            value.alignment = TextAlignmentOptions.Center;
+            var info = MakeTMP("Info", panel.transform, "", 12, FontStyles.Normal, TextSec);
+            info.alignment = TextAlignmentOptions.Center;
+            info.textWrappingMode = TextWrappingModes.Normal;
+
+            int minHappy = Mathf.CeilToInt(d.desiredWagePerContract * HrSystem.SatisfiedRatio);
+            void Render()
+            {
+                value.text = $"{wage:N0} $ <size=55%><color=#7A8FA6>/ contrat</color></size>";
+                bool happy = wage >= minHappy;
+                info.text = $"Demande : {d.desiredWagePerContract:N0} $  ·  satisfait à partir de {minHappy:N0} $\n" +
+                            (happy ? "<color=#3DC96E>Satisfait : pas de demande d'augmentation.</color>"
+                                   : "<color=#F7A624>Mal payé : demandera une augmentation après sa prochaine livraison.</color>");
+            }
+            Render();
+
+            var steps = MakeGO("Steps", panel.transform);
+            var sh = steps.AddComponent<HorizontalLayoutGroup>();
+            sh.spacing = 8; sh.childForceExpandWidth = true; sh.childForceExpandHeight = true;
+            sh.childControlWidth = true; sh.childControlHeight = true;
+            steps.AddComponent<LayoutElement>().preferredHeight = 44;
+            foreach (int delta in new[] { -5, -1, +1, +5 })
+            {
+                int dd = delta;
+                var b = MakeButton(steps.transform, dd > 0 ? $"+{dd}" : dd.ToString(), BgCard, 44);
+                b.onClick.AddListener(() => { wage = Mathf.Max(0, wage + dd); Render(); });
+            }
+            var demand = MakeButton(panel.transform, $"Aligner sur sa demande ({d.desiredWagePerContract:N0} $)", BgInset, 40);
+            demand.onClick.AddListener(() => { wage = d.desiredWagePerContract; Render(); });
+
+            var end = MakeGO("End", panel.transform);
+            var eh = end.AddComponent<HorizontalLayoutGroup>();
+            eh.spacing = 8; eh.childForceExpandWidth = true; eh.childForceExpandHeight = true;
+            eh.childControlWidth = true; eh.childControlHeight = true;
+            end.AddComponent<LayoutElement>().preferredHeight = 46;
+            MakeButton(end.transform, "Annuler", ColDisabled, 46).onClick.AddListener(CloseWageEditor);
+            MakeButton(end.transform, "Valider", new Color(0x2E / 255f, 0x7D / 255f, 0x52 / 255f, 1f), 46)
+                .onClick.AddListener(() => { hr.SetWage(driverId, wage); CloseWageEditor(); });
+        }
+
+        private void CloseWageEditor()
+        {
+            if (_wageEditor != null) Destroy(_wageEditor);
+            _wageEditor = null;
         }
 
         // Construit le corps d'une fiche driver (identité + note + barres de stats), sans action.
@@ -351,7 +504,7 @@ namespace TransportManager.UI.Tabs
             idHlg.childForceExpandHeight = false;
             idHlg.childControlWidth = true;
             idHlg.childControlHeight = true;
-            idRow.AddComponent<LayoutElement>().preferredHeight = 48;
+            idRow.AddComponent<LayoutElement>().preferredHeight = 58;   // portrait 56 px
 
             BuildMonogram(idRow.transform, d, general);
 
@@ -362,7 +515,7 @@ namespace TransportManager.UI.Tabs
             nameCol.AddComponent<LayoutElement>().flexibleWidth = 1;
             var nameLbl = MakeTMP("Name", nameCol.transform, d.FullName, 16, FontStyles.Bold, TextPri);
             nameLbl.overflowMode = TextOverflowModes.Ellipsis; nameLbl.textWrappingMode = TextWrappingModes.NoWrap;
-            string nat = string.IsNullOrEmpty(d.nationality) ? "—" : d.nationality;
+            string nat = string.IsNullOrEmpty(d.nationality) ? "-" : d.nationality;
             MakeTMP("Sub", nameCol.transform, $"<color=#56607A>Niv.</color> {level}   <color=#3A3F4A>•</color>   {nat}", 12, FontStyles.Normal, TextSec);
 
             // ── Bloc note générale ──
@@ -375,28 +528,28 @@ namespace TransportManager.UI.Tabs
             return card;
         }
 
-        // Fiche driver grisée (emplacement libéré) : visible avec ses stats mais inaccessible.
-        // Un overlay sombre translucide la grise et bloque le clic ; libellé en bas.
-        private void BuildGreyedDriverCard(Transform parent, DriverInstance d)
+        // Emplacement vide (candidat déjà embauché) : pas de faux conducteur, juste l'info utile.
+        private void BuildEmptySlotCard(Transform parent, HrSystem hr)
         {
-            var card = BuildDriverCardBase(parent, d);
+            var card = MakeGO("EmptySlot", parent);
+            var img = card.AddComponent<Image>();
+            img.sprite = _sprR12; img.type = Image.Type.Sliced; img.color = new Color(1f, 1f, 1f, 0.03f);
+            var ol = card.AddComponent<Outline>();
+            ol.effectColor = Border; ol.effectDistance = new Vector2(1.2f, -1.2f);
+            var vlg = card.AddComponent<VerticalLayoutGroup>();
+            vlg.padding = new RectOffset(20, 20, 20, 20); vlg.spacing = 8;
+            vlg.childAlignment = TextAnchor.MiddleCenter;
+            vlg.childForceExpandWidth = true; vlg.childForceExpandHeight = false;
+            vlg.childControlWidth = true; vlg.childControlHeight = true;
 
-            var overlay = MakeGO("Overlay", card.transform);
-            overlay.AddComponent<LayoutElement>().ignoreLayout = true;
-            FillParent(overlay.GetComponent<RectTransform>());
-            var oImg = overlay.AddComponent<Image>();
-            oImg.sprite = _sprR12; oImg.type = Image.Type.Sliced;
-            oImg.color = new Color(0.07f, 0.08f, 0.10f, 0.55f);   // sombre translucide → « grisée »
-            oImg.raycastTarget = true;                            // bloque le clic sur la fiche dessous
-
-            var ovlg = overlay.AddComponent<VerticalLayoutGroup>();
-            ovlg.padding = new RectOffset(14, 14, 14, 16);
-            ovlg.childAlignment = TextAnchor.LowerCenter;
-            ovlg.childForceExpandWidth = true; ovlg.childControlWidth = true;
-            ovlg.childForceExpandHeight = false; ovlg.childControlHeight = true;
-
-            var msg = MakeTMP("Msg", overlay.transform, "Emplacement libre", 14, FontStyles.Bold, TextDim);
-            msg.alignment = TextAlignmentOptions.Center;
+            var t1 = MakeTMP("T1", card.transform, "Emplacement vide", 15, FontStyles.Bold, TextSec);
+            t1.alignment = TextAlignmentOptions.Center;
+            double sec = hr.SecondsUntilFreeRefresh();
+            string when = sec <= 0 ? "Nouveaux candidats disponibles : utilise « Actualiser »."
+                        : $"Nouveaux candidats dans {Mathf.FloorToInt((float)(sec / 3600))} h {Mathf.FloorToInt((float)(sec % 3600 / 60)):00}";
+            var t2 = MakeTMP("T2", card.transform, $"Ce candidat a été embauché.\n{when}", 12, FontStyles.Normal, TextDim);
+            t2.alignment = TextAlignmentOptions.Center;
+            t2.textWrappingMode = TextWrappingModes.Normal;
         }
 
         // Carte verrouillée : fond sombre opaque + bordure violette + compétence à débloquer.
@@ -443,12 +596,69 @@ namespace TransportManager.UI.Tabs
             s2.alignment = TextAlignmentOptions.Center;
         }
 
+        // ── Portraits des pilotes ──────────────────────────────────────────────────
+        // Banque d'illustrations Resources/UI/Drivers/<origine>_<genre>_<n>.png : le portrait suit
+        // le GENRE et l'ORIGINE du pilote (cf. DriverOrigins), et son id → toujours le même visage.
+        // Portraits disponibles par groupe (« fr_m », « mag_f »…), détectés dans Resources/UI/Drivers :
+        // on peut en ajouter autant qu'on veut sans toucher au code.
+        private static Dictionary<string, List<Texture2D>> _portraitPools;
+        private static readonly Dictionary<string, Sprite> _portraitCache = new Dictionary<string, Sprite>();
+
+        private static Dictionary<string, List<Texture2D>> PortraitPools()
+        {
+            if (_portraitPools != null) return _portraitPools;
+            _portraitPools = new Dictionary<string, List<Texture2D>>();
+            foreach (var t in Resources.LoadAll<Texture2D>("UI/Drivers"))
+            {
+                int cut = t.name.LastIndexOf('_');
+                if (cut <= 0) continue;
+                string pool = t.name.Substring(0, cut);
+                if (!_portraitPools.TryGetValue(pool, out var list)) _portraitPools[pool] = list = new List<Texture2D>();
+                list.Add(t);
+            }
+            foreach (var l in _portraitPools.Values) l.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
+            return _portraitPools;
+        }
+
+        public static Sprite DriverPortrait(DriverInstance d)
+        {
+            if (d == null) return null;
+            DriverOrigins.EnsureIdentity(d);   // pilote d'une ancienne sauvegarde
+            var pools = PortraitPools();
+            if (!pools.TryGetValue($"{d.origin}_{d.gender}", out var list) || list.Count == 0)
+                if (!pools.TryGetValue($"{DriverOrigins.EuWest}_{d.gender}", out list) || list.Count == 0) return null;
+
+            int h = 17;
+            foreach (char c in d.instanceId ?? "") h = unchecked(h * 31 + c);
+            var tex = list[(h & 0x7FFFFFFF) % list.Count];
+            if (_portraitCache.TryGetValue(tex.name, out var s)) return s;
+            s = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+            _portraitCache[tex.name] = s;
+            return s;
+        }
+
         private void BuildMonogram(Transform parent, DriverInstance d, float general)
         {
             var go = MakeGO("Mono", parent);
             var img = go.AddComponent<Image>();
             img.sprite = _sprR12; img.type = Image.Type.Sliced; img.color = BgInset;
             var le = go.AddComponent<LayoutElement>();
+
+            // Portrait si disponible (masqué aux coins arrondis), sinon initiales.
+            var portrait = DriverPortrait(d);
+            if (portrait != null)
+            {
+                le.preferredWidth = 56; le.minWidth = 56; le.preferredHeight = 56;
+                go.AddComponent<Mask>().showMaskGraphic = true;
+                var pic = MakeGO("Portrait", go.transform);
+                FillParent(pic.GetComponent<RectTransform>());
+                var picImg = pic.AddComponent<Image>();
+                picImg.sprite = portrait; picImg.preserveAspect = true; picImg.raycastTarget = false;
+                // Liseré à la couleur de la note générale.
+                var ol = go.AddComponent<Outline>();
+                ol.effectColor = TierColor(general); ol.effectDistance = new Vector2(1.5f, -1.5f);
+                return;
+            }
             le.preferredWidth = 44; le.minWidth = 44; le.preferredHeight = 44;
 
             string initials = $"{Initial(d.firstName)}{Initial(d.lastName)}";
@@ -535,15 +745,17 @@ namespace TransportManager.UI.Tabs
             if (innerWidth <= 1f) return;
             int cols = Mathf.Max(1, Mathf.FloorToInt((innerWidth + GRID_SPACING) / (MIN_CARD_W + GRID_SPACING)));
             float cell = (innerWidth - GRID_SPACING * (cols - 1)) / cols;
-            ApplyGrid(_crewGrid, cols, cell);
-            ApplyGrid(_poolGrid, cols, cell);
+            ApplyGrid(_crewGrid, cols, cell, _crewCardH);
+            ApplyGrid(_poolGrid, cols, cell, CARD_H);
         }
 
-        private static void ApplyGrid(GridLayoutGroup grid, int cols, float cellW)
+        private float _crewCardH = CARD_H + 40f;
+
+        private static void ApplyGrid(GridLayoutGroup grid, int cols, float cellW, float cellH)
         {
             if (grid == null) return;
             grid.constraintCount = cols;
-            grid.cellSize = new Vector2(cellW, CARD_H);
+            grid.cellSize = new Vector2(cellW, cellH);
         }
 
         // ── Lifecycle / refresh ──────────────────────────────────────────────────
@@ -555,6 +767,7 @@ namespace TransportManager.UI.Tabs
             GameEvents.OnDriverResigned += OnDriverChanged;
             GameEvents.OnDriverAssigned += OnDriverChanged;
             GameEvents.OnDriverXpChanged += OnDriverChanged;
+            GameEvents.OnDriverWageChanged += OnDriverChanged;
             Refresh();
             _refreshTicker = StartCoroutine(RefreshTicker());
         }
@@ -566,6 +779,7 @@ namespace TransportManager.UI.Tabs
             GameEvents.OnDriverResigned -= OnDriverChanged;
             GameEvents.OnDriverAssigned -= OnDriverChanged;
             GameEvents.OnDriverXpChanged -= OnDriverChanged;
+            GameEvents.OnDriverWageChanged -= OnDriverChanged;
             if (_refreshTicker != null) { StopCoroutine(_refreshTicker); _refreshTicker = null; }
         }
 
@@ -653,6 +867,9 @@ namespace TransportManager.UI.Tabs
             if (_crewCount) _crewCount.text = crew.Count.ToString();
             if (_poolCount) _poolCount.text = pool.Count.ToString();
 
+            // Salaire (+40) ; une demande d'augmentation ajoute un encart (+96).
+            _crewCardH = CARD_H + 40f + (crew.Any(HrSystem.HasRaiseRequest) ? 96f : 0f);
+
             if (crew.Count == 0)
                 AddEmptyNote(_crewGridTf, "Aucun conducteur embauché.");
             else
@@ -664,23 +881,13 @@ namespace TransportManager.UI.Tabs
             // jusqu'au prochain refresh.
             int emptySlots = Mathf.Max(0, hr.CurrentPoolSize - pool.Count);
             for (int i = 0; i < emptySlots; i++)
-                BuildGreyedDriverCard(_poolGridTf, EmptyPreview(i));
+                BuildEmptySlotCard(_poolGridTf, hr);
 
             // Un emplacement verrouillé par palier de taille de vivier non débloqué.
             foreach (var node in hr.LockedPoolNodes())
                 BuildLockedCard(_poolGridTf, node.title);
 
             _lastWidth = -1f; // force recompute des colonnes au prochain Update
-        }
-
-        // Drivers « preview » mis en cache : stables entre deux Refresh (pas de clignotement
-        // quand on embauche/licencie). Purement décoratifs (non stockés dans la sauvegarde).
-        private readonly List<DriverInstance> _emptyPreviews = new List<DriverInstance>();
-
-        private DriverInstance EmptyPreview(int index)
-        {
-            while (_emptyPreviews.Count <= index) _emptyPreviews.Add(DriverGenerator.Generate());
-            return _emptyPreviews[index];
         }
 
         private void AddEmptyNote(Transform gridParent, string message)
@@ -741,19 +948,6 @@ namespace TransportManager.UI.Tabs
             var go = new GameObject(name, typeof(RectTransform));
             go.transform.SetParent(parent, false);
             return go;
-        }
-
-        // Image de fond plein écran (RawImage : marche quel que soit le type d'import de la texture).
-        private void BuildPageBackground(string texturePath)
-        {
-            var tex = Resources.Load<Texture2D>(texturePath);
-            if (tex == null) return;
-            var go = MakeGO("PageBackground", transform);
-            go.transform.SetAsFirstSibling();
-            FillParent(go.GetComponent<RectTransform>());
-            var raw = go.AddComponent<RawImage>();
-            raw.texture       = tex;
-            raw.raycastTarget = false;
         }
 
         private static Image MakeImg(string name, Transform parent, Color color)

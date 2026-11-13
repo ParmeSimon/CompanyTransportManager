@@ -64,8 +64,7 @@ namespace TransportManager.UI.Daily
             canvas.sortingOrder = 520;
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-            scaler.matchWidthOrHeight  = 0.5f;
+            TransportManager.Core.UiScale.Configure(scaler);
             gameObject.AddComponent<GraphicRaycaster>();
 
             var overlay = MakeImg("Overlay", transform, BgOverlay);
@@ -140,7 +139,7 @@ namespace TransportManager.UI.Daily
             Label(card.transform, $"Tu as fini <b>#{_daily.LeaguePendingRank}</b> de ta ligue la semaine dernière.", 12.5f, TextSec, false, TextAlignmentOptions.MidlineLeft);
 
             var rewardRow = Row(card.transform, 8, 32);
-            string reward = $"+{_daily.LeaguePendingDollars:N0} $" + (_daily.LeaguePendingGold > 0 ? $"    +{_daily.LeaguePendingGold} ◆" : "");
+            string reward = $"+{_daily.LeaguePendingDollars:N0} $" + (_daily.LeaguePendingGold > 0 ? $"    +{_daily.LeaguePendingGold} lingots" : "");
             var rl = Label(rewardRow, reward, 16, Gold, true, TextAlignmentOptions.MidlineLeft);
             rl.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
             var btn = Button(rewardRow, "Récupérer", Green, 38);
@@ -213,7 +212,7 @@ namespace TransportManager.UI.Daily
 
             Label(cell.transform, $"J{day}", 11, past ? TextMuted : TextSec, false, TextAlignmentOptions.Center);
             Label(cell.transform, ShortReward(kind, amount), 13, day == 7 ? Gold : TextPri, true, TextAlignmentOptions.Center);
-            if (past) Label(cell.transform, "✓", 11, Green, true, TextAlignmentOptions.Center);
+            if (past) Label(cell.transform, "OK", 11, Green, true, TextAlignmentOptions.Center);
         }
 
         // ── Missions ────────────────────────────────────────────────────────────────
@@ -224,7 +223,7 @@ namespace TransportManager.UI.Daily
             var top = Row(card.transform, 8, 22);
             var lbl = Label(top, DailySystem.MissionLabel(m), 15, TextPri, true, TextAlignmentOptions.MidlineLeft);
             lbl.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
-            var rew = Label(top, DailySystem.RewardLabel(m.rewardKind, m.rewardAmount), 14,
+            var rew = Label(top, DailySystem.RewardLabel(m.rewardKind, DailySystem.EffectiveMissionReward(m.rewardKind, m.rewardAmount)), 14,
                             m.rewardKind == "skill" ? Blue : m.rewardKind == "ingots" ? Gold : Green, true, TextAlignmentOptions.MidlineRight);
             rew.gameObject.AddComponent<LayoutElement>().preferredWidth = 96;
 
@@ -245,7 +244,7 @@ namespace TransportManager.UI.Daily
             prog.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
 
             bool complete = DailySystem.IsComplete(m);
-            string txt = m.claimed ? "Réclamé ✓" : complete ? "Récupérer" : "En cours";
+            string txt = m.claimed ? "Réclamé" : complete ? "Récupérer" : "En cours";
             Color32 col = m.claimed ? BgInset : complete ? Green : BgInset;
             var btn = Button(bottom, txt, col, 36);
             btn.gameObject.GetComponent<LayoutElement>().preferredWidth = 150;
@@ -259,7 +258,7 @@ namespace TransportManager.UI.Daily
         private static string ShortReward(string kind, int amount) => kind switch
         {
             "dollars" => amount >= 1000 ? $"{amount / 1000f:0.#}k$" : $"{amount}$",
-            "ingots"  => $"{amount}◆",
+            "ingots"  => $"{amount} lingots",
             "skill"   => $"{amount}pt",
             _         => amount.ToString(),
         };

@@ -46,6 +46,8 @@ namespace TransportManager.Systems.Social
             for (int i = 0; i < LeagueCount; i++) if (km >= LeagueMin[i]) idx = i;
             return idx;
         }
+        /// Km hebdo minimum pour entrer dans la ligue idx (barre de progression vers la suivante).
+        public static long LeagueMinKm(int idx) => LeagueMin[Mathf.Clamp(idx, 0, LeagueCount - 1)];
         public static string LeagueName(int idx)  => LeagueNames[Mathf.Clamp(idx, 0, LeagueCount - 1)];
         public static Color32 LeagueColor(int idx) => LeagueColors[Mathf.Clamp(idx, 0, LeagueCount - 1)];
 

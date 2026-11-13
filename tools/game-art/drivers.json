@@ -1,0 +1,514 @@
+{
+  "style": "Photorealistic professional head and shoulders portrait photograph of a fictional, ordinary-looking truck driver looking at the camera, friendly natural expression, wearing a dark work jacket with a blue collar. Natural skin texture, realistic details, 85mm lens, soft studio lighting, plain dark slate blue studio backdrop.",
+  "negative": "cartoon, anime, illustration, painting, drawing, 3d render, cgi, caricature, text, letters, logo, watermark, hands, multiple people, cropped head, blurry, frame, border, white background, celebrity, famous person, politician, wound, scar, blood, bruise, cut, injury, text, lettering, logo",
+  "aspect": "1:1",
+  "removeBackground": false,
+  "fit": {
+    "w": 256,
+    "h": 256,
+    "pad": 0
+  },
+  "installDir": "../../Assets/Resources/UI/Drivers",
+  "images": [
+    {
+      "name": "eu_west_m_1",
+      "seed": 9200,
+      "description": "A French man in his forties with messy dark hair, with a thick moustache."
+    },
+    {
+      "name": "eu_west_m_2",
+      "seed": 8201,
+      "description": "A French man in his fifties with a dark buzz cut, with a thick moustache."
+    },
+    {
+      "name": "eu_west_m_3",
+      "seed": 8202,
+      "description": "A French man in his thirties with a shaved head, with a goatee, wearing glasses."
+    },
+    {
+      "name": "eu_west_m_4",
+      "seed": 8203,
+      "description": "A French man in his twenties with receding greying hair, with a thick moustache, wearing a cap."
+    },
+    {
+      "name": "eu_west_m_5",
+      "seed": 15981,
+      "description": "A French man in his thirties with messy dark hair, clean-shaven, with a small scar on the chin."
+    },
+    {
+      "name": "eu_west_m_6",
+      "seed": 8205,
+      "description": "A French man in his sixties with curly black hair, clean-shaven."
+    },
+    {
+      "name": "eu_west_m_7",
+      "seed": 8206,
+      "description": "A French man in his fifties with short brown hair, with a thick moustache."
+    },
+    {
+      "name": "eu_west_m_8",
+      "seed": 9207,
+      "description": "A French man in his twenties with messy dark hair, clean-shaven."
+    },
+    {
+      "name": "eu_west_m_9",
+      "seed": 8208,
+      "description": "A French man in his sixties with receding greying hair, with light stubble."
+    },
+    {
+      "name": "eu_west_m_10",
+      "seed": 8209,
+      "description": "A French man in his twenties with a dark buzz cut, clean-shaven."
+    },
+    {
+      "name": "eu_west_m_11",
+      "seed": 8210,
+      "description": "A French man in his thirties with short blond hair, with a full beard."
+    },
+    {
+      "name": "eu_west_m_12",
+      "seed": 8211,
+      "description": "A French man in his fifties with receding greying hair, clean-shaven, with a small scar on the chin."
+    },
+    {
+      "name": "eu_west_f_1",
+      "seed": 8212,
+      "description": "A French woman in her forties with short grey hair."
+    },
+    {
+      "name": "eu_west_f_2",
+      "seed": 8213,
+      "description": "A French woman in her fifties with brown hair in a ponytail."
+    },
+    {
+      "name": "eu_west_f_3",
+      "seed": 8214,
+      "description": "A French woman in her forties with short grey hair."
+    },
+    {
+      "name": "eu_west_f_4",
+      "seed": 8215,
+      "description": "A French woman in her sixties with a short pixie cut."
+    },
+    {
+      "name": "eu_west_f_5",
+      "seed": 8216,
+      "description": "A French woman in her forties with shoulder-length chestnut hair, wearing a cap."
+    },
+    {
+      "name": "eu_west_f_6",
+      "seed": 8217,
+      "description": "A French woman in her fifties with short grey hair."
+    },
+    {
+      "name": "eu_west_f_7",
+      "seed": 8218,
+      "description": "A French woman in her sixties with short grey hair."
+    },
+    {
+      "name": "eu_west_f_8",
+      "seed": 9219,
+      "description": "A French woman in her fifties with brown hair in a ponytail, wearing glasses."
+    },
+    {
+      "name": "eu_west_f_9",
+      "seed": 9220,
+      "description": "A French woman in her sixties with long dark hair, with a small scar on the chin."
+    },
+    {
+      "name": "eu_west_f_10",
+      "seed": 8221,
+      "description": "A French woman in her sixties with a short pixie cut."
+    },
+    {
+      "name": "africa_north_m_1",
+      "seed": 8222,
+      "description": "A North African man in his sixties with receding greying hair, with a thick moustache."
+    },
+    {
+      "name": "africa_north_m_2",
+      "seed": 8223,
+      "description": "A North African man in his twenties with a shaved head, clean-shaven."
+    },
+    {
+      "name": "africa_north_m_3",
+      "seed": 8224,
+      "description": "A North African man in his sixties with short brown hair, with a goatee, wearing glasses."
+    },
+    {
+      "name": "africa_north_m_4",
+      "seed": 8225,
+      "description": "A North African man in his fifties with curly black hair, with a short beard, with a small scar on the chin."
+    },
+    {
+      "name": "africa_north_m_5",
+      "seed": 9226,
+      "description": "A North African man in his thirties with short red hair, with a goatee, wearing glasses."
+    },
+    {
+      "name": "africa_north_m_6",
+      "seed": 8227,
+      "description": "A North African man in his twenties with short brown hair, with light stubble."
+    },
+    {
+      "name": "africa_north_m_7",
+      "seed": 9228,
+      "description": "A North African man in his twenties with messy dark hair, with light stubble."
+    },
+    {
+      "name": "africa_north_m_8",
+      "seed": 8229,
+      "description": "A North African man in his fifties with short blond hair, with a short beard."
+    },
+    {
+      "name": "africa_north_f_1",
+      "seed": 8230,
+      "description": "A North African woman in her fifties with curly black hair, wearing a cap."
+    },
+    {
+      "name": "africa_north_f_2",
+      "seed": 8231,
+      "description": "A North African woman in her sixties with short grey hair."
+    },
+    {
+      "name": "africa_north_f_3",
+      "seed": 16009,
+      "description": "A North African woman in her sixties with a short pixie cut."
+    },
+    {
+      "name": "africa_north_f_4",
+      "seed": 17010,
+      "description": "A North African woman in her thirties with a short pixie cut, wearing glasses."
+    },
+    {
+      "name": "africa_north_f_5",
+      "seed": 8234,
+      "description": "A North African woman in her forties with brown hair in a ponytail, wearing glasses."
+    },
+    {
+      "name": "africa_north_f_6",
+      "seed": 8235,
+      "description": "A North African woman in her forties with brown hair in a ponytail."
+    },
+    {
+      "name": "eu_east_m_1",
+      "seed": 8236,
+      "description": "A East European man in his forties with short red hair, clean-shaven."
+    },
+    {
+      "name": "eu_east_m_2",
+      "seed": 16014,
+      "description": "A East European man in his twenties with grey hair, with light stubble, with a small scar on the chin."
+    },
+    {
+      "name": "eu_east_m_3",
+      "seed": 8238,
+      "description": "A East European man in his fifties with short brown hair, with a full beard."
+    },
+    {
+      "name": "eu_east_m_4",
+      "seed": 8239,
+      "description": "A East European man in his fifties with curly black hair, with light stubble."
+    },
+    {
+      "name": "eu_east_m_5",
+      "seed": 8240,
+      "description": "A East European man in his thirties with grey hair, with a short beard."
+    },
+    {
+      "name": "eu_east_m_6",
+      "seed": 8241,
+      "description": "A East European man in his forties with receding greying hair, with light stubble, with a small scar on the chin."
+    },
+    {
+      "name": "eu_east_m_7",
+      "seed": 8242,
+      "description": "A East European man in his twenties with a shaved head, with a thick moustache."
+    },
+    {
+      "name": "eu_east_m_8",
+      "seed": 9243,
+      "description": "A East European man in his fifties with curly black hair, with a goatee, wearing a cap."
+    },
+    {
+      "name": "eu_north_m_1",
+      "seed": 9244,
+      "description": "A German man in his forties with curly black hair, with a full beard, wearing glasses."
+    },
+    {
+      "name": "eu_north_m_2",
+      "seed": 16022,
+      "description": "A German man in his twenties with a shaved head, with a thick moustache, with a small scar on the chin."
+    },
+    {
+      "name": "eu_north_m_3",
+      "seed": 9246,
+      "description": "A German man in his forties with grey hair, with light stubble."
+    },
+    {
+      "name": "eu_north_m_4",
+      "seed": 8247,
+      "description": "A German man in his forties with short blond hair, clean-shaven."
+    },
+    {
+      "name": "eu_north_m_5",
+      "seed": 8248,
+      "description": "A German man in his thirties with receding greying hair, with a goatee."
+    },
+    {
+      "name": "eu_north_m_6",
+      "seed": 8249,
+      "description": "A German man in his thirties with messy dark hair, with a thick moustache."
+    },
+    {
+      "name": "eu_north_m_7",
+      "seed": 8250,
+      "description": "A German man in his fifties with short blond hair, clean-shaven."
+    },
+    {
+      "name": "eu_north_m_8",
+      "seed": 8251,
+      "description": "A German man in his thirties with short blond hair, with a goatee."
+    },
+    {
+      "name": "eu_north_f_1",
+      "seed": 8252,
+      "description": "A German woman in her sixties with brown hair in a ponytail, wearing glasses."
+    },
+    {
+      "name": "eu_north_f_2",
+      "seed": 9253,
+      "description": "A German woman in her fifties with short grey hair."
+    },
+    {
+      "name": "eu_north_f_3",
+      "seed": 8254,
+      "description": "A German woman in her forties with a short pixie cut, with a small scar on the chin."
+    },
+    {
+      "name": "eu_north_f_4",
+      "seed": 8255,
+      "description": "A German woman in her fifties with short grey hair, wearing glasses."
+    },
+    {
+      "name": "eu_north_f_5",
+      "seed": 9000,
+      "description": "A Northern European (Scandinavian or German) woman in her sixties with a bob haircut."
+    },
+    {
+      "name": "eu_north_f_6",
+      "seed": 9001,
+      "description": "A Northern European (Scandinavian or German) woman in her fifties with short grey hair."
+    },
+    {
+      "name": "eu_east_f_1",
+      "seed": 9002,
+      "description": "A Eastern European woman in her sixties with a short pixie cut."
+    },
+    {
+      "name": "eu_east_f_2",
+      "seed": 9003,
+      "description": "A Eastern European woman in her thirties with shoulder-length hair, wearing a cap."
+    },
+    {
+      "name": "eu_east_f_3",
+      "seed": 9004,
+      "description": "A Eastern European woman in her forties with braided hair, wearing glasses."
+    },
+    {
+      "name": "eu_east_f_4",
+      "seed": 9005,
+      "description": "A Eastern European woman in her twenties with hair in a ponytail."
+    },
+    {
+      "name": "eu_east_f_5",
+      "seed": 9006,
+      "description": "A Eastern European woman in her thirties with curly hair, wearing a cap."
+    },
+    {
+      "name": "eu_east_f_6",
+      "seed": 9007,
+      "description": "A Eastern European woman in her twenties with a bob haircut."
+    },
+    {
+      "name": "africa_sub_m_1",
+      "seed": 9008,
+      "description": "A Black West African or East African man in his fifties with a shaved head, clean-shaven."
+    },
+    {
+      "name": "africa_sub_m_2",
+      "seed": 9009,
+      "description": "A Black West African or East African man in his twenties with a buzz cut, with a short beard."
+    },
+    {
+      "name": "africa_sub_m_3",
+      "seed": 9010,
+      "description": "A Black West African or East African man in his twenties with a buzz cut, with light stubble."
+    },
+    {
+      "name": "africa_sub_m_4",
+      "seed": 9011,
+      "description": "A Black West African or East African man in his thirties with wavy hair, clean-shaven."
+    },
+    {
+      "name": "africa_sub_m_5",
+      "seed": 9012,
+      "description": "A Black West African or East African man in his forties with short dark hair, clean-shaven."
+    },
+    {
+      "name": "africa_sub_m_6",
+      "seed": 9013,
+      "description": "A Black West African or East African man in his twenties with messy dark hair, with a moustache."
+    },
+    {
+      "name": "africa_sub_f_1",
+      "seed": 9014,
+      "description": "A Black West African or East African woman in her sixties with short grey hair."
+    },
+    {
+      "name": "africa_sub_f_2",
+      "seed": 9015,
+      "description": "A Black West African or East African woman in her fifties with a short pixie cut, wearing a cap."
+    },
+    {
+      "name": "africa_sub_f_3",
+      "seed": 9016,
+      "description": "A Black West African or East African woman in her twenties with braided hair."
+    },
+    {
+      "name": "africa_sub_f_4",
+      "seed": 9017,
+      "description": "A Black West African or East African woman in her thirties with hair tied back, wearing glasses."
+    },
+    {
+      "name": "africa_sub_f_5",
+      "seed": 9018,
+      "description": "A Black West African or East African woman in her twenties with long dark hair."
+    },
+    {
+      "name": "africa_sub_f_6",
+      "seed": 9019,
+      "description": "A Black West African or East African woman in her sixties with long dark hair, wearing glasses."
+    },
+    {
+      "name": "asia_east_m_1",
+      "seed": 9020,
+      "description": "A East Asian (Chinese, Japanese, Korean or Vietnamese) man in his forties with a buzz cut, clean-shaven."
+    },
+    {
+      "name": "asia_east_m_2",
+      "seed": 9021,
+      "description": "A East Asian (Chinese, Japanese, Korean or Vietnamese) man in his thirties with curly black hair, with a full beard."
+    },
+    {
+      "name": "asia_east_m_3",
+      "seed": 9022,
+      "description": "A East Asian (Chinese, Japanese, Korean or Vietnamese) man in his twenties with grey hair, with a full beard."
+    },
+    {
+      "name": "asia_east_m_4",
+      "seed": 9023,
+      "description": "A East Asian (Chinese, Japanese, Korean or Vietnamese) man in his forties with receding greying hair, with a goatee, wearing a cap."
+    },
+    {
+      "name": "asia_east_m_5",
+      "seed": 9024,
+      "description": "A East Asian (Chinese, Japanese, Korean or Vietnamese) man in his forties with neatly combed hair, clean-shaven."
+    },
+    {
+      "name": "asia_east_m_6",
+      "seed": 9025,
+      "description": "A East Asian (Chinese, Japanese, Korean or Vietnamese) man in his twenties with receding greying hair, with a goatee."
+    },
+    {
+      "name": "asia_east_f_1",
+      "seed": 9026,
+      "description": "A East Asian (Chinese, Japanese, Korean or Vietnamese) woman in her forties with hair tied back."
+    },
+    {
+      "name": "asia_east_f_2",
+      "seed": 9027,
+      "description": "A East Asian (Chinese, Japanese, Korean or Vietnamese) woman in her sixties with long dark hair."
+    },
+    {
+      "name": "asia_east_f_3",
+      "seed": 9028,
+      "description": "A East Asian (Chinese, Japanese, Korean or Vietnamese) woman in her thirties with a short pixie cut."
+    },
+    {
+      "name": "asia_east_f_4",
+      "seed": 9029,
+      "description": "A East Asian (Chinese, Japanese, Korean or Vietnamese) woman in her fifties with a bob haircut, wearing glasses."
+    },
+    {
+      "name": "asia_east_f_5",
+      "seed": 9030,
+      "description": "A East Asian (Chinese, Japanese, Korean or Vietnamese) woman in her forties with braided hair."
+    },
+    {
+      "name": "asia_east_f_6",
+      "seed": 9031,
+      "description": "A East Asian (Chinese, Japanese, Korean or Vietnamese) woman in her sixties with shoulder-length hair."
+    },
+    {
+      "name": "asia_south_m_1",
+      "seed": 9032,
+      "description": "A South Asian (Indian, Pakistani or Bangladeshi) man in his sixties with curly black hair, with light stubble."
+    },
+    {
+      "name": "asia_south_m_2",
+      "seed": 9033,
+      "description": "A South Asian (Indian, Pakistani or Bangladeshi) man in his forties with receding greying hair, clean-shaven."
+    },
+    {
+      "name": "asia_south_m_3",
+      "seed": 9034,
+      "description": "A South Asian (Indian, Pakistani or Bangladeshi) man in his forties with short dark hair, with a full beard."
+    },
+    {
+      "name": "asia_south_m_4",
+      "seed": 9035,
+      "description": "A South Asian (Indian, Pakistani or Bangladeshi) man in his fifties with grey hair, with a goatee."
+    },
+    {
+      "name": "asia_south_m_5",
+      "seed": 9036,
+      "description": "A South Asian (Indian, Pakistani or Bangladeshi) man in his sixties with short hair, with a moustache."
+    },
+    {
+      "name": "asia_south_m_6",
+      "seed": 9037,
+      "description": "A South Asian (Indian, Pakistani or Bangladeshi) man in his sixties with grey hair, with light stubble."
+    },
+    {
+      "name": "asia_south_f_1",
+      "seed": 9038,
+      "description": "A South Asian (Indian, Pakistani or Bangladeshi) woman in her thirties with short grey hair."
+    },
+    {
+      "name": "asia_south_f_2",
+      "seed": 9039,
+      "description": "A South Asian (Indian, Pakistani or Bangladeshi) woman in her fifties with braided hair."
+    },
+    {
+      "name": "asia_south_f_3",
+      "seed": 9040,
+      "description": "A South Asian (Indian, Pakistani or Bangladeshi) woman in her thirties with a short pixie cut."
+    },
+    {
+      "name": "asia_south_f_4",
+      "seed": 9041,
+      "description": "A South Asian (Indian, Pakistani or Bangladeshi) woman in her fifties with a bob haircut."
+    },
+    {
+      "name": "asia_south_f_5",
+      "seed": 9042,
+      "description": "A South Asian (Indian, Pakistani or Bangladeshi) woman in her fifties with hair tied back."
+    },
+    {
+      "name": "asia_south_f_6",
+      "seed": 9043,
+      "description": "A South Asian (Indian, Pakistani or Bangladeshi) woman in her sixties with a bob haircut."
+    }
+  ]
+}

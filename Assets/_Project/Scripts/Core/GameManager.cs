@@ -108,6 +108,10 @@ namespace TransportManager.Core
             // Cours du carburant réel (identique pour tous) : récupération asynchrone, repli local si indispo.
             Systems.Economy.RealFuelMarket.EnsureFresh();
 
+            // Notifications : enregistré AVANT le rattrapage hors-ligne pour journaliser ce qui
+            // s'est passé pendant que le jeu était fermé (avec l'heure réelle des événements).
+            ServiceLocator.Register(new Systems.Notifications.NotificationSystem(Save));
+
             ServiceLocator.Get<HrSystem>().EnsureRecruitmentPool();
             ServiceLocator.Get<OfflineTimeService>().ApplyOfflineProgress();
 
@@ -164,7 +168,7 @@ namespace TransportManager.Core
         // Débloque d'office la chaîne de skills menant aux tournées multi-arrêts (jeu de test).
         private void SeedUnlockMultiStop()
         {
-            string[] chain = { "depot_root", "depot_a", "depot_a2", "depot_a2a", "depot_tour" };
+            string[] chain = { "com_root", "depot_geo1", "depot_tour" };   // chaîne Commercial → tournées
             var unlocked = Save.skillTree.unlockedNodeIds;
             foreach (var id in chain)
                 if (!unlocked.Contains(id)) unlocked.Add(id);
@@ -253,6 +257,19 @@ namespace TransportManager.Core
         }
 
         public void SaveNow() => SaveSystem.Save(Save);
+
+        // Boucle de jeu : une fois par seconde, on termine les livraisons de carburant et
+        // les contrats arrivés à terme (aussi au retour d'arrière-plan, l'horloge étant réelle).
+        private float _nextTickTime;
+
+        private void Update()
+        {
+            if (Save == null || UnityEngine.Time.unscaledTime < _nextTickTime) return;
+            _nextTickTime = UnityEngine.Time.unscaledTime + 1f;
+
+            var offline = ServiceLocator.Get<OfflineTimeService>();
+            if (offline != null && offline.Tick()) SaveNow();
+        }
 
         private void OnApplicationPause(bool pause)
         {

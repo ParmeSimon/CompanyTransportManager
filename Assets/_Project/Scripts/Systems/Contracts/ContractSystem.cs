@@ -46,7 +46,8 @@ namespace TransportManager.Systems.Contracts
             var shop = ServiceLocator.Get<Systems.Shop.ShopSystem>();
             if (shop == null || !shop.TryConsumeEnergyDrink()) return false;
 
-            driver.currentFatigue = Mathf.Max(0f, driver.currentFatigue - EnergyDrinkFatigueRelief);
+            float relief = EnergyDrinkFatigueRelief * (1f + SkillTreeSystem.PctOf(SkillEffectType.EnergyDrinkBoost));
+            bool onTrip = false;
 
             // Annule l'accident programmé du contrat en cours de ce conducteur.
             var fleet = ServiceLocator.Get<FleetSystem>();
@@ -60,7 +61,14 @@ namespace TransportManager.Systems.Contracts
                 c.scheduledAccidentRepairCost   = 0;
                 c.scheduledAccidentDescription  = null;
                 c.energyDrinkUsed               = true;
+                // La fatigue chute MAINTENANT (pas avant le départ, sinon les km l'annulent).
+                long total = c.completionTimeUtcTicks - c.startTimeUtcTicks;
+                c.energyDrinkProgress = total > 0
+                    ? Mathf.Clamp01((float)(DateTime.UtcNow.Ticks - c.startTimeUtcTicks) / total) : 1f;
+                c.energyDrinkRelief   = relief;
+                onTrip = true;
             }
+            if (!onTrip) driver.currentFatigue = Mathf.Max(0f, driver.currentFatigue - relief);
 
             GameEvents.RaiseDriverXpChanged(driver);   // rafraîchit les vues conducteur/flotte
             GameManager.Instance?.SaveNow();
@@ -94,7 +102,7 @@ namespace TransportManager.Systems.Contracts
             if (driver != null) consumption *= driver.stats.FuelConsumptionMultiplier;
             consumption *= (1f - (ServiceLocator.Get<SkillTreeSystem>()?.Pct(SkillEffectType.FuelConsumptionReduction) ?? 0f));
             if (consumption <= 0f) return false;
-            float maxRange = data.fuelTankCapacityLiters * 100f / consumption;
+            float maxRange = data.TankCapacity * 100f / consumption;
             return maxRange >= contract.distanceKm;
         }
 
@@ -128,7 +136,7 @@ namespace TransportManager.Systems.Contracts
             float effectiveConsumption = data.fuelConsumptionLPer100Km * driver.stats.FuelConsumptionMultiplier
                 * (1f - (ServiceLocator.Get<SkillTreeSystem>()?.Pct(SkillEffectType.FuelConsumptionReduction) ?? 0f));
             if (effectiveSpeed <= 0f || effectiveConsumption <= 0f) return null;
-            float effectiveMaxRange = data.fuelTankCapacityLiters * 100f / effectiveConsumption;
+            float effectiveMaxRange = data.TankCapacity * 100f / effectiveConsumption;
             if (effectiveMaxRange < definition.distanceKm) return null;
 
             float fuelNeeded = definition.distanceKm / 100f * effectiveConsumption;
@@ -144,7 +152,8 @@ namespace TransportManager.Systems.Contracts
             DateTime completion = now.AddSeconds(durationSeconds);
 
             // Délai de livraison (E1) : rythme exigé. Un véhicule lent (gros convoi) peut le rater.
-            float deadlineSeconds = definition.distanceKm / DeadlineSpeedKmh * 3600f;
+            float deadlineSeconds = definition.distanceKm / DeadlineSpeedKmh * 3600f
+                                    * (1f + SkillTreeSystem.PctOf(SkillEffectType.DeadlineTimeBonus));
             DateTime deadline = now.AddSeconds(deadlineSeconds);
 
             var instance = new ContractInstance
@@ -182,14 +191,18 @@ namespace TransportManager.Systems.Contracts
             // L'accident est vérifié en priorité — il peut interrompre le trajet avant la fin.
             if (contract.IsAccidentDue)
             {
-                FinalizeAccident(contract, data);
+                Notifications.NotificationSystem.ContextTicks = contract.scheduledAccidentTimeTicks;
+                try { FinalizeAccident(contract, data); }
+                finally { Notifications.NotificationSystem.ContextTicks = 0; }
                 _save.activeContracts.RemoveAt(idx);
                 return true;
             }
 
             if (!contract.IsReadyToComplete) return false;
 
-            Finalize(contract, data);
+            Notifications.NotificationSystem.ContextTicks = Math.Min(contract.completionTimeUtcTicks, DateTime.UtcNow.Ticks);
+            try { Finalize(contract, data); }
+            finally { Notifications.NotificationSystem.ContextTicks = 0; }
             _save.activeContracts.RemoveAt(idx);
             return true;
         }
@@ -206,7 +219,9 @@ namespace TransportManager.Systems.Contracts
             var contract = _save.activeContracts[idx];
             if (contract.status != ContractStatus.InProgress || !contract.IsAccidentDue) return false;
 
-            FinalizeAccident(contract, data);
+            Notifications.NotificationSystem.ContextTicks = contract.scheduledAccidentTimeTicks;
+            try { FinalizeAccident(contract, data); }
+            finally { Notifications.NotificationSystem.ContextTicks = 0; }
             _save.activeContracts.RemoveAt(idx);
             return true;
         }
@@ -230,12 +245,14 @@ namespace TransportManager.Systems.Contracts
         {
             var wallet = ServiceLocator.Get<WalletSystem>();
             float rewardBonus = ServiceLocator.Get<SkillTreeSystem>()?.Pct(SkillEffectType.ContractRewardBonus) ?? 0f;
-            float eventMult   = TransportManager.Systems.Events.LiveEvents.RewardMultiplier;   // bonus événement du jour
+            // Bonus de l'événement du jour, amplifié par le skill « Opportuniste ».
+            float eventBonus  = TransportManager.Systems.Events.LiveEvents.RewardMultiplier - 1f;
+            float eventMult   = 1f + eventBonus * (1f + SkillTreeSystem.PctOf(SkillEffectType.LiveEventBonus));
 
             // Ponctualité (E1) : livré avant le délai → bonus ; en retard → pénalité.
             bool onTime = contract.deadlineTimeUtcTicks <= 0
                           || contract.completionTimeUtcTicks <= contract.deadlineTimeUtcTicks;
-            float punctualMult = onTime ? 1.15f : 0.80f;
+            float punctualMult = onTime ? 1.15f + SkillTreeSystem.PctOf(SkillEffectType.OnTimeBonusIncrease) : 0.80f;
 
             // Réputation (E4) : bonus de récompense par palier.
             var reputation = ServiceLocator.Get<ReputationSystem>();
@@ -249,6 +266,7 @@ namespace TransportManager.Systems.Contracts
 
             var fleet   = ServiceLocator.Get<FleetSystem>();
             var vehicle = fleet?.GetById(contract.assignedVehicleInstanceId);
+            string driverName = "Ton conducteur";
 
             if (vehicle != null)
             {
@@ -265,15 +283,25 @@ namespace TransportManager.Systems.Contracts
                     var driver = hr?.GetHired(vehicle.assignedDriverInstanceId);
                     if (driver != null && hr != null)
                     {
-                        AccidentSystem.ApplyFatigueCycle(driver, contract.startTimeUtcTicks, contract.definition.distanceKm);
+                        driverName = driver.FullName;
+                        AccidentSystem.ApplyFatigueCycle(driver, contract.startTimeUtcTicks, contract.DriveHours,
+                            contract.energyDrinkProgress, contract.energyDrinkRelief);
                         bool resigned = hr.ProcessPostContract(driver, contract.definition.distanceKm);
-                        if (resigned) Debug.Log($"[Contract] {driver.FullName} a démissionné après livraison.");
+                        if (resigned)
+                        {
+                            Debug.Log($"[Contract] {driver.FullName} a démissionné après livraison.");
+                        }
                     }
                 }
             }
 
             ServiceLocator.Get<XpSystem>()?.AddCompanyXpForContract(contract.definition);
             contract.status = ContractStatus.Completed;
+            Notifications.NotificationSystem.Push(onTime ? NotificationKind.Delivered : NotificationKind.Late,
+                onTime ? "Livraison terminée" : "Livraison en retard",
+                $"{driverName} a livré {(string.IsNullOrEmpty(contract.definition.cargoLabel) ? "la marchandise" : contract.definition.cargoLabel.ToLowerInvariant())} " +
+                $"({Notifications.NotificationSystem.Route(contract.definition)}). +{reward:N0} $" +
+                (onTime ? " · bonus ponctualité" : " · pénalité de retard"));
             GameEvents.RaiseContractDelivered(contract, reward);   // succès → célébration (game feel)
             GameEvents.RaiseContractCompleted(contract);
         }
@@ -314,10 +342,13 @@ namespace TransportManager.Systems.Contracts
             if (driver != null)
             {
                 // Fatigue accumulée jusqu'au crash (distance partielle)
-                AccidentSystem.ApplyFatigueCycle(driver, contract.startTimeUtcTicks, kmAtCrash);
+                AccidentSystem.ApplyFatigueCycle(driver, contract.startTimeUtcTicks, contract.DriveHours * progress);
 
                 if (accident.IsFatal)
                 {
+                    Notifications.NotificationSystem.Push(NotificationKind.Fatal, "Accident mortel",
+                        $"{driver.FullName} est {(driver.gender == "f" ? "décédée" : "décédé")} sur la route " +
+                        $"{Notifications.NotificationSystem.Route(contract.definition)} ({progress:P0} du trajet). Le contrat est annulé.");
                     if (vehicle != null) vehicle.assignedDriverInstanceId = null;
                     hr?.KillDriver(driver);
                     Debug.Log($"[Accident FATAL] {driver.FullName} a péri dans un accident ({progress:P0} du trajet).");
@@ -327,8 +358,12 @@ namespace TransportManager.Systems.Contracts
                     if (accident.vehicleRepairCost > 0)
                         ServiceLocator.Get<WalletSystem>()?.TrySpend(CurrencyType.Dollar, accident.vehicleRepairCost);
 
+                    Notifications.NotificationSystem.Push(NotificationKind.Accident,
+                        $"Accident : {(string.IsNullOrEmpty(accident.description) ? "incident" : accident.description.ToLowerInvariant())}",
+                        $"{driver.FullName} · {Notifications.NotificationSystem.Route(contract.definition)}, à {progress:P0} du trajet. " +
+                        $"Réparation : {accident.vehicleRepairCost:N0} $. Contrat annulé, sans récompense.");
                     GameEvents.RaiseDriverAccident(driver, accident);
-                    Debug.Log($"[Accident] {driver.FullName} — {accident.description} à {progress:P0} du trajet, réparation : {accident.vehicleRepairCost:N0} $");
+                    Debug.Log($"[Accident] {driver.FullName} · {accident.description} à {progress:P0} du trajet, réparation : {accident.vehicleRepairCost:N0} $");
 
                     // Le conducteur ne perçoit pas de salaire (contrat annulé)
                     driver.contractsCompleted++;
@@ -351,7 +386,7 @@ namespace TransportManager.Systems.Contracts
             if (driver == null || data == null) return;
 
             float fatigueAtEnd = AccidentSystem.ComputeFatigueAtEnd(
-                driver, instance.startTimeUtcTicks, instance.definition.distanceKm);
+                driver, instance.startTimeUtcTicks, instance.DriveHours);
 
             var result = AccidentSystem.Roll(
                 driver, fatigueAtEnd, instance.definition.distanceKm, data.purchasePrice);
@@ -363,7 +398,7 @@ namespace TransportManager.Systems.Contracts
             instance.scheduledAccidentRepairCost     = result.vehicleRepairCost;
             instance.scheduledAccidentDescription    = result.description;
 
-            Debug.Log($"[Accident prévu] {driver.FullName} — {result.description} à {new DateTime(instance.scheduledAccidentTimeTicks, DateTimeKind.Utc):HH:mm} UTC");
+            Debug.Log($"[Accident prévu] {driver.FullName} · {result.description} à {new DateTime(instance.scheduledAccidentTimeTicks, DateTimeKind.Utc):HH:mm} UTC");
         }
     }
 }

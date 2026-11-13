@@ -29,30 +29,7 @@ namespace TransportManager.Systems.Hr
         private const int PoolMinLevel = 1;
         private const int PoolMaxLevel = 6;
 
-        private static readonly string[] FirstNames =
-        {
-            "Jean", "Pierre", "Marc", "Luc", "Paul", "Émile", "Antoine", "Hugo", "Théo",
-            "Marie", "Sophie", "Camille", "Léa", "Julie", "Claire", "Anne", "Élise",
-            "Mohamed", "Karim", "Hakim", "Yasmine", "Amira", "Samir",
-            "Pavel", "Andrei", "Ivan", "Nikolai", "Boris",
-            "Klaus", "Hans", "Stefan", "Greta", "Lukas"
-        };
-
-        private static readonly string[] LastNames =
-        {
-            "Martin", "Bernard", "Dubois", "Thomas", "Robert", "Richard",
-            "Petit", "Durand", "Leroy", "Moreau", "Simon", "Laurent",
-            "Lefebvre", "Michel", "Garcia", "David", "Bertrand",
-            "Roux", "Vincent", "Fournier", "Morel", "Girard", "Rousseau",
-            "Mercier", "Blanc", "Faure", "Dupuis", "Carpentier"
-        };
-
-        private static readonly string[] Nationalities =
-        {
-            "Français", "Belge", "Suisse", "Espagnol", "Portugais",
-            "Italien", "Allemand", "Polonais", "Roumain",
-            "Algérien", "Marocain", "Tunisien", "Turc", "Russe"
-        };
+        // Prénoms, noms et nationalités : voir DriverOrigins (par origine et par genre).
 
         /// <summary>Génère un candidat de niveau aléatoire (biaisé vers le bas) pour le vivier.</summary>
         public static DriverInstance Generate() => Generate(RandomPoolLevel());
@@ -75,12 +52,9 @@ namespace TransportManager.Systems.Hr
 
             int desiredWage = ComputeDesiredWage(level, stats);
 
-            return new DriverInstance
+            var driver = new DriverInstance
             {
                 instanceId         = Guid.NewGuid().ToString(),
-                firstName          = FirstNames[UnityEngine.Random.Range(0, FirstNames.Length)],
-                lastName           = LastNames[UnityEngine.Random.Range(0, LastNames.Length)],
-                nationality        = Nationalities[UnityEngine.Random.Range(0, Nationalities.Length)],
                 xp                 = xp,
                 contractsCompleted = 0,
                 hired              = false,
@@ -90,6 +64,9 @@ namespace TransportManager.Systems.Hr
                 assignedWagePerContract = desiredWage,
                 desiredWagePerContract  = desiredWage
             };
+            // Genre + origine (souvent la région du joueur) → prénom, nom, nationalité, portrait.
+            DriverOrigins.AssignIdentity(driver);
+            return driver;
         }
 
         /// <summary>

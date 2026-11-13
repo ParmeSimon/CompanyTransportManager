@@ -50,7 +50,7 @@ namespace TransportManager.UI.Tabs
             canvas.renderMode = RenderMode.ScreenSpaceOverlay; canvas.sortingOrder = 540;
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080); scaler.matchWidthOrHeight = 0.5f;
+            TransportManager.Core.UiScale.Configure(scaler);
             gameObject.AddComponent<GraphicRaycaster>();
 
             var overlay = MakeImg("Overlay", transform, BgOverlay);
@@ -77,6 +77,9 @@ namespace TransportManager.UI.Tabs
             BuildChart(body.transform);
             BuildSliderRow(body.transform);
             BuildConfirm(body.transform);
+
+            // Petit écran (mobile) : le contenu garde une hauteur lisible et défile.
+            ScrollFit.WrapStretched(bRt, 520f);
         }
 
         // ── Prix courant + tendance ──────────────────────────────────────────────────
@@ -141,7 +144,7 @@ namespace TransportManager.UI.Tabs
 
             string source = _fuel.UsesRealMarket ? "cours réel" : "simulé";
             string legend = !hist
-                ? "Historique verrouillé — skill « Analyse de marché »"
+                ? "Historique verrouillé · skill « Analyse de marché »"
                 : $"Historique {histDays} j  ·  {source}";
             var leg = Tmp(card.transform, legend, 10.5f, TextMuted, false);
             leg.alignment = TextAlignmentOptions.Center;
@@ -189,8 +192,16 @@ namespace TransportManager.UI.Tabs
             btn.onClick.AddListener(() =>
             {
                 float liters = _slider != null ? _slider.value : 0f;
-                if (liters > 0f) _fuel.TryStartTruckRefill(liters);
-                Close();
+                if (liters <= 0f) { lbl.text = "Cuve déjà pleine"; return; }
+                if (_fuel.TryStartTruckRefill(liters))
+                {
+                    Core.GameManager.Instance?.SaveNow();
+                    Close();
+                    return;
+                }
+                // Échec : on garde la popup ouverte et on dit pourquoi (avant, elle se fermait sans rien faire).
+                lbl.text = _fuel.IsRefilling ? "Livraison déjà en cours" : "Fonds insuffisants";
+                img.color = new Color(0.75f, 0.30f, 0.28f);
             });
         }
 

@@ -11,7 +11,7 @@ namespace TransportManager.Systems.Accidents
     /// Gère la fatigue des conducteurs et le calcul des accidents en fin de contrat.
     ///
     /// Fatigue (0–100) :
-    ///   - Gain  : distanceKm × Lerp(0.50, 0.10, endurance/100)
+    ///   - Gain  : heures de conduite × Lerp(9, 4, endurance/100)  (repos : 10–20 pts/h)
     ///   - Récup : (5 + concentration × 0.10) fatigue/heure de repos
     ///
     /// Probabilité accident = (1 − effectiveDodge/100) × distanceKm × 0.0005
@@ -34,37 +34,77 @@ namespace TransportManager.Systems.Accidents
             if (lastEndTicks == 0) return 100f; // premier contrat → conducteur reposé
             float hours    = (float)((contractStartTicks - lastEndTicks) / (double)TimeSpan.TicksPerHour);
             hours          = Mathf.Max(0f, hours);
-            float ratePerH = 5f + concentration * 0.10f; // 5–15 fatigue/heure
+            float ratePerH = 10f + concentration * 0.10f; // 10–20 fatigue/heure de repos (une nuit = reposé)
             return hours * ratePerH;
         }
 
-        /// <summary>Fatigue gagnée sur un trajet (ou une portion de trajet).</summary>
-        public static float ComputeFatigueGain(float distanceKm, float endurance)
+        /// <summary>
+        /// Fatigue gagnée en conduisant <paramref name="driveHours"/> heures : 9 pts/h (endurance 0)
+        /// à 4 pts/h (endurance 100). ~9 h de route = une journée complète pour un conducteur moyen.
+        /// (Auparavant au km : tout trajet > ~200 km finissait à 100 %.)
+        /// </summary>
+        public static float ComputeFatigueGain(float driveHours, float endurance)
         {
-            float factor = Mathf.Lerp(0.50f, 0.10f, endurance / 100f);
+            float perHour = Mathf.Lerp(9f, 4f, endurance / 100f);
             float reduction = ServiceLocator.Get<SkillTreeSystem>()?.Pct(SkillEffectType.FatigueReduction) ?? 0f;
-            return distanceKm * factor * Mathf.Clamp01(1f - reduction);
+            return Mathf.Max(0f, driveHours) * perHour * Mathf.Clamp01(1f - reduction);
         }
 
         /// <summary>
         /// Calcul pur (sans mutation) de la fatigue en fin de trajet.
         /// Utilisé à la signature du contrat pour pré-calculer l'accident.
         /// </summary>
-        public static float ComputeFatigueAtEnd(DriverInstance driver, long contractStartTicks, float distanceKm)
+        public static float ComputeFatigueAtEnd(DriverInstance driver, long contractStartTicks, float driveHours,
+                                                float drinkProgress = 0f, float drinkRelief = 0f)
+            => ComputeFatigueDuringTrip(driver, contractStartTicks, driveHours, 1f, drinkProgress, drinkRelief);
+
+        /// <summary>Fatigue au départ du trajet (fatigue restante après le repos).</summary>
+        public static float ComputeFatigueAtStart(DriverInstance driver, long contractStartTicks)
         {
-            float recovery     = ComputeRestRecovery(driver.lastContractEndUtcTicks, contractStartTicks, driver.stats.concentration);
-            float fatigueStart = Mathf.Max(0f, driver.currentFatigue - recovery);
-            float gain         = ComputeFatigueGain(distanceKm, driver.stats.endurance);
-            return Mathf.Min(100f, fatigueStart + gain);
+            float recovery = ComputeRestRecovery(driver.lastContractEndUtcTicks, contractStartTicks, driver.stats.concentration);
+            return Mathf.Max(0f, driver.currentFatigue - recovery);
+        }
+
+        /// <summary>
+        /// Fatigue à une fraction (0–1) du trajet : elle monte avec les km parcourus.
+        /// La fatigue du pilote n'est persistée qu'en fin de contrat, donc ce calcul reste
+        /// valable en cours de route (et reflète une energy drink donnée entre-temps).
+        /// </summary>
+        /// Energy drink (drinkRelief > 0) : la fatigue, plafonnée à 100, chute de drinkRelief au
+        /// moment drinkProgress, puis remonte avec les km parcourus ensuite.
+        public static float ComputeFatigueDuringTrip(DriverInstance driver, long contractStartTicks, float driveHours, float progress,
+                                                     float drinkProgress = 0f, float drinkRelief = 0f)
+        {
+            progress = Mathf.Clamp01(progress);
+            float start = ComputeFatigueAtStart(driver, contractStartTicks);
+            float endurance = driver.stats.endurance;
+
+            if (drinkRelief <= 0f || progress < drinkProgress)
+                return Mathf.Min(100f, start + ComputeFatigueGain(driveHours * progress, endurance));
+
+            float atDrink = Mathf.Min(100f, start + ComputeFatigueGain(driveHours * drinkProgress, endurance));
+            float after   = Mathf.Max(0f, atDrink - drinkRelief)
+                          + ComputeFatigueGain(driveHours * (progress - drinkProgress), endurance);
+            return Mathf.Min(100f, after);
+        }
+
+        /// <summary>Probabilité (0–0,95) d'accident sur un trajet, selon l'esquive et la fatigue.</summary>
+        public static float AccidentChance(DriverInstance driver, float fatigue, float distanceKm)
+        {
+            float effectiveDodge = driver.stats.dodge * Mathf.Clamp01(1f - fatigue / 100f);
+            float chance = (1f - effectiveDodge / 100f) * distanceKm * BaseAccidentRatePerKm;
+            chance *= Mathf.Clamp01(1f - SkillTreeSystem.PctOf(SkillEffectType.AccidentChanceReduction));
+            return Mathf.Clamp(chance, 0f, 0.95f);
         }
 
         /// <summary>
         /// Applique le cycle repos + trajet et persiste l'état dans le driver.
         /// À appeler uniquement en fin de contrat (ou au moment de l'accident).
         /// </summary>
-        public static float ApplyFatigueCycle(DriverInstance driver, long contractStartTicks, float distanceKm)
+        public static float ApplyFatigueCycle(DriverInstance driver, long contractStartTicks, float driveHours,
+                                              float drinkProgress = 0f, float drinkRelief = 0f)
         {
-            float fatigueEnd = ComputeFatigueAtEnd(driver, contractStartTicks, distanceKm);
+            float fatigueEnd = ComputeFatigueAtEnd(driver, contractStartTicks, driveHours, drinkProgress, drinkRelief);
             driver.currentFatigue          = fatigueEnd;
             driver.lastContractEndUtcTicks = DateTime.UtcNow.Ticks;
             return fatigueEnd;
@@ -87,15 +127,14 @@ namespace TransportManager.Systems.Accidents
         public static AccidentResult Roll(DriverInstance driver, float fatigueAtEnd,
                                           float distanceKm, int vehiclePurchasePrice)
         {
-            float effectiveDodge  = driver.stats.dodge * Mathf.Clamp01(1f - fatigueAtEnd / 100f);
-            float accidentChance  = (1f - effectiveDodge / 100f) * distanceKm * BaseAccidentRatePerKm;
-            accidentChance        = Mathf.Clamp(accidentChance, 0f, 0.95f);
+            float accidentChance  = AccidentChance(driver, fatigueAtEnd, distanceKm);
 
             if (UnityEngine.Random.value > accidentChance)
                 return new AccidentResult { severity = AccidentSeverity.None };
 
-            // Mortel ?
-            float fatalChance = BaseFatalChance * (1f - driver.stats.concentration / 100f);
+            // Mortel ? (« Secourisme » réduit ce risque)
+            float fatalChance = BaseFatalChance * (1f - driver.stats.concentration / 100f)
+                              * Mathf.Clamp01(1f - SkillTreeSystem.PctOf(SkillEffectType.FatalAccidentReduction));
             if (UnityEngine.Random.value < fatalChance)
                 return new AccidentResult { severity = AccidentSeverity.Fatal, description = "Accident mortel" };
 

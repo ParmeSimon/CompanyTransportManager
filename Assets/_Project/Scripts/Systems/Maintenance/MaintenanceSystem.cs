@@ -11,15 +11,21 @@ namespace TransportManager.Systems.Maintenance
 {
     public class MaintenanceSystem
     {
-        public const float MandatoryMaintenanceThreshold = 0.8f;
+        public const float MandatoryMaintenanceThreshold = 0.8f;   // seuil de base (sans compétence)
 
         private readonly GameSaveData _save;
 
         public MaintenanceSystem(GameSaveData save) { _save = save; }
 
+        /// Seuil d'usure réel : relevé par « Révisions espacées » (plafonné à 95 %).
+        public static float CurrentThreshold =>
+            Mathf.Min(0.95f, MandatoryMaintenanceThreshold + SkillTreeSystem.PctOf(SkillEffectType.MaintenanceThresholdBonus));
+
         public bool IsMandatory(VehicleInstance vehicle, int vehicleMaxKm)
         {
-            return vehicle.WearRatio(vehicleMaxKm) >= MandatoryMaintenanceThreshold;
+            // « Pneus renforcés » : l'usure progresse moins vite (le compteur km, lui, reste exact).
+            float wear = vehicle.WearRatio(vehicleMaxKm) * Mathf.Clamp01(1f - SkillTreeSystem.PctOf(SkillEffectType.WearReduction));
+            return wear >= CurrentThreshold;
         }
 
         public void EvaluateAfterContract(VehicleInstance vehicle, int vehicleMaxKm)

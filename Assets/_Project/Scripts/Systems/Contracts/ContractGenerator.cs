@@ -62,37 +62,62 @@ namespace TransportManager.Systems.Contracts
             return await GenerateSingle(map, allowed, depot, profile, difficulty, maxDistanceKm, maxCargoTons);
         }
 
+        // ── Durée cible des contrats selon le niveau (rétention) ──
+        // Début de partie : trajets courts, on voit vite le résultat. Ensuite les trajets
+        // s'allongent pour que le joueur revienne 2-3 fois par jour, et non toutes les 30 min.
+        // (heures réelles, à la vitesse moyenne d'un camion ; les compétences de vitesse les raccourcissent)
+        private static (float minH, float maxH) TargetDurationHours(int companyLevel)
+        {
+            if (companyLevel <= 2)  return (0.20f, 0.75f);
+            if (companyLevel <= 4)  return (0.50f, 1.50f);
+            if (companyLevel <= 7)  return (1.00f, 3.00f);
+            if (companyLevel <= 11) return (2.00f, 5.00f);
+            if (companyLevel <= 16) return (3.00f, 8.00f);
+            return (4.00f, 12.0f);
+        }
+
+        private const int DestinationCandidates = 30;   // villes testées pour viser la durée cible
+
         // Contrat direct : dépôt → ville (livraison) ou ville → dépôt (collecte).
+        // On choisit, parmi plusieurs villes au hasard, celle dont le trajet estimé tombe dans
+        // la durée cible du niveau (ou s'en approche le plus), sans dépasser l'autonomie de la flotte.
         private async Task<ContractData> GenerateSingle(
             Systems.Map.MapSystem map, System.Collections.Generic.HashSet<string> allowed,
             CityEntry depot, VehicleRoutingProfile profile, ContractDifficulty difficulty,
             float maxDistanceKm, int maxCargoTons)
         {
-            int attempts = maxDistanceKm >= float.MaxValue ? 1 : MaxPairAttempts;
-            for (int i = 0; i < attempts; i++)
+            int level = ServiceLocator.Get<XpSystem>()?.CompanyLevel ?? 1;
+            var (minH, maxH) = TargetDurationHours(level);
+            float speed = profile == VehicleRoutingProfile.HeavyGoodsVehicle ? FallbackSpeedKmhHgv : FallbackSpeedKmhCar;
+
+            CityEntry best = null;
+            float bestMiss = float.MaxValue;
+            for (int i = 0; i < DestinationCandidates; i++)
             {
                 var other = map.GetRandomCityIn(allowed, depot);
                 if (other == null || other == depot) continue;
 
-                bool collection = UnityEngine.Random.value < 0.5f;   // sens du contrat
-                var from = collection ? other : depot;
-                var to   = collection ? depot : other;
+                float estimateKm = (float)(Entities.Map.GeoPoint.HaversineKm(depot.location, other.location)
+                                           * FallbackDetourFactor * (1f + AddressVariancePercent));
+                if (estimateKm > maxDistanceKm) continue;
 
-                if (maxDistanceKm < float.MaxValue)
-                {
-                    float estimate = (float)(Entities.Map.GeoPoint.HaversineKm(from.location, to.location)
-                                              * FallbackDetourFactor * (1f + AddressVariancePercent));
-                    if (estimate > maxDistanceKm) continue;
-                }
-
-                var (distance, duration) = await LegAsync(map, from, to, profile);
-                float jit = 1f + UnityEngine.Random.Range(-AddressVariancePercent, AddressVariancePercent);
-                distance *= jit; duration *= jit;
-                if (distance > maxDistanceKm) continue;
-
-                return BuildContract(map, difficulty, from, to, distance, duration, null, maxCargoTons);
+                float hours = estimateKm / speed;
+                float miss = hours < minH ? minH - hours : hours > maxH ? hours - maxH : 0f;
+                if (miss < bestMiss) { best = other; bestMiss = miss; }
+                if (miss <= 0f) break;   // dans la cible : on prend
             }
-            return null;
+            if (best == null) return null;
+
+            bool collection = UnityEngine.Random.value < 0.5f;   // sens du contrat
+            var from = collection ? best : depot;
+            var to   = collection ? depot : best;
+
+            var (distance, duration) = await LegAsync(map, from, to, profile);
+            float jit = 1f + UnityEngine.Random.Range(-AddressVariancePercent, AddressVariancePercent);
+            distance *= jit; duration *= jit;
+            if (distance > maxDistanceKm) return null;
+
+            return BuildContract(map, difficulty, from, to, distance, duration, null, maxCargoTons);
         }
 
         // Tournée : dépôt → escale 1 → escale 2 → … (2 à 4 livraisons enchaînées).
@@ -101,7 +126,8 @@ namespace TransportManager.Systems.Contracts
             CityEntry depot, VehicleRoutingProfile profile, ContractDifficulty difficulty,
             float maxDistanceKm, int maxCargoTons)
         {
-            int target = UnityEngine.Random.Range(2, MultiStopMaxStops + 1);   // 2..MaxStops
+            int maxStops = MultiStopMaxStops + SkillTreeSystem.FlatOf(SkillEffectType.ExtraTourStops);   // « Tournées longues »
+            int target = UnityEngine.Random.Range(2, maxStops + 1);   // 2..maxStops
             var stops = new System.Collections.Generic.List<CityEntry>();
             var chosen = new System.Collections.Generic.HashSet<CityEntry> { depot };
             var prev = depot;

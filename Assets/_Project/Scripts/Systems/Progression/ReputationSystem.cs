@@ -66,12 +66,17 @@ namespace TransportManager.Systems.Progression
                 ContractDifficulty.Premium => 26,
                 _                          => 6,
             };
-            int pts = onTime ? Mathf.RoundToInt(basePts * 1.5f) : Mathf.RoundToInt(basePts * 0.4f);
+            float gain = 1f + SkillTreeSystem.PctOf(SkillEffectType.ReputationGainBonus);
+            int pts = Mathf.RoundToInt(basePts * (onTime ? 1.5f : 0.4f) * gain);
             Add(pts);
         }
 
-        /// Pénalité de réputation (accident, contrat raté).
-        public void Penalize(int amount) => Add(-Mathf.Abs(amount));
+        /// Pénalité de réputation (accident, contrat raté), atténuée par « Gestion de crise ».
+        public void Penalize(int amount)
+        {
+            float keep = Mathf.Clamp01(1f - SkillTreeSystem.PctOf(SkillEffectType.ReputationLossReduction));
+            Add(-Mathf.RoundToInt(Mathf.Abs(amount) * keep));
+        }
 
         private void Add(int delta)
         {

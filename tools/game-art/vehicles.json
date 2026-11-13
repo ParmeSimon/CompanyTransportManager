@@ -1,0 +1,257 @@
+{
+  "style": "Flat vector illustration of a fictional vehicle, side view from the left, facing left, the whole vehicle visible and centred. Minimalist mobile game icon style, clean geometric shapes, solid flat colours, simple smooth front grille, white cab with a blue stripe, crisp outlines. Plain flat solid medium grey background.",
+  "negative": "logo, emblem, badge, brand, lettering, text, license plate, watermark, photo, photorealistic, 3D render, people, driver, road, ground, landscape, shadow, multiple vehicles, cropped, blurry",
+  "aspect": "3:2",
+  "removeBackground": true,
+  "fit": {
+    "w": 512,
+    "h": 320,
+    "pad": 0.05,
+    "bottom": true
+  },
+  "installDir": "../../Assets/Resources/UI/Vehicles",
+  "images": [
+    {
+      "name": "van_occasion",
+      "seed": 7600,
+      "description": "An old used panel van with a rounded roof and sliding side door, slightly dented and dusty, no separate cargo box."
+    },
+    {
+      "name": "utilitaire_standard",
+      "seed": 7001,
+      "description": "A compact white delivery van."
+    },
+    {
+      "name": "fourgon_grand_volume",
+      "seed": 7002,
+      "description": "A large high-roof cargo van."
+    },
+    {
+      "name": "chassis_cabine_pro",
+      "seed": 7003,
+      "description": "A light chassis-cab truck with a small box body."
+    },
+    {
+      "name": "van_premium_elec",
+      "seed": 7004,
+      "description": "A modern premium electric delivery van with a sleek aerodynamic body."
+    },
+    {
+      "name": "petit_porteur_7t",
+      "seed": 7005,
+      "description": "A small rigid box truck with two axles."
+    },
+    {
+      "name": "porteur_distrib_12t",
+      "seed": 7006,
+      "description": "A medium rigid box truck with two axles for city distribution.",
+      "flip": true
+    },
+    {
+      "name": "regional_pro_16t",
+      "seed": 7007,
+      "description": "A large rigid box truck with three axles."
+    },
+    {
+      "name": "heavy_rigid_19t",
+      "seed": 7601,
+      "description": "A large rigid box truck with three axles. The cargo box is painted light blue-grey with a dark blue stripe."
+    },
+    {
+      "name": "tracteur_standard",
+      "seed": 7009,
+      "description": "A standard tractor unit pulling a curtain-sider semi-trailer."
+    },
+    {
+      "name": "tracteur_longue_dist",
+      "seed": 7010,
+      "description": "A long-haul tractor unit with a sleeper cab, pulling a box trailer."
+    },
+    {
+      "name": "tracteur_high_end",
+      "seed": 7011,
+      "description": "A premium modern tractor unit with a high cab, pulling a curtain-sider trailer."
+    },
+    {
+      "name": "v8_heavy_duty",
+      "seed": 7012,
+      "description": "A powerful American-style long-nose tractor unit with chrome exhaust stacks, pulling a box trailer."
+    },
+    {
+      "name": "tracteur_convoi_80t",
+      "seed": 7013,
+      "description": "A heavy haulage tractor pulling a low-loader trailer carrying a large excavator."
+    },
+    {
+      "name": "tracteur_lourd_150t",
+      "seed": 7504,
+      "description": "A heavy haulage road truck pulling a multi-axle flat low-loader trailer carrying a big grey industrial electrical transformer box."
+    },
+    {
+      "name": "ultra_mover_250t",
+      "seed": 7015,
+      "description": "A massive heavy haulage tractor pulling a very long multi-axle trailer carrying a huge industrial machine."
+    },
+    {
+      "name": "pickup_leger",
+      "seed": 7016,
+      "description": "A light pick-up truck with an open cargo bed."
+    },
+    {
+      "name": "fourgon_compact",
+      "seed": 7017,
+      "description": "A compact white delivery van."
+    },
+    {
+      "name": "fourgon_xl_premium",
+      "seed": 7018,
+      "description": "A large high-roof cargo van."
+    },
+    {
+      "name": "porteur_urbain_10t",
+      "seed": 7019,
+      "description": "A medium rigid box truck with two axles for city distribution.",
+      "flip": true
+    },
+    {
+      "name": "porteur_renforce_18t",
+      "seed": 7602,
+      "description": "A large rigid box truck with three axles. The cargo box is painted light blue-grey with a dark blue stripe."
+    },
+    {
+      "name": "camion_grue_14t",
+      "seed": 7021,
+      "description": "A rigid truck with a folding hydraulic loading crane mounted behind the cab and a flatbed."
+    },
+    {
+      "name": "poids_lourd_26t",
+      "seed": 7022,
+      "description": "A heavy rigid truck with three axles and a long box body."
+    },
+    {
+      "name": "poids_lourd_32t",
+      "seed": 7503,
+      "description": "A heavy rigid truck with three axles and a long box body."
+    },
+    {
+      "name": "poids_lourd_premium_38t",
+      "seed": 7024,
+      "description": "A premium heavy rigid truck with four axles, a long box body and a high cab."
+    },
+    {
+      "name": "benne_chantier_18t",
+      "seed": 7025,
+      "description": "A tipper dump truck with a steel tipping body."
+    },
+    {
+      "name": "benne_tp_26t",
+      "seed": 7026,
+      "description": "A tipper dump truck with a steel tipping body."
+    },
+    {
+      "name": "benne_carriere_40t",
+      "seed": 7027,
+      "description": "A huge quarry dump truck with a massive tipper body."
+    },
+    {
+      "name": "frigo_compact_12t",
+      "seed": 7608,
+      "description": "A refrigerated rigid truck with a white insulated box body and a cooling unit above the cab. The cargo box is painted light blue-grey with a dark blue stripe."
+    },
+    {
+      "name": "frigo_renforce_22t",
+      "seed": 7029,
+      "description": "A refrigerated rigid truck with a white insulated box body and a cooling unit above the cab."
+    },
+    {
+      "name": "frigo_pharma_30t",
+      "seed": 7030,
+      "description": "A large refrigerated semi-trailer truck with a white insulated trailer and a cooling unit."
+    },
+    {
+      "name": "citerne_alim_24t",
+      "seed": 7031,
+      "description": "A tanker truck with a polished stainless steel food tank."
+    },
+    {
+      "name": "citerne_carburant_30t",
+      "seed": 7032,
+      "description": "A fuel tanker truck with a white aluminium tank."
+    },
+    {
+      "name": "citerne_chimique_36t",
+      "seed": 7033,
+      "description": "A chemical tanker truck with a cylindrical tank and hazard warning plates."
+    },
+    {
+      "name": "semi_tautliner_34t",
+      "seed": 7605,
+      "description": "A semi-trailer truck: tractor unit pulling a curtain-sider trailer. The cargo box is painted light blue-grey with a dark blue stripe."
+    },
+    {
+      "name": "semi_megatrailer_40t",
+      "seed": 7035,
+      "description": "A semi-trailer truck: tractor unit pulling a high-volume mega trailer."
+    },
+    {
+      "name": "semi_double_44t",
+      "seed": 7036,
+      "description": "A semi-trailer truck: tractor unit pulling a tall double-deck box trailer."
+    },
+    {
+      "name": "porte_conteneur_20",
+      "seed": 7037,
+      "description": "A container truck pulling a trailer carrying one 20-foot shipping container."
+    },
+    {
+      "name": "porte_conteneur_40",
+      "seed": 7038,
+      "description": "A container truck pulling a trailer carrying one 40-foot shipping container."
+    },
+    {
+      "name": "porte_conteneur_double_45t",
+      "seed": 7039,
+      "description": "A container truck pulling a long trailer carrying two shipping containers."
+    },
+    {
+      "name": "convoi_90t",
+      "seed": 7040,
+      "description": "A heavy haulage tractor pulling a low-loader trailer carrying a large excavator."
+    },
+    {
+      "name": "convoi_eolien_120t",
+      "seed": 7041,
+      "description": "A heavy haulage truck pulling an extendable trailer carrying a giant wind turbine blade."
+    },
+    {
+      "name": "train_routier_double_70t",
+      "seed": 7042,
+      "description": "A road train: a tractor unit pulling two trailers in a row."
+    },
+    {
+      "name": "train_routier_triple_110t",
+      "seed": 7043,
+      "description": "A road train: a tractor unit pulling three trailers in a row."
+    },
+    {
+      "name": "train_routier_outback_160t",
+      "seed": 7506,
+      "description": "An outback road train: a big long-nose road truck cab (not a farm tractor) pulling four long trailers in a row."
+    },
+    {
+      "name": "mega_convoi_300t",
+      "seed": 7607,
+      "description": "A heavy haulage truck pulling a long modular trailer with many axles carrying a huge horizontal grey industrial boiler tank, the whole convoy fills the image."
+    },
+    {
+      "name": "mega_convoi_industriel_500t",
+      "seed": 7046,
+      "description": "A gigantic heavy haulage convoy pulling a modular trailer with many axles carrying a huge industrial reactor."
+    },
+    {
+      "name": "mega_convoi_titan_800t",
+      "seed": 7047,
+      "description": "A gigantic heavy haulage convoy: two tractor units pulling a self-propelled modular trailer carrying a huge refinery column."
+    }
+  ]
+}

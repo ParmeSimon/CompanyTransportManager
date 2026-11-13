@@ -2,6 +2,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using TransportManager.UI.Common;
 using TransportManager.Core;
 using TransportManager.Entities.Drivers;
 using TransportManager.Entities.Vehicles;
@@ -48,12 +49,9 @@ namespace TransportManager.UI.Tabs
 
         private VehicleData _selectedVehicle;
 
-        private RawImage _bgImage;
-        private RectTransform _bgRect;
-        private Texture2D _bgTex;
-        private Vector2 _lastBgSize;
 
         // ── Palette partagée (Header / Navbar / ContractsPanel) ───────────────────
+        private static readonly Color BgRoot      = new Color(0x1A / 255f, 0x1D / 255f, 0x24 / 255f, 1f);    // = page Pilote
         private static readonly Color BgPanel     = new Color(0x2C / 255f, 0x30 / 255f, 0x38 / 255f, 0.94f); // fond panneau (#2C3038)
         private static readonly Color BgElevated  = new Color(0x34 / 255f, 0x38 / 255f, 0x42 / 255f, 1f);    // cartes
         private static readonly Color BgInset     = new Color(1f, 1f, 1f, 0.05f);                            // sous-cartes sur BgElevated
@@ -90,26 +88,11 @@ namespace TransportManager.UI.Tabs
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
 
-            // Background
-            var bgGo = new GameObject("Background", typeof(RectTransform));
-            bgGo.transform.SetParent(transform, false);
-            var bgImg = bgGo.AddComponent<RawImage>();
-            var bgTex = Resources.Load<Texture2D>("UI/Tutorial/VehicleBackground");
-            bgImg.texture = bgTex;
-            bgImg.color = Color.white;
-            bgImg.raycastTarget = false;
-            _bgImage = bgImg;
-            _bgTex = bgTex;
-            var bgRt = bgGo.GetComponent<RectTransform>();
-            StretchFull(bgRt);
-            _bgRect = bgRt;
-            UpdateBackgroundUVs();
-
-            // Dark scrim
-            var scrimGo = new GameObject("Scrim", typeof(RectTransform));
-            scrimGo.transform.SetParent(transform, false);
-            scrimGo.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.55f);
-            StretchFull(scrimGo.GetComponent<RectTransform>());
+            // Fond sobre plein écran, identique aux pages Pilote et Magasin (plus de photo IA).
+            var rootBg = GetComponent<Image>() ?? gameObject.AddComponent<Image>();
+            rootBg.sprite = null;
+            rootBg.color  = BgRoot;
+            PageBackdrop.Create(transform, AccentBlue);
 
             // Split view: list on the left, detail on the right (always visible side by side)
             var splitGo = new GameObject("Split", typeof(RectTransform));
@@ -126,16 +109,18 @@ namespace TransportManager.UI.Tabs
         private GameObject _splitRoot;
         private GameObject _detailPlaceholder;
         private GameObject _detailContent;
+        private GameObject _detailScroll;
+        private const float DETAIL_MIN_HEIGHT = 780f;   // en dessous, la fiche défile au lieu de s'écraser
 
         // ---- List panel ----
 
         // Layout constants — single source of truth for the modern, airy look
         private const float SIDEBAR_RESERVE = 130f;  // left margin to clear HUD sidebar (Carte/Dépôt/Véhicules/Magasin)
-        private const float TOP_RESERVE     = 160f;  // top margin to clear HUD header (Saiaze block + tab strip)
-        private const float RIGHT_PADDING   = 32f;
-        private const float BOTTOM_PADDING  = 32f;
+        private float TOP_RESERVE => SafeAreaUtil.HudTopReserve(GetComponentInParent<Canvas>());   // rien sous le bandeau
+        private const float RIGHT_PADDING   = 0f;     // plein écran (comme Pilote / Magasin)
+        private const float BOTTOM_PADDING  = 0f;
         private const float HEADER_HEIGHT   = 56f;
-        private const float CARD_HEIGHT     = 108f;
+        private const float CARD_HEIGHT     = 124f;
         private const float CARD_SPACING    = 12f;
         private const float SPLIT_GAP       = 20f;   // gap between list and detail panels
 
@@ -150,11 +135,9 @@ namespace TransportManager.UI.Tabs
             panelRt.offsetMin = new Vector2(SafeAreaUtil.SidebarReserve(GetComponentInParent<Canvas>()), BOTTOM_PADDING);
             panelRt.offsetMax = new Vector2(-SPLIT_GAP * 0.5f, -TOP_RESERVE);
 
-            // Rounded panel backdrop (même fond que le header #2C3038)
+            // Plein écran : panneau transparent, comme la page Pilote.
             var panelBg = panel.AddComponent<Image>();
-            panelBg.sprite        = _sprR16;
-            panelBg.type          = Image.Type.Sliced;
-            panelBg.color         = BgPanel;
+            panelBg.color         = new Color(0f, 0f, 0f, 0f);
             panelBg.raycastTarget = true;
 
             // Header bar — sits at the top of the list panel
@@ -201,7 +184,25 @@ namespace TransportManager.UI.Tabs
             _fleetCountLabel.fontSize = 13;
             _fleetCountLabel.color = TextSecond;
             _fleetCountLabel.alignment = TextAlignmentOptions.MidlineRight;
-            countGo.AddComponent<LayoutElement>().preferredWidth = 260;
+            countGo.AddComponent<LayoutElement>().preferredWidth = 200;
+
+            // « Ma flotte » : la liste de mes camions (anciennement une icône du bandeau du haut).
+            var fleetGo = new GameObject("BtnFleet", typeof(RectTransform));
+            fleetGo.transform.SetParent(header.transform, false);
+            var fleetImg = fleetGo.AddComponent<Image>();
+            fleetImg.sprite = _sprR8; fleetImg.type = Image.Type.Sliced; fleetImg.color = AccentBlue;
+            var fleetBtn = fleetGo.AddComponent<Button>();
+            fleetBtn.targetGraphic = fleetImg;
+            fleetBtn.onClick.AddListener(TransportManager.UI.Fleet.FleetListPopupView.Show);
+            var fleetLe = fleetGo.AddComponent<LayoutElement>();
+            fleetLe.preferredWidth = 130; fleetLe.minWidth = 130;
+            var fleetLblGo = new GameObject("Label", typeof(RectTransform));
+            fleetLblGo.transform.SetParent(fleetGo.transform, false);
+            var fleetLbl = fleetLblGo.AddComponent<TextMeshProUGUI>();
+            fleetLbl.text = "Ma flotte"; fleetLbl.fontSize = 14; fleetLbl.fontStyle = FontStyles.Bold;
+            fleetLbl.color = Color.white; fleetLbl.alignment = TextAlignmentOptions.Center;
+            fleetLbl.raycastTarget = false;
+            StretchFull(fleetLblGo.GetComponent<RectTransform>());
 
             // Fine separator under the header
             var hSep = new GameObject("HeaderSep", typeof(RectTransform));
@@ -271,10 +272,18 @@ namespace TransportManager.UI.Tabs
             panelRt.offsetMax = new Vector2(-RIGHT_PADDING, -TOP_RESERVE);
 
             var panelBg = panel.AddComponent<Image>();
-            panelBg.sprite        = _sprR16;
-            panelBg.type          = Image.Type.Sliced;
-            panelBg.color         = BgPanel;
+            panelBg.color         = new Color(0f, 0f, 0f, 0f);
             panelBg.raycastTarget = true;
+
+            // Filet vertical séparant la liste de la fiche
+            var vSep = new GameObject("SplitSep", typeof(RectTransform));
+            vSep.transform.SetParent(panel.transform, false);
+            var vSepImg = vSep.AddComponent<Image>();
+            vSepImg.color = BorderFaint; vSepImg.raycastTarget = false;
+            var vSepRt = vSep.GetComponent<RectTransform>();
+            vSepRt.anchorMin = new Vector2(0, 0); vSepRt.anchorMax = new Vector2(0, 1);
+            vSepRt.pivot = new Vector2(0.5f, 0.5f);
+            vSepRt.offsetMin = new Vector2(-SPLIT_GAP * 0.5f, 16); vSepRt.offsetMax = new Vector2(-SPLIT_GAP * 0.5f + 1, -16);
 
             // Placeholder when nothing is selected
             _detailPlaceholder = new GameObject("Placeholder", typeof(RectTransform));
@@ -286,10 +295,28 @@ namespace TransportManager.UI.Tabs
             phTmp.alignment = TextAlignmentOptions.Center;
             phTmp.raycastTarget = false;
 
-            // Content container (shown when a vehicle is selected)
+            // Content container (shown when a vehicle is selected) — dans une zone défilable :
+            // sur petit écran (mobile) la fiche garde sa hauteur mini et se fait défiler.
+            _detailScroll = new GameObject("DetailScroll", typeof(RectTransform));
+            _detailScroll.transform.SetParent(panel.transform, false);
+            StretchFull(_detailScroll.GetComponent<RectTransform>());
+            var dsImg = _detailScroll.AddComponent<Image>();
+            dsImg.color = new Color(0f, 0f, 0f, 0f);
+            _detailScroll.AddComponent<RectMask2D>();
+            var dsRect = _detailScroll.AddComponent<ScrollRect>();
+            dsRect.horizontal = false;
+            dsRect.vertical = true;
+            dsRect.movementType = ScrollRect.MovementType.Clamped;
+            dsRect.scrollSensitivity = 36;
+            dsRect.viewport = (RectTransform)_detailScroll.transform;
+
             _detailContent = new GameObject("Content", typeof(RectTransform));
-            _detailContent.transform.SetParent(panel.transform, false);
-            StretchFull(_detailContent.GetComponent<RectTransform>());
+            _detailContent.transform.SetParent(_detailScroll.transform, false);
+            var dcRt = _detailContent.GetComponent<RectTransform>();
+            dcRt.anchorMin = new Vector2(0, 1); dcRt.anchorMax = new Vector2(1, 1);
+            dcRt.pivot = new Vector2(0.5f, 1f);
+            dcRt.offsetMin = Vector2.zero; dcRt.offsetMax = Vector2.zero;
+            dsRect.content = dcRt;
 
             var vlg = _detailContent.AddComponent<VerticalLayoutGroup>();
             vlg.padding = new RectOffset(24, 24, 22, 22);
@@ -543,18 +570,21 @@ namespace TransportManager.UI.Tabs
             AddButtonLeftIcon(_buyIngotBtn.transform, "UI/Icons/Infos/gold", 32);
 
             _detailContent.SetActive(false);
+            _detailScroll.SetActive(false);
             return panel;
         }
 
         private void ShowDetailPlaceholder()
         {
             if (_detailContent != null) _detailContent.SetActive(false);
+            if (_detailScroll != null) _detailScroll.SetActive(false);
             if (_detailPlaceholder != null) _detailPlaceholder.SetActive(true);
         }
 
         private void ShowDetailContent()
         {
             if (_detailPlaceholder != null) _detailPlaceholder.SetActive(false);
+            if (_detailScroll != null) _detailScroll.SetActive(true);
             if (_detailContent != null) _detailContent.SetActive(true);
         }
 
@@ -671,8 +701,8 @@ namespace TransportManager.UI.Tabs
             badgeRt.anchorMin = new Vector2(0, 0.5f);
             badgeRt.anchorMax = new Vector2(0, 0.5f);
             badgeRt.pivot     = new Vector2(0, 0.5f);
-            badgeRt.anchoredPosition = new Vector2(24, 0);
-            badgeRt.sizeDelta = new Vector2(64, 64);
+            badgeRt.anchoredPosition = new Vector2(20, 0);
+            badgeRt.sizeDelta = new Vector2(160, 100);   // grande vignette du camion
 
             var badgeBg = badgeZone.AddComponent<Image>();
             badgeBg.sprite        = _sprR12;
@@ -680,18 +710,19 @@ namespace TransportManager.UI.Tabs
             badgeBg.color         = BgPill;
             badgeBg.raycastTarget = false;
 
-            // Icon on top of badge if available, else category letter
-            if (data.icon != null)
+            // Image du camion si disponible, sinon lettre de la catégorie
+            var vehicleSprite = VehicleSprite(data);
+            if (vehicleSprite != null)
             {
                 var iconHolder = new GameObject("Icon", typeof(RectTransform));
                 iconHolder.transform.SetParent(badgeZone.transform, false);
                 var iconRt = iconHolder.GetComponent<RectTransform>();
                 iconRt.anchorMin = Vector2.zero;
                 iconRt.anchorMax = Vector2.one;
-                iconRt.offsetMin = new Vector2(6, 6);
-                iconRt.offsetMax = new Vector2(-6, -6);
+                iconRt.offsetMin = new Vector2(4, 4);
+                iconRt.offsetMax = new Vector2(-4, -4);
                 var iconImg = iconHolder.AddComponent<Image>();
-                iconImg.sprite = data.icon;
+                iconImg.sprite = vehicleSprite;
                 iconImg.preserveAspect = true;
                 iconImg.color = unlocked ? Color.white : new Color(0.5f, 0.5f, 0.5f, 0.55f);
                 iconImg.raycastTarget = false;
@@ -719,7 +750,7 @@ namespace TransportManager.UI.Tabs
             var textZoneRt = textZone.GetComponent<RectTransform>();
             textZoneRt.anchorMin = new Vector2(0, 0);
             textZoneRt.anchorMax = new Vector2(1, 1);
-            textZoneRt.offsetMin = new Vector2(108, 0);
+            textZoneRt.offsetMin = new Vector2(196, 0);
             textZoneRt.offsetMax = new Vector2(-180, 0);
 
             var textVlg = textZone.AddComponent<VerticalLayoutGroup>();
@@ -748,8 +779,8 @@ namespace TransportManager.UI.Tabs
                 : "";
             string dot = "<color=#3a4458>  •  </color>";
             subTmp.text = unlocked
-                ? $"<color=#8899bb>{data.category}</color>{dot}<color=#c8d2e0>{data.capacity}t</color>{dot}<color=#c8d2e0>{data.speedKmh} km/h</color>{dot}<color=#f0c060>${data.purchasePrice:N0}</color>{ownedBadge}"
-                : $"<color=#cc7733>◆ Niveau entreprise {data.RequiredCompanyLevel} requis</color>";
+                ? $"<color=#8899bb>{CategoryDisplayName(data.category)}</color>{dot}<color=#c8d2e0>{data.capacity}t</color>{dot}<color=#c8d2e0>{data.speedKmh} km/h</color>{dot}<color=#f0c060>${data.EffectivePrice:N0}</color>{ownedBadge}"
+                : $"<color=#cc7733>Niveau entreprise {data.RequiredCompanyLevel} requis</color>";
             subTmp.fontSize = 12;
             subTmp.color = new Color(0.70f, 0.72f, 0.80f);
             subTmp.raycastTarget = false;
@@ -769,9 +800,11 @@ namespace TransportManager.UI.Tabs
             var chipImg = chipGo.AddComponent<Image>();
             chipImg.sprite        = _sprR8;
             chipImg.type          = Image.Type.Sliced;
-            chipImg.color         = unlocked
-                ? new Color(AccentBlue.r, AccentBlue.g, AccentBlue.b, 0.16f)
-                : BgPill;
+            chipImg.color         = owned
+                ? new Color(0.24f, 0.79f, 0.43f, 0.20f)
+                : unlocked
+                    ? new Color(AccentBlue.r, AccentBlue.g, AccentBlue.b, 0.16f)
+                    : BgPill;
             chipImg.raycastTarget = false;
 
             var chipLblGo = new GameObject("Label", typeof(RectTransform));
@@ -779,12 +812,38 @@ namespace TransportManager.UI.Tabs
             var chipLblRt = chipLblGo.GetComponent<RectTransform>();
             StretchFull(chipLblRt);
             var chipLbl = chipLblGo.AddComponent<TextMeshProUGUI>();
-            chipLbl.text = unlocked ? "Voir plus  ›" : "Verrouillé";
+            chipLbl.text = owned ? $"Possédé  ×{ownedCount}" : unlocked ? "Voir plus  ›" : "Verrouillé";
             chipLbl.fontSize = 13;
             chipLbl.fontStyle = FontStyles.Bold;
-            chipLbl.color = unlocked ? new Color(0.62f, 0.78f, 1f) : TextDim;
+            chipLbl.color = owned ? new Color(0.45f, 0.90f, 0.60f) : unlocked ? new Color(0.62f, 0.78f, 1f) : TextDim;
+            if (owned)
+            {
+                var ownedOutline = card.AddComponent<Outline>();
+                ownedOutline.effectColor    = new Color(0.24f, 0.79f, 0.43f, 0.85f);
+                ownedOutline.effectDistance = new Vector2(1.5f, -1.5f);
+            }
             chipLbl.alignment = TextAlignmentOptions.Center;
             chipLbl.raycastTarget = false;
+        }
+
+        // Image d'un véhicule : sprite assigné dans le catalogue, sinon Resources/UI/Vehicles/<id>
+        // (PNG importé en Sprite ou en simple texture). null → la carte affiche une lettre.
+        private static readonly Dictionary<string, Sprite> _vehicleSprites = new Dictionary<string, Sprite>();
+
+        public static Sprite VehicleSprite(VehicleData data)
+        {
+            if (data == null) return null;
+            if (data.icon != null) return data.icon;
+            if (_vehicleSprites.TryGetValue(data.id, out var cached)) return cached;
+            string path = "UI/Vehicles/" + data.id;
+            var sprite = Resources.Load<Sprite>(path);
+            if (sprite == null)
+            {
+                var tex = Resources.Load<Texture2D>(path);
+                if (tex != null) sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+            }
+            _vehicleSprites[data.id] = sprite;
+            return sprite;
         }
 
         private static Color CategoryAccent(VehicleCategory cat)
@@ -821,8 +880,8 @@ namespace TransportManager.UI.Tabs
 
             bool unlocked = xp == null || xp.IsVehicleUnlocked(data.RequiredCompanyLevel);
             bool depotFull = depot != null && !depot.HasRoomForOneMore();
-            bool canAffordDollar = wallet != null && wallet.CanAfford(CurrencyType.Dollar, data.purchasePrice);
-            int ingotCost = Mathf.Max(1, data.purchasePrice / 1000);
+            bool canAffordDollar = wallet != null && wallet.CanAfford(CurrencyType.Dollar, data.EffectivePrice);
+            int ingotCost = Mathf.Max(1, data.EffectivePrice / 1000);
             bool canAffordIngot = wallet != null && wallet.CanAfford(CurrencyType.GoldIngot, ingotCost);
 
             int ownedCount = 0;
@@ -859,13 +918,13 @@ namespace TransportManager.UI.Tabs
                 row("Vitesse max",     val(data.speedKmh + " km/h")) + "\n" +
                 row("Durabilité",      val(data.maxKilometers.ToString("N0") + " km")) + "\n\n" +
                 $"{secHdr("Carburant")}\n\n" +
-                row("Réservoir",       val(data.fuelTankCapacityLiters.ToString("0") + " L")) + "\n" +
+                row("Réservoir",       val(data.TankCapacity.ToString("0") + " L")) + "\n" +
                 row("Consommation",    val(data.fuelConsumptionLPer100Km.ToString("0.0") + " L/100km")) + "\n" +
                 row("Autonomie",       val(range.ToString("0") + " km")) + "\n" +
                 row("Coût / km",       val(fuelPerKm.ToString("0.00") + " L")) + "\n\n" +
                 $"{secHdr("Économie")}\n\n" +
-                row("Prix d'achat",    $"<color=#f0c060><b>${data.purchasePrice:N0}</b></color>") + "\n" +
-                row("Lingots",         $"<color=#e8b850><b>{ingotCost} ◆</b></color>") + "\n" +
+                row("Prix d'achat",    $"<color=#f0c060><b>${data.EffectivePrice:N0}</b></color>") + "\n" +
+                row("Lingots",         $"<color=#e8b850><b>{ingotCost} lingots</b></color>") + "\n" +
                 row("Entretien",       val("$" + data.maintenanceCost.ToString("N0") + " / contrat"));
 
             // ---- BOTTOM: career statistics for this vehicle model ----
@@ -884,10 +943,10 @@ namespace TransportManager.UI.Tabs
             bool hasHistory = ownedCount > 0 || kmDriven > 0;
             string fmt(int n, string suffix = "") => hasHistory
                 ? $"{n:N0}{suffix}"
-                : "<color=#3a4458>—</color>";
+                : "<color=#3a4458>-</color>";
             string fmtMoney(int n) => hasHistory
                 ? $"${n:N0}"
-                : "<color=#3a4458>—</color>";
+                : "<color=#3a4458>-</color>";
 
             // Two-column career stats. Use colored bullets (• ★ ▲) — these glyphs exist in
             // every standard TMP font, so no "missing character" boxes.
@@ -899,7 +958,7 @@ namespace TransportManager.UI.Tabs
 
             string careerSubtitle = hasHistory
                 ? "<color=#5a6d8a><size=11>(total cumulé sur ce modèle)</size></color>"
-                : "<color=#cc7733><size=11>(aucune donnée — modèle non encore utilisé)</size></color>";
+                : "<color=#cc7733><size=11>(aucune donnée · modèle non encore utilisé)</size></color>";
 
             _detailCareerStats.text =
                 $"{secHdr("Statistiques de carrière")}    {careerSubtitle}\n\n" +
@@ -917,12 +976,12 @@ namespace TransportManager.UI.Tabs
             // Status message
             if (!unlocked)
             {
-                _detailStatus.text = $"🔒 Requiert niveau entreprise {data.RequiredCompanyLevel}";
+                _detailStatus.text = $"Requiert niveau entreprise {data.RequiredCompanyLevel}";
                 if (_detailStatusIcon != null) _detailStatusIcon.gameObject.SetActive(false);
             }
             else if (depotFull)
             {
-                _detailStatus.text = "Dépôt plein — améliorez le hangar";
+                _detailStatus.text = "Dépôt plein · améliorez le hangar";
                 if (_detailStatusIcon != null) _detailStatusIcon.gameObject.SetActive(true);
             }
             else
@@ -933,7 +992,7 @@ namespace TransportManager.UI.Tabs
 
             bool canBuy = unlocked && !depotFull;
 
-            _buyDollarLabel.text = $"Acheter\n${data.purchasePrice:N0}";
+            _buyDollarLabel.text = $"Acheter\n${data.EffectivePrice:N0}";
             _buyDollarBtn.interactable = canBuy && canAffordDollar;
             var dollarImg = _buyDollarBtn.GetComponent<Image>();
             dollarImg.color = (canBuy && canAffordDollar)
@@ -1043,7 +1102,7 @@ namespace TransportManager.UI.Tabs
         // Ligne « carburant » d'une carte camion : libellé + jauge proportionnelle.
         private void BuildAssignFuelRow(Transform parent, VehicleInstance vehicle, VehicleData data)
         {
-            float tank  = data.fuelTankCapacityLiters;
+            float tank  = data.TankCapacity;
             float ratio = tank > 0f ? Mathf.Clamp01(vehicle.currentFuelLiters / tank) : 0f;
             Color col   = ratio > 0.5f ? AccentGreen : ratio > 0.2f
                 ? new Color(0.97f, 0.65f, 0.14f) : new Color(0.95f, 0.28f, 0.28f);
@@ -1100,8 +1159,7 @@ namespace TransportManager.UI.Tabs
             canvas.sortingOrder = 600;
             var scaler = _driverPicker.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-            scaler.matchWidthOrHeight = 0.5f;
+            TransportManager.Core.UiScale.Configure(scaler);
             _driverPicker.AddComponent<GraphicRaycaster>();
             StretchFull(_driverPicker.GetComponent<RectTransform>());
 
@@ -1231,7 +1289,7 @@ namespace TransportManager.UI.Tabs
             var fleet = ServiceLocator.Get<FleetSystem>();
             if (wallet == null || depot == null || fleet == null) return;
 
-            int ingotCost = Mathf.Max(1, _selectedVehicle.purchasePrice / 1000);
+            int ingotCost = Mathf.Max(1, _selectedVehicle.EffectivePrice / 1000);
             if (!depot.HasRoomForOneMore())
             {
                 _detailStatus.text = "Dépôt plein";
@@ -1245,7 +1303,7 @@ namespace TransportManager.UI.Tabs
                 instanceId = System.Guid.NewGuid().ToString(),
                 vehicleDataId = _selectedVehicle.id,
                 totalKilometers = 0,
-                currentFuelLiters = _selectedVehicle.fuelTankCapacityLiters,
+                currentFuelLiters = _selectedVehicle.TankCapacity,
                 status = VehicleStatus.Idle
             };
             fleet.Add(instance);
@@ -1285,15 +1343,9 @@ namespace TransportManager.UI.Tabs
         {
             if (_catalogContent == null) return;
 
-            // Clear catalog cards
-            foreach (Transform child in _catalogContent)
-            {
-#if UNITY_EDITOR
-                DestroyImmediate(child.gameObject);
-#else
-                Destroy(child.gameObject);
-#endif
-            }
+            // Vide la liste. (L'ancien foreach + DestroyImmediate sautait un élément sur deux :
+            // titres et cartes des rafraîchissements précédents restaient mélangés aux nouveaux.)
+            ClearChildren(_catalogContent);
 
             var catalog = ServiceLocator.Get<VehicleCatalog>();
             var fleet = ServiceLocator.Get<FleetSystem>();
@@ -1320,10 +1372,14 @@ namespace TransportManager.UI.Tabs
                 return la != lb ? la.CompareTo(lb) : ((int)a).CompareTo((int)b);
             });
 
+            // Dans chaque catégorie : du moins cher au plus cher.
+            var byPrice = new List<VehicleData>(catalog.vehicles);
+            byPrice.Sort((a, b) => a.purchasePrice.CompareTo(b.purchasePrice));
+
             foreach (VehicleCategory category in categories)
             {
                 bool headerSpawned = false;
-                foreach (var data in catalog.vehicles)
+                foreach (var data in byPrice)
                 {
                     if (data.category != category) continue;
 
@@ -1334,7 +1390,7 @@ namespace TransportManager.UI.Tabs
                     }
 
                     bool unlocked = xp == null || xp.IsVehicleUnlocked(data.RequiredCompanyLevel);
-                    bool canAfford = wallet != null && wallet.CanAfford(CurrencyType.Dollar, data.purchasePrice);
+                    bool canAfford = wallet != null && wallet.CanAfford(CurrencyType.Dollar, data.EffectivePrice);
                     int ownedCount = 0;
                     if (fleet != null)
                         foreach (var v in fleet.Vehicles)
@@ -1476,34 +1532,11 @@ namespace TransportManager.UI.Tabs
 
         private void Update()
         {
-            if (_bgRect == null) return;
-            var size = _bgRect.rect.size;
-            if (size != _lastBgSize)
-            {
-                _lastBgSize = size;
-                UpdateBackgroundUVs();
-            }
-        }
-
-        private void UpdateBackgroundUVs()
-        {
-            if (_bgImage == null || _bgTex == null || _bgRect == null) return;
-
-            float containerAspect = _bgRect.rect.width / Mathf.Max(1f, _bgRect.rect.height);
-            float texAspect = (float)_bgTex.width / Mathf.Max(1, _bgTex.height);
-
-            float u = 0f, v = 0f, uw = 1f, vh = 1f;
-            if (containerAspect > texAspect)
-            {
-                vh = texAspect / containerAspect;
-                v = (1f - vh) * 0.5f;
-            }
-            else
-            {
-                uw = containerAspect / texAspect;
-                u = (1f - uw) * 0.5f;
-            }
-            _bgImage.uvRect = new Rect(u, v, uw, vh);
+            if (_detailScroll == null || _detailContent == null || !_detailScroll.activeSelf) return;
+            float viewH = ((RectTransform)_detailScroll.transform).rect.height;
+            float h = Mathf.Max(viewH, DETAIL_MIN_HEIGHT);
+            var dcRt = (RectTransform)_detailContent.transform;
+            if (Mathf.Abs(dcRt.sizeDelta.y - h) > 0.5f) dcRt.sizeDelta = new Vector2(0f, h);
         }
     }
 }

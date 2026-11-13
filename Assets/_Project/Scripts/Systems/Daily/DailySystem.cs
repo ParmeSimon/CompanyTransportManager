@@ -51,12 +51,53 @@ namespace TransportManager.Systems.Daily
                     S.missions.Insert(0, MakeConnectMission());
                     Save();
                 }
+                ReplaceIneligibleMissions();
                 return;
             }
             S.missionsDayTicks = TodayTicks();
             S.visitedCountries.Clear();
             S.missions = GenerateMissions();
             Save();
+        }
+
+        // ── Quêtes selon l'avancement ──────────────────────────────────────────────
+        // Une quête n'est proposée que si le joueur PEUT la réussir aujourd'hui : tournées et pays
+        // demandent les compétences correspondantes, les contrats difficiles un camion assez gros,
+        // et les objectifs chiffrés suivent le niveau et la taille de la flotte.
+        private struct Progress
+        {
+            public int  level;          // niveau entreprise
+            public int  crews;          // camions avec conducteur
+            public int  maxCap;         // plus gros camion (t)
+            public bool tours;          // « Tournées multi-arrêts »
+            public int  countryReach;   // 0 = pays d'attache, 1 = limitrophes, 2 = continent, 3 = monde
+        }
+
+        private Progress ReadProgress()
+        {
+            var p = new Progress { level = Entities.Progression.XpCurve.CompanyLevelFromXp(_save.companyXp) };
+            var catalog = ServiceLocator.Get<Entities.Vehicles.VehicleCatalog>();
+            foreach (var v in _save.vehicles)
+            {
+                if (string.IsNullOrEmpty(v.assignedDriverInstanceId)) continue;
+                p.crews++;
+                var data = catalog != null ? catalog.GetById(v.vehicleDataId) : null;
+                if (data != null && data.capacity > p.maxCap) p.maxCap = data.capacity;
+            }
+            p.tours        = SkillTreeSystem.FlatOf(SkillEffectType.MultiStopContractsUnlocked) > 0;
+            p.countryReach = SkillTreeSystem.FlatOf(SkillEffectType.ContractCountryReach);
+            return p;
+        }
+
+        private static bool IsEligible(string type, Progress p)
+        {
+            switch (type)
+            {
+                case "tour":      return p.tours;
+                case "countries": return p.countryReach >= 1;   // il faut pouvoir livrer hors de son pays
+                case "premium":   return p.maxCap >= 15;        // contrats « difficiles » : camion ≥ 15 t
+                default:          return true;                  // distance, contrats, gains : toujours
+            }
         }
 
         private static readonly string[] AllTypes = { "distance", "contracts", "premium", "earn", "tour", "countries" };
@@ -68,15 +109,37 @@ namespace TransportManager.Systems.Daily
             // Quête fixe, toujours présente : se connecter aujourd'hui (1000 $), complétée d'office.
             list.Add(MakeConnectMission());
 
-            // + 3 missions aléatoires de types distincts (changent chaque jour).
-            var pool = new List<string>(AllTypes);
+            // + 3 missions de types distincts, uniquement parmi celles réalisables à ce stade.
+            var prog = ReadProgress();
+            var pool = new List<string>();
+            foreach (var t in AllTypes) if (IsEligible(t, prog)) pool.Add(t);
             for (int n = 0; n < 3 && pool.Count > 0; n++)
             {
-                int p = UnityEngine.Random.Range(0, pool.Count);
-                list.Add(MakeMission(pool[p]));
-                pool.RemoveAt(p);
+                int i = UnityEngine.Random.Range(0, pool.Count);
+                list.Add(MakeMission(pool[i], prog));
+                pool.RemoveAt(i);
             }
             return list;
+        }
+
+        // Quêtes du jour générées avant cette règle : on remplace celles qui sont impossibles
+        // (et pas encore entamées) par une quête réalisable.
+        private void ReplaceIneligibleMissions()
+        {
+            var prog = ReadProgress();
+            bool changed = false;
+            for (int i = 0; i < S.missions.Count; i++)
+            {
+                var m = S.missions[i];
+                if (m.type == "connect" || m.claimed || m.progress > 0 || IsEligible(m.type, prog)) continue;
+                var pool = new List<string>();
+                foreach (var t in AllTypes)
+                    if (IsEligible(t, prog) && !S.missions.Exists(x => x.type == t)) pool.Add(t);
+                if (pool.Count == 0) { S.missions.RemoveAt(i); i--; changed = true; continue; }
+                S.missions[i] = MakeMission(pool[UnityEngine.Random.Range(0, pool.Count)], prog);
+                changed = true;
+            }
+            if (changed) Save();
         }
 
         // La connexion du jour : complétée dès la génération (le joueur est connecté).
@@ -87,17 +150,34 @@ namespace TransportManager.Systems.Daily
             return m;
         }
 
-        private static MissionState MakeMission(string type)
+        // Durée moyenne d'un contrat selon le niveau (cf. ContractGenerator.TargetDurationHours).
+        private static float AvgContractHours(int level) =>
+            level <= 2 ? 0.5f : level <= 4 ? 1f : level <= 7 ? 2f : level <= 11 ? 3.5f : level <= 16 ? 5.5f : 8f;
+
+        private static MissionState MakeMission(string type, Progress p)
         {
-            int R(int a, int b, int step) => UnityEngine.Random.Range(a, b + 1) / step * step;
+            int Round(float v, int step) => Mathf.Max(step, Mathf.RoundToInt(v / step) * step);
+            int crews = Mathf.Max(1, p.crews);
+
+            // Contrats faisables dans une journée « normale » (quelques sessions de jeu) :
+            // ~3 par camion, plafonné ; un peu d'aléa pour varier.
+            int contracts = Mathf.Clamp(Mathf.RoundToInt(crews * 2.5f) + UnityEngine.Random.Range(-1, 2), 2, 10);
+            float kmPerContract = AvgContractHours(p.level) * 70f;      // ~70 km/h de moyenne
+            float km = contracts * kmPerContract;
+
             switch (type)
             {
-                case "distance":  { int t = R(1500, 3000, 100); return M(type, t, "dollars", Mathf.RoundToInt(t * 2f)); }
-                case "contracts": { int t = UnityEngine.Random.Range(3, 7);  return M(type, t, "ingots", 2); }
-                case "premium":   { int t = UnityEngine.Random.Range(1, 3);  return M(type, t, "skill", 1); }
-                case "earn":      { int t = R(12000, 30000, 1000); return M(type, t, "dollars", Mathf.RoundToInt(t * 0.25f)); }
-                case "tour":      { int t = UnityEngine.Random.Range(1, 3);  return M(type, t, "ingots", 2); }
-                case "countries": { int t = UnityEngine.Random.Range(3, 6);  return M(type, t, "skill", 1); }
+                case "distance":  { int t = Round(km, 50);       return M(type, t, "dollars", Round(t * 2f, 50)); }
+                case "contracts": {                              return M(type, contracts, "ingots", contracts >= 6 ? 3 : 2); }
+                case "premium":   { int t = crews >= 3 ? 2 : 1;  return M(type, t, "skill", 1); }
+                case "earn":      { int t = Round(km * 3f, 500); return M(type, t, "dollars", Round(t * 0.25f, 50)); }
+                case "tour":      { int t = crews >= 3 ? 2 : 1;  return M(type, t, "ingots", 2); }
+                case "countries":
+                {
+                    // limitrophes → 2 pays ; continent → 3 ; monde → 3 à 4.
+                    int t = p.countryReach >= 3 ? UnityEngine.Random.Range(3, 5) : p.countryReach == 2 ? 3 : 2;
+                    return M(type, t, "skill", 1);
+                }
                 default:          return M(type, 1, "dollars", 1000);
             }
         }
@@ -114,7 +194,7 @@ namespace TransportManager.Systems.Daily
             var m = S.missions[index];
             if (m.claimed || !IsComplete(m)) return false;
             m.claimed = true;
-            Grant(m.rewardKind, m.rewardAmount);
+            Grant(m.rewardKind, EffectiveMissionReward(m.rewardKind, m.rewardAmount));
             Save();
             return true;
         }
@@ -245,6 +325,14 @@ namespace TransportManager.Systems.Daily
         }
 
         // ── Récompenses ──────────────────────────────────────────────────────────────
+        /// Récompense réellement versée pour une mission : « Objectifs ambitieux » augmente
+        /// les $ et les lingots (pas les points de compétence). Utilisé aussi par l'affichage.
+        public static int EffectiveMissionReward(string kind, int amount)
+        {
+            if (kind != "dollars" && kind != "ingots") return amount;
+            return Mathf.RoundToInt(amount * (1f + SkillTreeSystem.PctOf(SkillEffectType.DailyMissionRewardBonus)));
+        }
+
         private void Grant(string kind, int amount)
         {
             switch (kind)
@@ -271,7 +359,7 @@ namespace TransportManager.Systems.Daily
         public static string RewardLabel(string kind, int amount) => kind switch
         {
             "dollars" => $"+{amount:N0} $",
-            "ingots"  => $"+{amount} ◆",
+            "ingots"  => $"+{amount} lingots",
             "skill"   => $"+{amount} pt",
             _         => $"+{amount}",
         };

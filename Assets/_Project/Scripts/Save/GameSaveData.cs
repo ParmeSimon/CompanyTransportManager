@@ -49,6 +49,9 @@ namespace TransportManager.Save
         public DailyState daily = new DailyState();
 
         public AchievementsState achievements = new AchievementsState();
+
+        // Journal de notifications (livraisons, accidents, démissions…), plus récent en tête.
+        public List<NotificationEntry> notifications = new List<NotificationEntry>();
     }
 
     [Serializable]

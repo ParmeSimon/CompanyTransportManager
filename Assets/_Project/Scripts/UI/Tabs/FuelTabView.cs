@@ -79,33 +79,33 @@ namespace TransportManager.UI.Tabs
 
             // --- Card : Etat de la cuve ---
             var stateCard = CreateCard(contentGo.transform, "StateCard");
-            CreateCardTitle(stateCard, "Cuve Ã  carburant");
+            CreateCardTitle(stateCard, "Cuve à carburant");
             _tierLabel = CreateCardRowSimple(stateCard, "TierRow", "Pompe", "Niveau 1");
             BuildFuelBar(stateCard);
             _litersLabel = CreateCardRowSimple(stateCard, "LitersRow", "Stock actuel", "0 L");
-            _capacityLabel = CreateCardRowSimple(stateCard, "CapacityRow", "CapacitÃ©", "500 L");
+            _capacityLabel = CreateCardRowSimple(stateCard, "CapacityRow", "Capacité", "500 L");
 
             // --- Card : Recharge camion ---
             var refillCard = CreateCard(contentGo.transform, "RefillCard");
             CreateCardTitle(refillCard, "Commander un camion-citerne");
             _refillStatusLabel = CreateCardDescription(refillCard, "Recharge disponible");
-            _refillCostLabel = CreateCardRowSimple(refillCard, "CostRow", "CoÃ»t (plein)", "$ 0");
+            _refillCostLabel = CreateCardRowSimple(refillCard, "CostRow", "Coût (plein)", "$ 0");
             _refillButton = CreateActionButton(refillCard, "RefillButton", new Color(0.20f, 0.65f, 0.45f));
             _refillButtonLabel = _refillButton.GetComponentInChildren<TMP_Text>();
 
-            // --- Card : Recharge instantanÃ©e ---
+            // --- Card : Recharge instantanée ---
             var instantCard = CreateCard(contentGo.transform, "InstantCard");
-            CreateCardTitle(instantCard, "Recharge instantanÃ©e");
-            CreateCardDescription(instantCard, "Utilise des lingots d'or pour remplir la cuve immÃ©diatement.");
-            _instantCostLabel = CreateCardRowSimple(instantCard, "InstantCostRow", "CoÃ»t", "â—† 0");
+            CreateCardTitle(instantCard, "Recharge instantanée");
+            CreateCardDescription(instantCard, "Utilise des lingots d'or pour remplir la cuve immédiatement.");
+            _instantCostLabel = CreateCardRowSimple(instantCard, "InstantCostRow", "Coût", "0 lingot");
             _instantButton = CreateActionButton(instantCard, "InstantButton", new Color(0.86f, 0.60f, 0.10f));
-            _instantButton.GetComponentInChildren<TMP_Text>().text = "Recharge instantanÃ©e";
+            _instantButton.GetComponentInChildren<TMP_Text>().text = "Recharge instantanée";
 
-            // --- Card : AmÃ©lioration pompe ---
+            // --- Card : Amélioration pompe ---
             var upgradeCard = CreateCard(contentGo.transform, "UpgradeCard");
-            CreateCardTitle(upgradeCard, "AmÃ©liorer la pompe");
-            CreateCardDescription(upgradeCard, "Augmente la capacitÃ© de stockage et rÃ©duit le temps de livraison.");
-            _upgradeCostLabel = CreateCardRowSimple(upgradeCard, "UpgradeCostRow", "CoÃ»t", "$ 0");
+            CreateCardTitle(upgradeCard, "Améliorer la pompe");
+            CreateCardDescription(upgradeCard, "Augmente la capacité de stockage et réduit le temps de livraison.");
+            _upgradeCostLabel = CreateCardRowSimple(upgradeCard, "UpgradeCostRow", "Coût", "$ 0");
             _upgradeButton = CreateActionButton(upgradeCard, "UpgradeButton", new Color(0.29f, 0.56f, 0.89f));
             _upgradeButtonLabel = _upgradeButton.GetComponentInChildren<TMP_Text>();
         }
@@ -358,7 +358,7 @@ namespace TransportManager.UI.Tabs
             bool canRefill = !autoRefill && !isRefilling && fuel.RemainingCapacity > 0;
             if (_refillButton) _refillButton.interactable = canRefill;
             if (_refillButtonLabel) _refillButtonLabel.text = autoRefill ? "Auto" : (isRefilling ? "En cours..." : "Commander");
-            if (_refillStatusLabel && autoRefill) _refillStatusLabel.text = "Citerne autonome — remplissage automatique";
+            if (_refillStatusLabel && autoRefill) _refillStatusLabel.text = "Citerne autonome · remplissage automatique";
             else if (_refillStatusLabel && !isRefilling)
             {
                 string arrow = fuel.FuelPriceTrend > 0 ? "<color=#ff6b6b>▲</color>"
@@ -374,7 +374,7 @@ namespace TransportManager.UI.Tabs
 
                 float pct = capacity > 0 ? remaining / capacity : 0f;
                 int ingotCost = Mathf.CeilToInt(pct * tier.instantRefillIngotCost);
-                if (_instantCostLabel) _instantCostLabel.text = $"â—† {ingotCost}";
+                if (_instantCostLabel) _instantCostLabel.text = $"{ingotCost} lingot{(ingotCost > 1 ? "s" : "")}";
             }
 
             bool instantAvailable = !isRefilling && fuel.RemainingCapacity > 0;
@@ -389,10 +389,10 @@ namespace TransportManager.UI.Tabs
             {
                 if (!hasNextTier) _upgradeButtonLabel.text = "Niveau maximum";
                 else if (!canUpgrade) _upgradeButtonLabel.text = "Fonds insuffisants";
-                else _upgradeButtonLabel.text = "AmÃ©liorer";
+                else _upgradeButtonLabel.text = "Améliorer";
             }
             if (_upgradeCostLabel)
-                _upgradeCostLabel.text = nextTier != null ? $"$ {nextTier.upgradeCostDollars:N0}" : "â€”";
+                _upgradeCostLabel.text = nextTier != null ? $"$ {nextTier.upgradeCostDollars:N0}" : "-";
         }
     }
 }

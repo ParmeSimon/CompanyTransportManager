@@ -75,3 +75,17 @@ osm_tiles/
 # out of the repo, uncomment the next line and commit an OrsConfig.example.asset
 # instead.
 # Assets/_Project/ScriptableObjects/Map/OrsConfig.asset
+
+# Génération des images du dépôt (clé Bedrock + sorties intermédiaires)
+tools/depot-art/bedrock-key.txt
+tools/depot-art/raw/
+tools/depot-art/out/
+tools/depot-art/cut/
+tools/depot-art/inpaint/
+tools/depot-art/integrated/
+tools/game-art/raw/
+tools/game-art/cut/
+tools/game-art/out/
+
+# Scènes de récupération automatique d'Unity
+Assets/_Recovery/

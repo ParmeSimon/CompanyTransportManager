@@ -26,6 +26,12 @@ namespace TransportManager.UI.Map
         private static readonly Color CoreColor   = new Color(0.26f, 0.56f, 0.98f, 0.92f);
         private static readonly Color CasingColor = new Color(0.10f, 0.24f, 0.52f, 0.92f);
         private static readonly Color TruckBg     = new Color(0.22f, 0.52f, 1.00f, 1f);
+        // Trajet mis en avant (« Voir la route sur la carte ») : jaune, plus épais, au-dessus des autres.
+        private static readonly Color HlCoreColor   = new Color(1.00f, 0.84f, 0.18f, 1f);
+        private static readonly Color HlCasingColor = new Color(0.45f, 0.32f, 0.00f, 0.95f);
+        private const float HlCoreThickness   = 5.5f;
+        private const float HlCasingThickness = 9f;
+        private string _highlightId;
 
         private const float CoreThickness   = 3.5f;
         private const float CasingThickness = 6f;
@@ -230,10 +236,57 @@ namespace TransportManager.UI.Map
                 screen.Add(_map.LatLonToLocal(v.latB, v.lonB));
             }
 
-            DrawPolyPass(v, screen, CasingColor, CasingThickness);
-            DrawPolyPass(v, screen, CoreColor,   CoreThickness);
+            bool hl = v.inst.instanceId == _highlightId;
+            DrawPolyPass(v, screen, hl ? HlCasingColor : CasingColor, hl ? HlCasingThickness : CasingThickness);
+            DrawPolyPass(v, screen, hl ? HlCoreColor   : CoreColor,   hl ? HlCoreThickness   : CoreThickness);
+
+            var truckBg = v.truck != null ? v.truck.GetComponent<Image>() : null;
+            if (truckBg != null) truckBg.color = hl ? HlCoreColor : TruckBg;
 
             PositionTruck(v);
+            BringHighlightToFront();
+        }
+
+        /// <summary>
+        /// Met en jaune le trajet en cours de ce contrat et cadre la carte dessus.
+        /// Renvoie false si aucun trajet affiché ne correspond (contrat pas démarré ou masqué).
+        /// def == null retire la mise en avant.
+        /// </summary>
+        public bool Highlight(ContractData def)
+        {
+            string prev = _highlightId;
+            _highlightId = null;
+            RouteVisual target = null;
+            if (def != null)
+                foreach (var v in _visuals.Values)
+                    if (v.inst.definition == def) { target = v; break; }
+            if (target != null) _highlightId = target.inst.instanceId;
+
+            if (prev != null && _visuals.TryGetValue(prev, out var old)) RedrawVisual(old);
+            if (target == null) return false;
+
+            if (_map != null)
+            {
+                double minLat = Math.Min(target.latA, target.latB), maxLat = Math.Max(target.latA, target.latB);
+                double minLon = Math.Min(target.lonA, target.lonB), maxLon = Math.Max(target.lonA, target.lonB);
+                if (target.polyline != null)
+                    foreach (var g in target.polyline)
+                    {
+                        if (g.latitude  < minLat) minLat = g.latitude;  if (g.latitude  > maxLat) maxLat = g.latitude;
+                        if (g.longitude < minLon) minLon = g.longitude; if (g.longitude > maxLon) maxLon = g.longitude;
+                    }
+                _map.FitBounds(minLat, minLon, maxLat, maxLon);   // déclenche RedrawAll
+            }
+            RedrawVisual(target);
+            return true;
+        }
+
+        // Le trajet jaune passe au-dessus des autres tracés, son camion au-dessus des autres camions.
+        private void BringHighlightToFront()
+        {
+            if (_highlightId == null || !_visuals.TryGetValue(_highlightId, out var v)) return;
+            foreach (var s in v.segments) if (s != null) s.SetAsLastSibling();
+            if (v.truck != null) v.truck.SetAsLastSibling();
         }
 
         private void UpdateTrucks()

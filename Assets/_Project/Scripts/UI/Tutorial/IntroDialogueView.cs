@@ -72,7 +72,7 @@ namespace TransportManager.UI.Tutorial
             _lines.Add(new DialogueLine("Vous venez d'hériter d'une entreprise de transport… disons, qui a connu des jours meilleurs.", LineKind.Text, 1));
             _lines.Add(new DialogueLine("Mais ne vous inquiétez pas, ensemble nous allons la remettre sur pieds !", LineKind.Text, 0));
             _lines.Add(new DialogueLine("Avant toute chose, comment souhaitez-vous appeler cette nouvelle entreprise ?", LineKind.AskName, 0));
-            _lines.Add(new DialogueLine("« {name} » — quel beau nom ! Ça sonne bien.", LineKind.Text, 1));
+            _lines.Add(new DialogueLine("« {name} » · quel beau nom ! Ça sonne bien.", LineKind.Text, 1));
             _lines.Add(new DialogueLine("Où installez-vous votre dépôt ? Indiquez-moi une ville ou une adresse.", LineKind.AskLocation, 0));
             _lines.Add(new DialogueLine("Parfait, {location}. C'est de là que nous lancerons nos premiers contrats.", LineKind.Text, 1));
             _lines.Add(new DialogueLine("Le bâtiment est en ruine, alors retroussons nos manches. Suivez-moi !", LineKind.Text, 0));
@@ -85,8 +85,7 @@ namespace TransportManager.UI.Tutorial
             canvas.sortingOrder = 8000;
             var scaler = gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-            scaler.matchWidthOrHeight = 0.5f;
+            TransportManager.Core.UiScale.Configure(scaler);
             gameObject.AddComponent<GraphicRaycaster>();
 
             // Scrim covers full screen and receives clicks to advance

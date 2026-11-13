@@ -23,11 +23,18 @@ namespace TransportManager.Entities.Contracts
 
         // Energy drink donnée au conducteur pour ce trajet (vigilance accrue : annule l'accident).
         public bool             energyDrinkUsed;
+        // Moment (fraction 0–1 du trajet) et effet de l'energy drink : la fatigue chute de
+        // energyDrinkRelief à ce moment-là, puis reprend sa hausse avec les km restants.
+        public float            energyDrinkProgress;
+        public float            energyDrinkRelief;
 
         public DateTime StartTimeUtc      => new DateTime(startTimeUtcTicks,      DateTimeKind.Utc);
         public DateTime CompletionTimeUtc => new DateTime(completionTimeUtcTicks, DateTimeKind.Utc);
 
         public bool IsReadyToComplete => DateTime.UtcNow.Ticks >= completionTimeUtcTicks;
+
+        /// Durée de conduite du trajet, en heures (base du calcul de fatigue).
+        public float DriveHours => Math.Max(0f, (float)((completionTimeUtcTicks - startTimeUtcTicks) / (double)TimeSpan.TicksPerHour));
 
         public bool HasScheduledAccident =>
             scheduledAccidentSeverity != AccidentSeverity.None && scheduledAccidentTimeTicks > 0;
